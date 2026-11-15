@@ -85,6 +85,14 @@ apk="$root/out/release/TheLastOfUsRemastered-Android-v0.1.1-arm64.apk"
 "$android_tools/zipalign" -f -p 4 "$unsigned" "$aligned"
 key="$out/experimental-development.jks"
 # A different key would make updates impossible. Never regenerate a release key.
+if [[ ! -s "$key" && "${TLOU_ALLOW_NEW_SIGNING_KEY:-0}" == "1" ]]; then
+  # Forks never have the upstream key. Their APK gets its own key, so it cannot
+  # update an upstream install: uninstall that first (export saves before).
+  echo "WARNING: creating a fork signing key; this APK cannot update an upstream install" >&2
+  keytool -genkeypair -keystore "$key" -alias tlou-bionic -keyalg RSA -keysize 4096 \
+    -validity 10000 -storepass TLOU-Bionic-development -keypass TLOU-Bionic-development \
+    -dname "CN=TLOU Android fork build" >/dev/null
+fi
 if [[ ! -s "$key" ]]; then
   echo "ERROR: existing TLOU signing identity missing; refusing a differently signed APK" >&2
   exit 8
