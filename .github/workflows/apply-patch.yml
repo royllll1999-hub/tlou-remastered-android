@@ -1,0 +1,59 @@
+name: Apply uploaded patch
+
+# Lets source changes arrive as one uploaded .patch file (GitHub's web upload) instead of many
+# single-file web edits: the patch under tools/patches/ is applied on the same branch, committed,
+# and the APK build is started for it. Patches touching .github/workflows are refused by GitHub
+# for the built-in token; those still go through the web editor.
+on:
+  push:
+    branches: [tlou-ui-approval-log32-20261105]
+    paths:
+      - 'tools/patches/*.patch'
+  workflow_dispatch:
+    inputs:
+      patch:
+        description: 'Patch file in the repository (tools/patches/<name>.patch)'
+        required: true
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: apply-patch-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply, commit and push
+        env:
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+          INPUT_PATCH: ${{ github.event.inputs.patch }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -n "${INPUT_PATCH:-}" ]; then
+            patches="$INPUT_PATCH"
+          else
+            patches=$(git diff --name-only --diff-filter=AM "$BEFORE" "$AFTER" -- 'tools/patches/*.patch')
+          fi
+          [ -n "$patches" ] || { echo "No new patch"; exit 0; }
+          for p in $patches; do
+            echo "::group::$p"
+            git apply --index --whitespace=nowarn "$p"
+            subject=$(sed -n 's/^# Subject: //p' "$p" | head -1)
+            git commit -m "${subject:-Apply $(basename "$p")}" -m "Applied from $p."
+            echo "::endgroup::"
+          done
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+      - name: Start the APK build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run tlou-native-apk.yml --repo "$GITHUB_REPOSITORY" --ref "$GITHUB_REF_NAME"
