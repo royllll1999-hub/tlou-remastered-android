@@ -101,6 +101,46 @@ BASE_PATCHES_111 = {
          "e93329dcffc39090"),
     ],
 }
+# 01.11 job workers wake up on time (ported from uncharted-android 0161-0163, same Naughty Dog
+# job manager; sites checked against the 01.11 SELF 3cfa475f...). With job-sleep, an idle
+# NdJobWorkerThread spins 1000 `pause`s (on ARM64 under FEX each is a long wfe/yield, holding a
+# core about 100 ms after every job) and then waits on the manager's condition variable (+0x80)
+# with a 10 ms timeout. Job submission broadcasts it, but the two fiber-resume paths only bump the
+# workers' ready counters (+0x2040+worker*8) and wake nobody: a resumed job waited for the timeout.
+# - spins: cmp rax,1000 -> cmp rax,2 before the wait (0xC87D71);
+# - wait: mov edx,10 -> mov edx,1 (ms; the wrapper at 0xC81C40 multiplies by 1000) (0xC87D9F);
+# - resume wake: both resume paths end in `call 0xC89BD0` with the manager in rax; that call goes
+#   to a 35-byte thunk in the zero tail of the text segment (after eh_frame, never read) which
+#   saves the argument registers, broadcasts [rax+0x80] through the game's own CondBroadcast
+#   wrapper (0xC81DD0, the call of the submit path), restores them and jumps to 0xC89BD0.
+JOB_WAKE_CAVE_111 = 0x1473D00
+JOB_WAKE_111 = {
+    "job-wake": [
+        (0xC87D71, "483de8030000", "483d02000000"),
+        (0xC87D9F, "ba0a000000", "ba01000000"),
+        (0xC8781C, "e8af230000", "e8dfc47e00"),
+        (0xC897EC, "e8df030000", "e80fa57e00"),
+        (JOB_WAKE_CAVE_111, "00" * 35, "505152565741504151488db880000000e8bbe080ff415941585f5e5a5958e9ad5e81ff"),
+        # Guards: the CondBroadcast wrapper, the submit path's call of it and the resume
+        # paths' callee are where the thunk expects them.
+        (0xC81DD0, "554889e5415653", None),
+        (0xC873FF, "e8cca9ffff", None),
+        (0xC89BD0, "554889e564488b04", None),
+    ],
+}
+
+
+def job_wake_for(options, profile):
+    """job_wake (default on) only with job_sleep and only on 01.11."""
+    options = options or {}
+    wake = options.get("job_wake", True)
+    if type(wake) is not bool:
+        raise ValueError("Opção de despertar dos workers inválida")
+    if profile != "01.11" or not wake or not options.get("job_sleep", True):
+        return {}
+    return dict(JOB_WAKE_111)
+
+
 # Original-byte guards checked independently in BOTH supplied 01.11 ELFs.
 # In 01.11 the graphics settings are reconstructed from game/config data after
 # the constructor runs. Defaults alone can therefore be overwritten. Keep the
@@ -539,6 +579,7 @@ def write_selected(source, prepared, options):
                 return elf[offset + at-start:offset + at-start+length]
         return b""
     patches = base_patches_for(effective, profile)
+    patches.update(job_wake_for(effective, profile))
     patches.update(requested)
     for name, changes in patches.items():
         for at, expected, _ in changes:
