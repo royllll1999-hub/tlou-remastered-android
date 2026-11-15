@@ -184,6 +184,7 @@ final class PortMenu {
                 row("Vídeo e tela",()->go("video"));
                 screenMode(); // separate one-tap fit and fill actions in the main in-game menu
                 row("Patches",()->go("patches"));
+                row("AMD FSR 1.0",()->go("fsr"));
                 row("Idioma e interface",()->go("settings"));
                 row("Controles e HUD",()->go("hud"));
                 if(!inGame) {
@@ -210,6 +211,17 @@ final class PortMenu {
                 note("Sincronização da geometria: Completo (único modo). "
                      +"Preserva a correção das deformações.");
                 break;
+            case "fsr":
+                heading("AMD FSR 1.0");
+                note("Melhora a nitidez da imagem quando o jogo roda abaixo da resolução da tela.");
+                toggle("fsr","Ativar AMD FSR 1.0",false);
+                choice("fsr_sharpness","Nitidez do FSR",
+                    new String[]{"Suave","Média","Forte"},
+                    new String[]{"50","75","90"},"75");
+                note("Como ativar: ligue a opção acima, escolha 720p, 540p ou 360p em Resolução interna e reinicie o jogo.");
+                note("Como desativar: desligue a opção acima e reinicie o jogo. A imagem volta à exibição original.");
+                note("Em 1080p (Original) o FSR só aumenta a nitidez.");
+                break;
             case "patches":
                 heading("PATCHES");
                 note("Patches validados para o eboot reconhecido. Reinicie para aplicar.");
@@ -228,6 +240,7 @@ final class PortMenu {
                     SharedPreferences.Editor e=prefs.edit().putString("resolution","original");
                     for(String key:PortSettings.EFFECTS)e.putBoolean(key,false);
                     e.putBoolean("fps_unlock",false);
+                    e.putBoolean("fsr",false).putString("fsr_sharpness","75");
                     e.apply();actions.changed();render();
                 });
                 break;
