@@ -265,8 +265,18 @@ public final class MainActivity extends Activity {
                 SharedPreferences.Editor edit=prefs.edit().putString("resolution","original");
                 for(String key:PortSettings.EFFECTS)edit.putBoolean(key,false);
                 edit.putBoolean("fps_unlock",false);
+                edit.putBoolean("fsr",false).putString("fsr_sharpness","75");
                 edit.apply();buildHome();
             });
+            LinearLayout fsr=card(root,"AMD FSR 1.0");
+            fsr.addView(text("Melhora a nitidez da imagem quando o jogo roda abaixo da resolução da tela.",12,MUTED));
+            toggleSetting(fsr,"fsr","Ativar AMD FSR 1.0",false);
+            choice(fsr,"fsr_sharpness","Nitidez do FSR",
+                new String[]{"Suave","Média","Forte"},
+                new String[]{"50","75","90"},"75");
+            fsr.addView(text("Como ativar: ligue a opção acima, escolha 720p, 540p ou 360p em Resolução interna e reinicie o jogo.",12,MUTED));
+            fsr.addView(text("Como desativar: desligue a opção acima e reinicie o jogo. A imagem volta à exibição original.",12,MUTED));
+            fsr.addView(text("Em 1080p (Original) o FSR só aumenta a nitidez.",12,MUTED));
         } else if(currentTab.equals("settings")) {
             LinearLayout video=card(root,"VÍDEO E TELA");
             screenChoice(video);
