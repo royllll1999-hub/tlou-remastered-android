@@ -1,0 +1,49 @@
+name: Publish APK release
+
+# Publishes the APK of a finished "TLOU Bionic Full Native and APK" run as a GitHub release.
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Run ID of the APK build (from its Actions URL)'
+        required: true
+      tag:
+        description: 'Release tag'
+        required: true
+        default: 'v0.1.1-odin3'
+      notes:
+        description: 'Release notes file in the repository'
+        required: true
+        default: 'tools/release-notes/v0.1.1-odin3.md'
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download the APK of that build
+        uses: actions/download-artifact@v4
+        with:
+          name: TheLastOfUsRemastered-Android-v0.1.1-arm64
+          run-id: ${{ inputs.run_id }}
+          github-token: ${{ github.token }}
+          path: out
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+          NOTES: ${{ inputs.notes }}
+        run: |
+          set -euo pipefail
+          ls -la out
+          apk="out/TLOU-Remastered-Android-${TAG}-arm64.apk"
+          mv out/TheLastOfUsRemastered-Android-v0.1.1-arm64.apk "$apk"
+          (cd out && sha256sum "$(basename "$apk")" > "$(basename "$apk").sha256")
+          gh release create "$TAG" "$apk" "$apk.sha256" \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "TLOU Remastered Android $TAG (FSR, motion sensors, cutscene fix)" \
+            --notes-file "$NOTES"
