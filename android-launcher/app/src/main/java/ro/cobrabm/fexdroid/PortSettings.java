@@ -91,6 +91,21 @@ final class PortSettings {
             env.remove("TLOU_EXPECT_HOST_SCENE");
         }
 
+        // AMD FSR 1.0 (spatial EASU + RCAS) in the presenter, opt-in. Below the
+        // screen size EASU upscales the game's image; at the same size only
+        // RCAS sharpens. Temporal upscalers stay off (see GameActivity).
+        if(p.getBoolean("fsr",false)) {
+            env.put("GOW3_ANDROID_FSR","1");
+            env.put("GOW3_FSR1","1");
+            env.put("GOW3_RCAS","1");
+            env.put("GOW3_RCAS_STRENGTH",fsrStrength(p.getString("fsr_sharpness","75")));
+        } else {
+            env.remove("GOW3_ANDROID_FSR");
+            env.put("GOW3_FSR1","0");
+            env.put("GOW3_RCAS","0");
+            env.remove("GOW3_RCAS_STRENGTH");
+        }
+
         // Exact flags observed in launch.log of TLOU-Android-Logs (32).zip.
         // Its preceding launch-previous.log used different v0.31 trial flags:
         // the more recent actual run had the three below OFF.
@@ -213,6 +228,9 @@ final class PortSettings {
         result.append("; scene-composite=")
               .append(env.containsKey("TLOU_UNIFIED_GUEST_UI")?"unified-direct-no-ui-blit":
                       env.containsKey("TLOU_SPATIAL_SCENE")?"proxy-spatial-compat":"native");
+        result.append("; spatial-fsr=")
+              .append(env.containsKey("GOW3_ANDROID_FSR")
+                      ?"fsr1 rcas="+env.getOrDefault("GOW3_RCAS_STRENGTH","75"):"off");
         result.append("; temporal-fsr=off");
         result.append("; frames-in-flight=").append(env.getOrDefault("GOW3_FRAMES_IN_FLIGHT","0"));
         result.append("; geometry-sync=full");
@@ -229,6 +247,11 @@ final class PortSettings {
         return result.toString();
     }
 
+    /** RCAS strength in percent; anything unexpected falls back to the default 75. */
+    static String fsrStrength(String value) {
+        return "50".equals(value)||"90".equals(value)?value:"75";
+    }
+
     static String fpsLimit(Context context) {
         if(prefs(context).getBoolean("fps_unlock",false))return "120";
         return "30".equals(prefs(context).getString("fps_limit","60"))?"30":"60";
@@ -237,6 +260,7 @@ final class PortSettings {
         SharedPreferences p=prefs(context);
         String r=p.getString("resolution","original"), limit=fpsLimit(context);
         String res=r.equals("original")?"Original":r+"p";
+        if(p.getBoolean("fsr",false))res+=" + FSR";
         return res+"  ·  "+(limit+" FPS")+"  ·  "+
             (p.getBoolean("fps_unlock",false)?"VSync OFF (desbloqueio)":
              p.getBoolean("vsync",true)?"VSync ON":"VSync OFF");
