@@ -397,6 +397,7 @@ void Scheduler::RecorderThread(std::stop_token stoken) {
     Common::SetCurrentThreadName("gow3:VkRecorder");
 #ifdef __ANDROID__
     tlou_cpu_policy_apply("Vulkan recorder",1);
+    Gow3Threads::ApplyGpuThreadPriority("Vulkan recording thread");
     native_recorder_tid.store(static_cast<u32>(syscall(SYS_gettid)), std::memory_order_release);
 #endif
 #ifndef _WIN32
@@ -621,6 +622,11 @@ void Scheduler::WaitSubmitted(std::source_location caller) {
 }
 
 void Scheduler::Wait(u64 tick, std::source_location caller, u64 submit_ns) {
+    // A tick the GPU is known to have passed: nothing to flush, time or wait for (Uncharted
+    // Android port 0155). IsFree reads the cached GPU tick only.
+    if (work_semaphore.IsFree(tick)) {
+        return;
+    }
     const bool diagnose = WaitDiagnostics::Enabled();
     auto start = diagnose ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point{};
     if (tick >= work_semaphore.CurrentTick()) {

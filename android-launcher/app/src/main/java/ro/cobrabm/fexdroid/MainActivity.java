@@ -353,6 +353,9 @@ public final class MainActivity extends Activity {
             option(cpu,"pause_wfe","Espera econômica dos threads (menos aquecimento)",
                 "Quando um thread do jogo fica girando à espera de outro, o processador dorme até o próximo evento em vez de consumir energia (como no port de Uncharted para Android). Menos calor e bateria; em raros casos pode custar alguns FPS. Desligado por padrão; reinicie o jogo para aplicar.",false);
             divider(cpu);
+            option(cpu,"gpu_thread_priority","Prioridade dos threads de renderização",
+                "Os três threads que enviam o trabalho para a GPU ganham prioridade um pouco maior que os threads de tarefas do jogo, para não ficarem na fila atrás deles. No port para PC isso evitou quedas de 47 para 33 FPS. Não aumenta a frequência da CPU. Ligado por padrão; reinicie o jogo para aplicar.",true);
+            divider(cpu);
             option(cpu,"fex_no_tso","Modo rápido da CPU sem TSO (experimental)",
                 "Desliga a emulação da ordem de memória do x86 no FEX: o código do jogo roda mais rápido, mas o próprio FEX avisa que isso pode quebrar programas com vários threads (travamentos, objetos estranhos, quedas). Teste curto: se algo der errado, desligue. Reinicie o jogo para aplicar.",false);
             divider(cpu);

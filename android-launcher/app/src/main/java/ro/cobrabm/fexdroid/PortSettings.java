@@ -141,7 +141,9 @@ final class PortSettings {
         // Diagnostic-only branch: report real per-thread shader scan frequency
         // and sampled scalar vs NEON cost every 5 seconds during gameplay.
         // The production launcher does not set this variable.
-        env.put("TLOU_SHADER_SCAN_PROFILE","1");
+        // Now only while the A/B diagnostic below is on: it timed both scans on sampled shader
+        // lookups (~67,000 a second) during normal play as well.
+        env.put("TLOU_SHADER_SCAN_PROFILE",p.getBoolean("shader_scan_scalar",false)?"1":"0");
         env.put("TLOU_SHADER_SCAN_SCALAR",
                 p.getBoolean("shader_scan_scalar",false)?"1":"0");
         // Leave profiling truly disabled. Some native switches check presence,
@@ -196,6 +198,10 @@ final class PortSettings {
         // code; FEX itself warns it can break multithreaded programs. Only set when chosen.
         if(p.getBoolean("fex_no_tso",false))env.put("FEX_TSOENABLED","0");
         else env.remove("FEX_TSOENABLED");
+        // GPU command, draw recording and Vulkan recording threads at nice -4 (gow3_threads.h),
+        // as the PC port's "above" priority: not queued behind the six busy job workers.
+        if(p.getBoolean("gpu_thread_priority",true))env.put("GOW3_GPU_THREAD_PRIORITY","above");
+        else env.remove("GOW3_GPU_THREAD_PRIORITY");
         // runtime_pad_bionic.c prints every pad-file change unless this is set (~14 lines/s).
         env.put("GOW3_PAD_QUIET","1");
         env.remove("TLOU_PREP_NORMAL_PRIORITY");
@@ -253,6 +259,7 @@ final class PortSettings {
         result.append("; compute-exact-memo=").append(env.getOrDefault("GOW3_TLOU_COMPUTE_MEMO","0"));
         result.append("; compute-wait-defer=").append(env.getOrDefault("TLOU_COMPUTE_WAIT_DEFER","0"));
         result.append("; guest-job-worker-wake=patched-sleep");
+        result.append("; gpu-thread-priority=").append(prefs(context).getBoolean("gpu_thread_priority",true)?"above":"normal");
         result.append("; tso=").append(prefs(context).getBoolean("fex_no_tso",false)?"OFF":"on");
         result.append("; pause=").append(prefs(context).getBoolean("pause_wfe",false)?"wfe":"yield");
         result.append("; job-wake=").append(prefs(context).getBoolean("job_wake",true)?"fast":"off");

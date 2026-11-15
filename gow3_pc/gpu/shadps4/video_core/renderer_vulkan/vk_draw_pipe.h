@@ -256,6 +256,7 @@ private:
         Common::SetCurrentThreadName("gow3:DrawRec");
 #ifdef __ANDROID__
         tlou_cpu_policy_apply("draw recording",1);
+        Gow3Threads::ApplyGpuThreadPriority("draw recording thread");
 #endif
 #ifndef _WIN32
         if (clockid_t clock; pthread_getcpuclockid(pthread_self(), &clock) == 0)

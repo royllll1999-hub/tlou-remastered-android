@@ -56,6 +56,20 @@ inline void ApplyGpuThreadPriority(const char* name) {
 }
 #else
 
+/// GOW3_GPU_THREAD_PRIORITY=above|high on Linux/Android: the calling thread's nice level -4 or
+/// -8 (Android's DISPLAY / URGENT_DISPLAY), so the GPU command, draw recording and Vulkan
+/// recording threads are not queued behind the game's six busy job workers. The PC port measured
+/// the Windows equivalent: 33-34 instead of 46-47 FPS in 5 of 11 runs without it. Unset: unchanged.
+inline void ApplyGpuThreadPriority(const char* name) {
+    const char* env = std::getenv("GOW3_GPU_THREAD_PRIORITY");
+    if (!env || !*env) {
+        return;
+    }
+    const int nice = !std::strcmp(env, "high") ? -8 : !std::strcmp(env, "above") ? -4 : 0;
+    const int result = setpriority(PRIO_PROCESS, static_cast<id_t>(gettid()), nice);
+    std::printf("%s: priority %s (nice %d)%s\n", name, env, nice, result ? " refused" : "");
+}
+
 /// Hardware threads available to the process.
 inline unsigned Available() {
     cpu_set_t set;

@@ -349,6 +349,7 @@ void Liverpool::ProcessLoop(std::stop_token stoken) {
     Common::SetCurrentThreadName("shadPS4:GpuCommandProcessor");
 #ifdef __ANDROID__
     tlou_cpu_policy_apply("GPU command",1);
+    Gow3Threads::ApplyGpuThreadPriority("GPU command thread");
 #endif
 #ifndef _WIN32
     if (clockid_t clock; pthread_getcpuclockid(pthread_self(), &clock) == 0) {
@@ -489,9 +490,13 @@ void Liverpool::ProcessLoop(std::stop_token stoken) {
                 std::scoped_lock lock{queue.m_access};
                 queue.submits.pop();
 
-                --num_submits;
-                std::scoped_lock lock2{submit_mutex};
-                submit_cv.notify_all();
+                // Only WaitGpuIdle waits on this for num_submits == 0: wake it when the last
+                // submission retires, not on each of the many a frame (Uncharted Android port
+                // 0062: ~100 futex wakes a frame and thousands of context switches a second).
+                if (--num_submits == 0) {
+                    std::scoped_lock lock2{submit_mutex};
+                    submit_cv.notify_all();
+                }
             }
         }
 

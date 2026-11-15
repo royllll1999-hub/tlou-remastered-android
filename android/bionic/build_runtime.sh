@@ -21,14 +21,16 @@ for path in "$out/lib/libgow3gpu.so" "$out/lib/libgow3cpu.so" "$prefix/lib/libav
 done
 mkdir -p "$out/bin" "$out/lib" "$out/objects" "$out/atrac9"
 cc="$llvm/bin/aarch64-linux-android${api}-clang"
+# Same CPU baseline as libgow3gpu and FEX (build_gpu.sh): LSE atomics inline.
+march="-march=${TLOU_ANDROID_MARCH:-armv8.2-a}"
 for source in gow3_pc/third_party/LibAtrac9/C/src/*.c; do
-  "$cc" -std=c99 -O2 -fPIC -w -c "$source" -o "$out/atrac9/$(basename "${source%.c}").o"
+  "$cc" -std=c99 -O2 $march -fPIC -w -c "$source" -o "$out/atrac9/$(basename "${source%.c}").o"
 done
 "$llvm/bin/llvm-ar" rcs "$out/libatrac9.a" "$out"/atrac9/*.o
 objects=()
 for source in gow3_pc/src/probe.c gow3_pc/src/runtime*.c gow3_pc/src/vulkan_smoke.c; do
   object="$out/objects/$(basename "${source%.c}").o"
-  "$cc" -std=c11 -O2 -g -fPIE -Wall -Wextra -Werror -DGOW3_NO_SDL=1 -pthread \
+  "$cc" -std=c11 -O2 $march -g -fPIE -Wall -Wextra -Werror -DGOW3_NO_SDL=1 -pthread \
     -I "$prefix/include" -I gow3_pc -I gow3_pc/src -c "$source" -o "$object"
   objects+=("$object")
 done
