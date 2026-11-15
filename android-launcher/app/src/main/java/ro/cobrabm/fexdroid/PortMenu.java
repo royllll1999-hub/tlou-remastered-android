@@ -187,6 +187,7 @@ final class PortMenu {
                 row("AMD FSR 1.0",()->go("fsr"));
                 row("Idioma e interface",()->go("settings"));
                 row("Controles e HUD",()->go("hud"));
+                row("Sensores de movimento",()->go("motion"));
                 if(!inGame) {
                     row("Jogo e drivers",()->go("library"));
                     row("Saves",()->go("saves"));
@@ -256,6 +257,17 @@ final class PortMenu {
                      +"Reinicie o jogo para aplicar; não desativa os limites térmicos.");
                 note("Usa KGSL sem root; respeita limites térmicos. Pode ser ativado ou desativado durante o jogo.");
                 toggle("launch_direct","Entrar direto no jogo",false);
+                break;
+            case "motion":
+                heading("SENSORES DE MOVIMENTO");
+                note("Em The Last of Us, sacudir o controle conserta a lanterna quando ela começa a piscar. Em um portátil como o AYN Odin 3, o próprio aparelho faz o papel do controle.");
+                toggle("motion_shake","Sacudir o aparelho = sacudir o controle",true);
+                choice("motion_sensitivity","Sensibilidade da sacudida",
+                    new String[]{"Baixa","Média","Alta"},
+                    new String[]{"low","medium","high"},"medium");
+                toggle("shake_button","L3 + R3 juntos = sacudir",true);
+                note("Como ativar: ligue a opção acima e, quando a lanterna piscar, sacuda o aparelho com força algumas vezes. Vale na hora, sem reiniciar.");
+                note("Como desativar: desligue a opção acima. Se L3 + R3 estiver ligado, a sacudida pelos botões continua disponível.");
                 break;
             case "hud":
                 heading("CONTROLES E HUD");
