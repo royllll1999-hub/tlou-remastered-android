@@ -13,6 +13,9 @@
 
 
 #include "videodec_error.h"
+extern "C" {
+#include <libavutil/error.h>
+}
 
 #include "common/support/avdec.h"
 #include "core/memory.h"
@@ -66,6 +69,17 @@ VdecDecoder::VdecDecoder(const OrbisVideodec2DecoderConfigInfo& config_info,
     avcodec_open2(m_codec_context, codec, nullptr);
 }
 
+/// Decoder failures used to be silent; a movie that stops must leave a trace in the log.
+static void LogDecodeError(const char* what, int ret) {
+    static int logged;
+    if (logged++ < 16) {
+        char text[AV_ERROR_MAX_STRING_SIZE] = {};
+        av_strerror(ret, text, sizeof(text));
+        std::printf("Runtime: Videodec2 %s failed: %d (%s)\n", what, ret, text);
+        std::fflush(stdout);
+    }
+}
+
 VdecDecoder::~VdecDecoder() {
     avcodec_free_context(&m_codec_context);
     sws_freeContext(m_sws_context);
@@ -107,8 +121,14 @@ s32 VdecDecoder::Decode(const OrbisVideodec2InputData& input_data,
         avcodec_flush_buffers(m_codec_context);
         ret = avcodec_send_packet(m_codec_context, packet);
     }
-    if (ret < 0) {
-        ((void)0);
+    // TLOU: one picture leaves per call, but a packet can yield more than one, so on long movies
+    // decoded frames pile up until FFmpeg refuses input with EAGAIN ("read output first"). That
+    // used to fail the call: the movie stopped on its last picture while its audio played on,
+    // and the game waited forever for the end of the video. Now the waiting frame is returned
+    // below and this packet is sent again after it.
+    const bool resend = ret == AVERROR(EAGAIN);
+    if (ret < 0 && !resend) {
+        LogDecodeError("send_packet", ret);
         av_packet_free(&packet);
         return ORBIS_VIDEODEC2_ERROR_API_FAIL;
     }
@@ -121,13 +141,23 @@ s32 VdecDecoder::Decode(const OrbisVideodec2InputData& input_data,
     }
 
     ret = avcodec_receive_frame(m_codec_context, frame);
+    if (resend) {
+        // A frame has just been taken out (or none was waiting): the decoder has room again.
+        const int again = avcodec_send_packet(m_codec_context, packet);
+        static int recovered;
+        if (again < 0) {
+            LogDecodeError("send_packet after a full output queue (packet dropped)", again);
+        } else if (recovered++ < 8) {
+            std::printf("Runtime: Videodec2 output queue was full; frame taken and packet resent\n");
+            std::fflush(stdout);
+        }
+    }
     if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-        ((void)0);
         av_packet_free(&packet);
         av_frame_free(&frame);
         return ORBIS_OK;
     } else if (ret < 0) {
-        ((void)0);
+        LogDecodeError("receive_frame", ret);
         av_packet_free(&packet);
         av_frame_free(&frame);
         return ORBIS_VIDEODEC2_ERROR_API_FAIL;
@@ -247,7 +277,7 @@ s32 VdecDecoder::Flush(OrbisVideodec2FrameBuffer& frame_buffer,
         av_frame_free(&frame);
         return ORBIS_OK;
     } else if (ret < 0) {
-        ((void)0);
+        LogDecodeError("flush receive_frame", ret);
         av_frame_free(&frame);
         return ORBIS_VIDEODEC2_ERROR_API_FAIL;
     }
