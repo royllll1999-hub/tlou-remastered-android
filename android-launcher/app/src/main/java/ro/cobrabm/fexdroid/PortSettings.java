@@ -58,6 +58,7 @@ final class PortSettings {
         // The previously observed HALT after 806 s remains unproven to be
         // caused by this patch; validate both FPS and >806 s stability.
         options.put("job_sleep",true);
+        options.put("job_wake",p.getBoolean("job_wake",true));
         for(String key:EFFECTS) options.put(key,p.getBoolean(key,false));
         File file=new File(context.getFilesDir(),"patch-options.json");
         Files.write(file.toPath(),options.toString().getBytes(StandardCharsets.UTF_8));
@@ -244,6 +245,7 @@ final class PortSettings {
         result.append("; compute-exact-memo=").append(env.getOrDefault("GOW3_TLOU_COMPUTE_MEMO","0"));
         result.append("; compute-wait-defer=").append(env.getOrDefault("TLOU_COMPUTE_WAIT_DEFER","0"));
         result.append("; guest-job-worker-wake=patched-sleep");
+        result.append("; job-wake=").append(prefs(context).getBoolean("job_wake",true)?"fast":"off");
         return result.toString();
     }
 
