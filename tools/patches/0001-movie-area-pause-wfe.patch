@@ -1,0 +1,523 @@
+# Subject: Movies: one-pass area filter for 1080p->720p; optional guest PAUSE->wfe (Uncharted Android ports)
+
+diff --git a/android-launcher/app/src/main/assets/ui-translations.tsv b/android-launcher/app/src/main/assets/ui-translations.tsv
+index 14237ca..86a506b 100644
+--- a/android-launcher/app/src/main/assets/ui-translations.tsv
++++ b/android-launcher/app/src/main/assets/ui-translations.tsv
+@@ -214,3 +214,5 @@ Como ativar: ligue a opção acima e, quando a lanterna piscar, sacuda o aparelh
+ Como desativar: desligue a opção acima. Se L3 + R3 estiver ligado, a sacudida pelos botões continua disponível.	How to disable: turn off the option above. If L3 + R3 is on, shaking with the buttons stays available.	Cómo desactivarlo: desactiva la opción de arriba. Si L3 + R3 está activado, la sacudida con los botones sigue disponible.	Pour le désactiver : désactivez l’option ci-dessus. Si L3 + R3 est activé, la secousse par les boutons reste disponible.	Deaktivieren: Schalte die Option oben aus. Ist L3 + R3 an, bleibt das Schütteln per Tasten verfügbar.	Come disattivarlo: disattiva l’opzione qui sopra. Se L3 + R3 è attivo, lo scuotimento con i pulsanti resta disponibile.	Devre dışı bırakmak için: yukarıdaki seçeneği kapatın. L3 + R3 açıksa düğmelerle sallama kullanılabilir kalır.	Jak wyłączyć: wyłącz opcję powyżej. Jeśli L3 + R3 jest włączone, potrząśnięcie przyciskami pozostaje dostępne.	Как выключить: отключите опцию выше. Если включено L3 + R3, встряхивание кнопками остаётся доступным.	बंद करने के लिए: ऊपर का विकल्प बंद करें। अगर L3 + R3 चालू है, तो बटनों से हिलाना उपलब्ध रहता है।
+ Despertar rápido dos threads do jogo	Fast wake-up for game threads	Despertar rápido de los hilos del juego	Réveil rapide des threads du jeu	Schnelles Aufwecken der Spiel-Threads	Risveglio rapido dei thread di gioco	Oyun iş parçacıklarını hızlı uyandırma	Szybkie wybudzanie wątków gry	Быстрое пробуждение потоков игры	गेम थ्रेड्स का तेज़ जागरण
+ Os threads de tarefas do jogo acordam assim que há trabalho, em vez de esperar até 10 ms (como no port de Uncharted para Android). Mais FPS e menos travadas, sem esquentar mais. Reinicie o jogo para aplicar; desligue se notar instabilidade.	The game's job threads wake up as soon as there is work instead of waiting up to 10 ms (as in the Uncharted Android port). More FPS and fewer hitches without extra heat. Restart the game to apply; turn it off if you notice instability.	Los hilos de tareas del juego despiertan en cuanto hay trabajo en lugar de esperar hasta 10 ms (como en el port de Uncharted para Android). Más FPS y menos tirones sin calentar más. Reinicia el juego para aplicar; desactívalo si notas inestabilidad.	Les threads de tâches du jeu se réveillent dès qu’il y a du travail au lieu d’attendre jusqu’à 10 ms (comme dans le portage Android d’Uncharted). Plus d’IPS et moins d’à-coups, sans chauffer davantage. Redémarrez le jeu pour appliquer ; désactivez-le en cas d’instabilité.	Die Job-Threads des Spiels wachen auf, sobald es Arbeit gibt, statt bis zu 10 ms zu warten (wie im Android-Port von Uncharted). Mehr FPS und weniger Ruckler ohne zusätzliche Wärme. Starte das Spiel neu, um es anzuwenden; schalte es bei Instabilität aus.	I thread dei job del gioco si risvegliano appena c’è lavoro invece di attendere fino a 10 ms (come nel port Android di Uncharted). Più FPS e meno scatti senza scaldare di più. Riavvia il gioco per applicare; disattivalo se noti instabilità.	Oyunun görev iş parçacıkları 10 ms'ye kadar beklemek yerine iş gelir gelmez uyanır (Uncharted Android portundaki gibi). Daha fazla ısınma olmadan daha yüksek FPS ve daha az takılma. Uygulamak için oyunu yeniden başlatın; dengesizlik görürseniz kapatın.	Wątki zadań gry budzą się, gdy tylko pojawi się praca, zamiast czekać do 10 ms (jak w porcie Uncharted na Androida). Więcej FPS i mniej przycięć bez dodatkowego grzania. Uruchom grę ponownie, aby zastosować; wyłącz w razie niestabilności.	Потоки задач игры просыпаются сразу, как появляется работа, а не ждут до 10 мс (как в Android-порте Uncharted). Больше FPS и меньше рывков без лишнего нагрева. Перезапустите игру, чтобы применить; выключите при нестабильности.	गेम के जॉब थ्रेड 10 ms तक इंतज़ार करने के बजाय काम आते ही जागते हैं (Uncharted के Android पोर्ट की तरह)। बिना ज़्यादा गर्म हुए अधिक FPS और कम अटकाव। लागू करने के लिए गेम फिर से शुरू करें; अस्थिरता दिखे तो बंद करें।
++Espera econômica dos threads (menos aquecimento)	Economical thread waiting (less heat)	Espera económica de los hilos (menos calor)	Attente économe des threads (moins de chauffe)	Sparsames Warten der Threads (weniger Wärme)	Attesa economica dei thread (meno calore)	İş parçacıklarının tasarruflu beklemesi (daha az ısınma)	Oszczędne oczekiwanie wątków (mniej ciepła)	Экономичное ожидание потоков (меньше нагрев)	थ्रेड्स का किफ़ायती इंतज़ार (कम गर्मी)
++Quando um thread do jogo fica girando à espera de outro, o processador dorme até o próximo evento em vez de consumir energia (como no port de Uncharted para Android). Menos calor e bateria; em raros casos pode custar alguns FPS. Desligado por padrão; reinicie o jogo para aplicar.	When a game thread spins waiting for another, the processor sleeps until the next event instead of burning power (as in the Uncharted Android port). Less heat and battery drain; in rare cases it may cost a few FPS. Off by default; restart the game to apply.	Cuando un hilo del juego gira esperando a otro, el procesador duerme hasta el siguiente evento en lugar de gastar energía (como en el port de Uncharted para Android). Menos calor y batería; en casos raros puede costar algunos FPS. Desactivado por defecto; reinicia el juego para aplicarlo.	Quand un thread du jeu tourne en attendant un autre, le processeur dort jusqu'au prochain événement au lieu de consommer de l'énergie (comme dans le portage Android d'Uncharted). Moins de chauffe et de batterie ; dans de rares cas, quelques FPS en moins. Désactivé par défaut ; redémarrez le jeu pour appliquer.	Wenn ein Spiel-Thread auf einen anderen wartend kreist, schläft der Prozessor bis zum nächsten Ereignis, statt Energie zu verbrauchen (wie im Android-Port von Uncharted). Weniger Wärme und Akkuverbrauch; in seltenen Fällen ein paar FPS weniger. Standardmäßig aus; Spiel zum Übernehmen neu starten.	Quando un thread del gioco gira in attesa di un altro, il processore dorme fino al prossimo evento invece di consumare energia (come nel port Android di Uncharted). Meno calore e batteria; in rari casi può costare qualche FPS. Disattivato per impostazione predefinita; riavvia il gioco per applicare.	Bir oyun iş parçacığı başka birini beklerken döndüğünde, işlemci enerji harcamak yerine bir sonraki olaya kadar uyur (Uncharted Android portundaki gibi). Daha az ısınma ve pil tüketimi; nadiren birkaç FPS'e mal olabilir. Varsayılan olarak kapalı; uygulamak için oyunu yeniden başlatın.	Gdy wątek gry kręci się, czekając na inny, procesor śpi do następnego zdarzenia zamiast zużywać energię (jak w porcie Uncharted na Androida). Mniej ciepła i zużycia baterii; rzadko może kosztować kilka FPS. Domyślnie wyłączone; uruchom grę ponownie, aby zastosować.	Когда поток игры крутится в ожидании другого, процессор засыпает до следующего события, а не тратит энергию впустую (как в Android-порте Uncharted). Меньше нагрев и расход батареи; в редких случаях можно потерять несколько FPS. По умолчанию выключено; перезапустите игру, чтобы применить.	जब गेम का कोई थ्रेड दूसरे का इंतज़ार करते हुए घूमता है, तो प्रोसेसर ऊर्जा खर्च करने के बजाय अगली घटना तक सोता है (Uncharted के Android पोर्ट की तरह)। कम गर्मी और बैटरी खपत; कभी-कभी कुछ FPS कम हो सकते हैं। डिफ़ॉल्ट रूप से बंद; लागू करने के लिए गेम फिर से शुरू करें।
+diff --git a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/MainActivity.java b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/MainActivity.java
+index 2c1e22a..c23e3e7 100644
+--- a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/MainActivity.java
++++ b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/MainActivity.java
+@@ -300,6 +300,8 @@ public final class MainActivity extends Activity {
+             toggleSetting(cpu,"adpf","ADPF — ajuste dinâmico de desempenho",false);
+             toggleSetting(cpu,"job_wake","Despertar rápido dos threads do jogo",true);
+             cpu.addView(text("Os threads de tarefas do jogo acordam assim que há trabalho, em vez de esperar até 10 ms (como no port de Uncharted para Android). Mais FPS e menos travadas, sem esquentar mais. Reinicie o jogo para aplicar; desligue se notar instabilidade.",12,MUTED));
++            toggleSetting(cpu,"pause_wfe","Espera econômica dos threads (menos aquecimento)",false);
++            cpu.addView(text("Quando um thread do jogo fica girando à espera de outro, o processador dorme até o próximo evento em vez de consumir energia (como no port de Uncharted para Android). Menos calor e bateria; em raros casos pode custar alguns FPS. Desligado por padrão; reinicie o jogo para aplicar.",12,MUTED));
+             LinearLayout app=card(root,"IDIOMA E INTERFACE");
+             languageChoice(app);
+             app.addView(text("O idioma do jogo é escolhido no próprio The Last of Us.",12,MUTED));
+diff --git a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortMenu.java b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortMenu.java
+index 0c5e268..4bcbf92 100644
+--- a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortMenu.java
++++ b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortMenu.java
+@@ -252,6 +252,8 @@ final class PortMenu {
+                 toggle("adpf","ADPF — ajuste dinâmico de desempenho",false);
+                 toggle("job_wake","Despertar rápido dos threads do jogo",true);
+                 note("Os threads de tarefas do jogo acordam assim que há trabalho, em vez de esperar até 10 ms (como no port de Uncharted para Android). Mais FPS e menos travadas, sem esquentar mais. Reinicie o jogo para aplicar; desligue se notar instabilidade.");
++                toggle("pause_wfe","Espera econômica dos threads (menos aquecimento)",false);
++                note("Quando um thread do jogo fica girando à espera de outro, o processador dorme até o próximo evento em vez de consumir energia (como no port de Uncharted para Android). Menos calor e bateria; em raros casos pode custar alguns FPS. Desligado por padrão; reinicie o jogo para aplicar.");
+                 toggle("fast_render_cores","Priorizar núcleos rápidos (experimental)",false);
+                 note("Não força o clock. Limita as threads críticas aos núcleos mais rápidos; reinicie o jogo para aplicar. Pode aumentar a disputa entre threads.");
+                 note("Usa dicas de desempenho na thread nativa de comandos. "
+diff --git a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortSettings.java b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortSettings.java
+index cf826d0..e7ac925 100644
+--- a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortSettings.java
++++ b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortSettings.java
+@@ -190,6 +190,8 @@ final class PortSettings {
+         // Do not enable automatically: command, draw and recorder threads could contend on two prime cores.
+         env.put("TLOU_FAST_RENDER_CORES",p.getBoolean("fast_render_cores",false)?"1":"0");
+         env.put("GOW3_ADPF", p.getBoolean("adpf",false) ? "1" : "0");
++        // Guest x86 PAUSE -> ARM wfe in FEX (Uncharted Android fex-0002): optional, off by default.
++        env.put("GOW3_PAUSE_WFE", p.getBoolean("pause_wfe",false) ? "1" : "0");
+         env.remove("TLOU_PREP_NORMAL_PRIORITY");
+         env.remove("TLOU_PREP_HIT_STATS");
+         env.put("GOW3_DEFERRED_READBACK","0");
+@@ -245,6 +247,7 @@ final class PortSettings {
+         result.append("; compute-exact-memo=").append(env.getOrDefault("GOW3_TLOU_COMPUTE_MEMO","0"));
+         result.append("; compute-wait-defer=").append(env.getOrDefault("TLOU_COMPUTE_WAIT_DEFER","0"));
+         result.append("; guest-job-worker-wake=patched-sleep");
++        result.append("; pause=").append(prefs(context).getBoolean("pause_wfe",false)?"wfe":"yield");
+         result.append("; job-wake=").append(prefs(context).getBoolean("job_wake",true)?"fast":"off");
+         return result.toString();
+     }
+diff --git a/android/bionic/build_fex.sh b/android/bionic/build_fex.sh
+index 77cbe7f..c43255b 100644
+--- a/android/bionic/build_fex.sh
++++ b/android/bionic/build_fex.sh
+@@ -28,6 +28,35 @@ if [[ ${TLOU_ALLOW_DIFFERENT_FEX:-0} != 1 ]]; then
+   fi
+ fi
+ git -C "$fex" submodule update --init --recursive
++# Guest PAUSE (x86 spin-wait hint) -> optional ARM wfe, ported from the Uncharted Android port
++# (fex-0002-pause-wfe). Off unless GOW3_PAUSE_WFE=1 (launcher: "Economical waiting"): spinning
++# guest threads then idle until the next event (at most ~100 us, the timer event stream) instead
++# of polling at full clock, which saves power and heat. Idempotent on a cached FEX source.
++python3 - "$fex/FEXCore/Source/Interface/Core/JIT/MiscOps.cpp" <<'PY'
++import sys
++path = sys.argv[1]
++src = open(path).read()
++if "GOW3_PAUSE_WFE" not in src:
++    old = "DEF_OP(Yield) {\n  yield();\n}"
++    new = """DEF_OP(Yield) {
++  // TLOU Android: GOW3_PAUSE_WFE=1 turns the guest pause into wfe (Uncharted Android port).
++  static const bool use_wfe = [] {
++    const char* env = getenv("GOW3_PAUSE_WFE");
++    return env && env[0] == '1' && env[1] == 0;
++  }();
++  if (use_wfe) {
++    wfe();
++  } else {
++    yield();
++  }
++}"""
++    if src.count(old) != 1:
++        sys.exit("FEX MiscOps.cpp: DEF_OP(Yield) not found; update the pause patch")
++    src = src.replace(old, new)
++    if "#include <cstdlib>" not in src:
++        src = src.replace("namespace FEXCore::CPU {", "#include <cstdlib>\n\nnamespace FEXCore::CPU {", 1)
++    open(path, "w").write(src)
++PY
+ unset CFLAGS CXXFLAGS CPPFLAGS LDFLAGS CPATH C_INCLUDE_PATH CPLUS_INCLUDE_PATH LIBRARY_PATH CMAKE_PREFIX_PATH
+ cmake -S "$fex" -B "$output/fex" -G Ninja \
+   -DCMAKE_TOOLCHAIN_FILE="$ndk/build/cmake/android.toolchain.cmake" \
+diff --git a/android/bionic/test_runtime_contracts.sh b/android/bionic/test_runtime_contracts.sh
+index 1efe8b1..54c7bbc 100644
+--- a/android/bionic/test_runtime_contracts.sh
++++ b/android/bionic/test_runtime_contracts.sh
+@@ -105,6 +105,11 @@ g++ -std=c++20 -O2 -Wall -Wextra -Werror \
+ g++ -std=c++20 -O2 -Wall -Wextra -Werror \
+     gow3_pc/tests/test_tlou_movie_111_planes.cpp -o "$test_dir/tlou-movie-111-planes"
+ "$test_dir/tlou-movie-111-planes"
++# 1080p movies shown at 720p: one area-filter pass from the decoder's planes (Uncharted 0084).
++g++ -std=c++20 -O2 -Wall -Wextra -Werror \
++    gow3_pc/tests/test_tlou_movie_area.cpp -o "$test_dir/tlou-movie-area"
++"$test_dir/tlou-movie-area"
++grep -Fq 'gow3_movie_scale_i420(' gow3_pc/src/runtime_videodec.c
+ # Both 01.00 and 01.11 now use the same guarded movie-only 64-row
+ # NV12 plane remapper. Fail with an actionable diagnostic if either end is
+ # missing instead of silently rejecting the correctly generalized fix.
+diff --git a/gow3_pc/gpu/shim/gow3_movie.cpp b/gow3_pc/gpu/shim/gow3_movie.cpp
+index 504e293..b47d386 100644
+--- a/gow3_pc/gpu/shim/gow3_movie.cpp
++++ b/gow3_pc/gpu/shim/gow3_movie.cpp
+@@ -1,6 +1,7 @@
+ #include "gow3_movie.h"
+ #include "gow3_movie_bridge.h"
+ #include "tlou_movie_111_planes.h"
++#include "tlou_movie_area.h"
+ #include "core/memory.h"
+ 
+ #include <array>
+@@ -425,3 +426,83 @@ extern "C" int gow3_movie_scale_nv12(
+     }
+     return 1;
+ }
++
++// TLOU Android (ported from the Uncharted Android port, patch 0084): the decoder's 4:2:0 picture
++// (separate U and V planes) shown at exactly 2/3 or 1/2 of its size goes straight into the
++// game's frame buffer through an area filter, in place. This skips both swscale passes of the
++// path above (the full 1080p YUV420P -> NV12 conversion, then the NV12 downscale): the movie
++// thread reads the picture once. Any other size, format or a frame buffer too small returns 0
++// and the caller keeps the original path. GOW3_MOVIE_AREA=0 turns it off.
++extern "C" int gow3_movie_scale_i420(
++    std::uint64_t guest_base, std::uint64_t guest_capacity, const std::uint8_t* src_y,
++    const std::uint8_t* src_u, const std::uint8_t* src_v, std::uint32_t src_width,
++    std::uint32_t src_height, int src_y_stride, int src_u_stride, int src_v_stride,
++    std::uint32_t* display_width, std::uint32_t* display_height) {
++    static const bool enabled = [] {
++        const char* env = std::getenv("GOW3_MOVIE_AREA");
++        return !(env && env[0] == '0' && env[1] == 0);
++    }();
++    std::uint32_t width = 0, height = 0;
++    if (!enabled || !guest_base || !src_y || !src_u || !src_v || !display_width ||
++        !display_height || !Gow3Movie::DisplaySize(width, height) ||
++        !TlouMovieArea::Ratio(src_width, src_height, width, height) ||
++        src_y_stride < int(src_width) || src_u_stride < int(src_width / 2) ||
++        src_v_stride < int(src_width / 2))
++        return 0;
++    const std::uint32_t pitch = Gow3Movie::ScaledPitch();
++    const std::uint32_t chroma_pitch = Gow3Movie::ScaledChromaPitch();
++    const std::uint32_t rows = Gow3Movie::ScaledRows();
++    const std::uint64_t bytes = Gow3Movie::ScaledFrameBytes();
++    if (!bytes || bytes > 128ull * 1024 * 1024 ||
++        !gow3_movie_can_scale_in_place(src_width, src_height, width, height, bytes,
++                                       guest_capacity))
++        return 0;
++    std::uint8_t* target =
++        reinterpret_cast<std::uint8_t*>(static_cast<std::uintptr_t>(guest_base));
++
++    thread_local std::vector<std::uint8_t> output;
++    output.resize(static_cast<std::size_t>(bytes));
++    std::uint8_t* y_out = output.data();
++    std::uint8_t* uv_out = y_out + std::uint64_t(pitch) * rows;
++    if (!TlouMovieArea::Downscale(src_y, src_u, src_v, src_y_stride, src_u_stride, src_v_stride,
++                                  src_width, src_height, y_out, uv_out, pitch, chroma_pitch,
++                                  width, height))
++        return 0;
++    // Black (video range) right of the picture when the pitch is wider; rows below repeat the
++    // last one, as in the swscale path (the shaders sample a 64-row-aligned layout).
++    if (pitch > width) {
++        for (std::uint32_t y = 0; y < height; ++y)
++            std::memset(y_out + std::uint64_t(y) * pitch + width, 16, pitch - width);
++    }
++    if (chroma_pitch > width) {
++        for (std::uint32_t y = 0; y < height / 2; ++y)
++            std::memset(uv_out + std::uint64_t(y) * chroma_pitch + width, 128,
++                        chroma_pitch - width);
++    }
++    for (std::uint32_t y = height; y < rows; ++y)
++        std::memcpy(y_out + std::uint64_t(y) * pitch,
++                    y_out + std::uint64_t(height - 1) * pitch, pitch);
++    for (std::uint32_t y = height / 2; y < rows / 2; ++y)
++        std::memcpy(uv_out + std::uint64_t(y) * chroma_pitch,
++                    uv_out + std::uint64_t(height / 2 - 1) * chroma_pitch, chroma_pitch);
++
++    const auto address = static_cast<VAddr>(reinterpret_cast<std::uintptr_t>(target));
++    auto* memory = Core::Memory::Instance();
++    if (!memory) return 0;
++    memory->InvalidateMemory(address, bytes);
++    if (!memory->TryWriteBacking(target, output.data(), bytes))
++        std::memcpy(target, output.data(), bytes);
++    memory->InvalidateMemory(address, bytes);
++    Gow3Movie::RecordFrame(guest_base, width, height, pitch, rows);
++    *display_width = width;
++    *display_height = height;
++    static std::atomic<unsigned> recorded{0};
++    if (recorded.fetch_add(1, std::memory_order_relaxed) < 2) {
++        std::printf("TLOU movie area filter: decoded %ux%u -> %ux%u in-place %#llx "
++                    "(one pass, no swscale)\n",
++                    src_width, src_height, width, height,
++                    static_cast<unsigned long long>(address));
++        std::fflush(stdout);
++    }
++    return 1;
++}
+diff --git a/gow3_pc/gpu/shim/gow3_movie_bridge.h b/gow3_pc/gpu/shim/gow3_movie_bridge.h
+index feaf65e..aabd6ee 100644
+--- a/gow3_pc/gpu/shim/gow3_movie_bridge.h
++++ b/gow3_pc/gpu/shim/gow3_movie_bridge.h
+@@ -27,6 +27,13 @@ int gow3_movie_scale_nv12(uint64_t guest_base, uint64_t guest_capacity,
+                           uint32_t src_width, uint32_t src_height,
+                           int src_y_stride, int src_uv_stride,
+                           uint32_t* display_width, uint32_t* display_height);
++// The decoder's 4:2:0 picture (separate U and V planes) area-filtered by an exact 3:2 or 2:1
++// straight into the game's frame buffer (in place). 0: not handled, use the path above.
++int gow3_movie_scale_i420(uint64_t guest_base, uint64_t guest_capacity,
++                          const uint8_t* src_y, const uint8_t* src_u, const uint8_t* src_v,
++                          uint32_t src_width, uint32_t src_height,
++                          int src_y_stride, int src_u_stride, int src_v_stride,
++                          uint32_t* display_width, uint32_t* display_height);
+ #ifdef __cplusplus
+ }
+ #endif
+diff --git a/gow3_pc/gpu/shim/tlou_movie_area.h b/gow3_pc/gpu/shim/tlou_movie_area.h
+new file mode 100644
+index 0000000..446a4df
+--- /dev/null
++++ b/gow3_pc/gpu/shim/tlou_movie_area.h
+@@ -0,0 +1,182 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++#pragma once
++// TLOU Android: a decoded 4:2:0 movie picture (separate Y, U, V planes, as FFmpeg's H.264
++// decoder gives it) made smaller by an exact 3:2 or 2:1 straight into an NV12 frame, with an
++// area filter. Ported from the Uncharted Android port (patch 0084, videodec2_impl.cpp
++// AreaDownscale): there sws_scale took 8 ms of the 16.7 a 60 FPS movie frame has for 720p.
++// Here it also replaces the full-size YUV420P -> NV12 conversion that ran before the scale,
++// so a 1080p movie shown at 720p is read once instead of three times.
++// Returns false for another ratio or size; the caller keeps the swscale path then.
++#include <cstdint>
++#if defined(__aarch64__)
++#include <arm_neon.h>
++#endif
++
++namespace TlouMovieArea {
++
++// 0 (unsupported), 32 (3:2) or 21 (2:1) for a source w x h shown at width x height.
++inline int Ratio(std::uint32_t w, std::uint32_t h, std::uint32_t width, std::uint32_t height) {
++    if (width * 3 == w * 2 && height * 3 == h * 2 && w % 96 == 0 && h % 6 == 0) return 32;
++    if (width * 2 == w && height * 2 == h && w % 64 == 0 && h % 4 == 0) return 21;
++    return 0;
++}
++
++// x / 9 rounded, x <= 9 * 255 (the NEON path computes the same with a doubling multiply).
++inline std::uint8_t Div9(std::uint32_t x) {
++    return static_cast<std::uint8_t>((x * 7282u + 32768u) >> 16);
++}
++
++// Scalar reference: one 3x3 block (rows r0..r2, columns x..x+2) into a 2x2 block.
++// An output pixel covers one source pixel and half of the next on each axis (weights 2 and 1).
++inline void Block32(const std::uint8_t* r0, const std::uint8_t* r1, const std::uint8_t* r2,
++                    std::uint32_t x, std::uint8_t out[4]) {
++    const std::uint32_t a = r0[x], b = r0[x + 1], c = r0[x + 2];
++    const std::uint32_t d = r1[x], e = r1[x + 1], f = r1[x + 2];
++    const std::uint32_t g = r2[x], h = r2[x + 1], i = r2[x + 2];
++    out[0] = Div9(4 * a + 2 * b + 2 * d + e);
++    out[1] = Div9(4 * c + 2 * b + 2 * f + e);
++    out[2] = Div9(4 * g + 2 * h + 2 * d + e);
++    out[3] = Div9(4 * i + 2 * h + 2 * f + e);
++}
++
++#if defined(__aarch64__)
++struct Wide {
++    uint16x8_t lo, hi;
++};
++inline Wide Weigh21(uint8x16_t major, uint8x16_t minor) {
++    return {vaddw_u8(vshll_n_u8(vget_low_u8(major), 1), vget_low_u8(minor)),
++            vaddw_high_u8(vshll_high_n_u8(major, 1), minor)};
++}
++inline Wide Weigh21(Wide major, Wide minor) {
++    return {vaddq_u16(vshlq_n_u16(major.lo, 1), minor.lo),
++            vaddq_u16(vshlq_n_u16(major.hi, 1), minor.hi)};
++}
++inline uint8x16_t Div9(Wide x) {
++    return vcombine_u8(vqmovun_s16(vqrdmulhq_n_s16(vreinterpretq_s16_u16(x.lo), 3641)),
++                       vqmovun_s16(vqrdmulhq_n_s16(vreinterpretq_s16_u16(x.hi), 3641)));
++}
++// 16 groups of 3 pixels in 3 rows -> 2 rows of 32 pixels.
++inline void Area32(const std::uint8_t* r0, const std::uint8_t* r1, const std::uint8_t* r2,
++                   uint8x16x2_t& top, uint8x16x2_t& bottom) {
++    const uint8x16x3_t a = vld3q_u8(r0), b = vld3q_u8(r1), c = vld3q_u8(r2);
++    Wide up[3], down[3];
++    for (int k = 0; k < 3; ++k) {
++        up[k] = Weigh21(a.val[k], b.val[k]);
++        down[k] = Weigh21(c.val[k], b.val[k]);
++    }
++    top.val[0] = Div9(Weigh21(up[0], up[1]));
++    top.val[1] = Div9(Weigh21(up[2], up[1]));
++    bottom.val[0] = Div9(Weigh21(down[0], down[1]));
++    bottom.val[1] = Div9(Weigh21(down[2], down[1]));
++}
++// 16 pairs in 2 rows: the mean of each 2x2.
++inline uint8x16_t Area21(const std::uint8_t* r0, const std::uint8_t* r1) {
++    const uint8x16x2_t a = vld2q_u8(r0), b = vld2q_u8(r1);
++    const uint16x8_t lo = vaddq_u16(vaddl_u8(vget_low_u8(a.val[0]), vget_low_u8(a.val[1])),
++                                    vaddl_u8(vget_low_u8(b.val[0]), vget_low_u8(b.val[1])));
++    const uint16x8_t hi =
++        vaddq_u16(vaddl_high_u8(a.val[0], a.val[1]), vaddl_high_u8(b.val[0], b.val[1]));
++    return vcombine_u8(vrshrn_n_u16(lo, 2), vrshrn_n_u16(hi, 2));
++}
++#endif
++
++// src planes (w x h luma, w/2 x h/2 chroma) into luma (pitch ls) and interleaved UV (pitch cs).
++// force_scalar is for tests.
++inline bool Downscale(const std::uint8_t* y_plane, const std::uint8_t* u_plane,
++                      const std::uint8_t* v_plane, int ys, int us, int vs, std::uint32_t w,
++                      std::uint32_t h, std::uint8_t* luma, std::uint8_t* chroma, std::uint32_t ls,
++                      std::uint32_t cs, std::uint32_t width, std::uint32_t height,
++                      bool force_scalar = false) {
++    const int ratio = Ratio(w, h, width, height);
++    if (!ratio || ls < width || cs < width) return false;
++#if defined(__aarch64__)
++    if (!force_scalar) {
++        if (ratio == 32) {
++            for (std::uint32_t y = 0; y < h; y += 3) {
++                const std::uint8_t* r = y_plane + std::int64_t(y) * ys;
++                std::uint8_t* d = luma + std::uint64_t(y / 3 * 2) * ls;
++                for (std::uint32_t x = 0; x < w; x += 48) {
++                    uint8x16x2_t top, bottom;
++                    Area32(r + x, r + ys + x, r + 2 * ys + x, top, bottom);
++                    vst2q_u8(d + x / 3 * 2, top);
++                    vst2q_u8(d + ls + x / 3 * 2, bottom);
++                }
++            }
++            for (std::uint32_t y = 0; y < h / 2; y += 3) {
++                const std::uint8_t* u = u_plane + std::int64_t(y) * us;
++                const std::uint8_t* v = v_plane + std::int64_t(y) * vs;
++                std::uint8_t* d = chroma + std::uint64_t(y / 3 * 2) * cs;
++                for (std::uint32_t x = 0; x < w / 2; x += 48) {
++                    uint8x16x2_t ut, ub, vt, vb;
++                    Area32(u + x, u + us + x, u + 2 * us + x, ut, ub);
++                    Area32(v + x, v + vs + x, v + 2 * vs + x, vt, vb);
++                    vst4q_u8(d + x / 3 * 4,
++                             (uint8x16x4_t{{ut.val[0], vt.val[0], ut.val[1], vt.val[1]}}));
++                    vst4q_u8(d + cs + x / 3 * 4,
++                             (uint8x16x4_t{{ub.val[0], vb.val[0], ub.val[1], vb.val[1]}}));
++                }
++            }
++        } else {
++            for (std::uint32_t y = 0; y < h; y += 2) {
++                const std::uint8_t* r = y_plane + std::int64_t(y) * ys;
++                std::uint8_t* d = luma + std::uint64_t(y / 2) * ls;
++                for (std::uint32_t x = 0; x < w; x += 32) vst1q_u8(d + x / 2, Area21(r + x, r + ys + x));
++            }
++            for (std::uint32_t y = 0; y < h / 2; y += 2) {
++                const std::uint8_t* u = u_plane + std::int64_t(y) * us;
++                const std::uint8_t* v = v_plane + std::int64_t(y) * vs;
++                std::uint8_t* d = chroma + std::uint64_t(y / 2) * cs;
++                for (std::uint32_t x = 0; x < w / 2; x += 32)
++                    vst2q_u8(d + x, (uint8x16x2_t{{Area21(u + x, u + us + x), Area21(v + x, v + vs + x)}}));
++            }
++        }
++        return true;
++    }
++#endif
++    (void)force_scalar;
++    if (ratio == 32) {
++        std::uint8_t o[4], p[4];
++        for (std::uint32_t y = 0; y < h; y += 3) {
++            const std::uint8_t* r = y_plane + std::int64_t(y) * ys;
++            std::uint8_t* d = luma + std::uint64_t(y / 3 * 2) * ls;
++            for (std::uint32_t x = 0; x < w; x += 3) {
++                Block32(r, r + ys, r + 2 * ys, x, o);
++                const std::uint32_t c = x / 3 * 2;
++                d[c] = o[0]; d[c + 1] = o[1]; d[ls + c] = o[2]; d[ls + c + 1] = o[3];
++            }
++        }
++        for (std::uint32_t y = 0; y < h / 2; y += 3) {
++            const std::uint8_t* u = u_plane + std::int64_t(y) * us;
++            const std::uint8_t* v = v_plane + std::int64_t(y) * vs;
++            std::uint8_t* d = chroma + std::uint64_t(y / 3 * 2) * cs;
++            for (std::uint32_t x = 0; x < w / 2; x += 3) {
++                Block32(u, u + us, u + 2 * us, x, o);
++                Block32(v, v + vs, v + 2 * vs, x, p);
++                const std::uint32_t c = x / 3 * 4;
++                d[c] = o[0]; d[c + 1] = p[0]; d[c + 2] = o[1]; d[c + 3] = p[1];
++                d[cs + c] = o[2]; d[cs + c + 1] = p[2]; d[cs + c + 2] = o[3]; d[cs + c + 3] = p[3];
++            }
++        }
++    } else {
++        auto mean = [](const std::uint8_t* a, const std::uint8_t* b, std::uint32_t x) {
++            return static_cast<std::uint8_t>((a[x] + a[x + 1] + b[x] + b[x + 1] + 2u) >> 2);
++        };
++        for (std::uint32_t y = 0; y < h; y += 2) {
++            const std::uint8_t* r = y_plane + std::int64_t(y) * ys;
++            std::uint8_t* d = luma + std::uint64_t(y / 2) * ls;
++            for (std::uint32_t x = 0; x < w; x += 2) d[x / 2] = mean(r, r + ys, x);
++        }
++        for (std::uint32_t y = 0; y < h / 2; y += 2) {
++            const std::uint8_t* u = u_plane + std::int64_t(y) * us;
++            const std::uint8_t* v = v_plane + std::int64_t(y) * vs;
++            std::uint8_t* d = chroma + std::uint64_t(y / 2) * cs;
++            for (std::uint32_t x = 0; x < w / 2; x += 2) {
++                d[x] = mean(u, u + us, x);
++                d[x + 1] = mean(v, v + vs, x);
++            }
++        }
++    }
++    return true;
++}
++
++} // namespace TlouMovieArea
+diff --git a/gow3_pc/src/runtime_videodec.c b/gow3_pc/src/runtime_videodec.c
+index db4fb2c..5c1af91 100644
+--- a/gow3_pc/src/runtime_videodec.c
++++ b/gow3_pc/src/runtime_videodec.c
+@@ -98,6 +98,32 @@ static ABI int32_t videodec_create(const ConfigInfo *config, const ResourceInfo
+  * of the width aligned to 64 and the height aligned to 16 (the last rows repeated). */
+ static int32_t picture(Decoder *d, FrameBuffer *buffer, PictureInfo *info) {
+     AVFrame *f=d->frame;
++    /* A 4:2:0 picture shown at exactly 2/3 or 1/2 of its size (1080p movies at 720p) goes
++     * straight into the frame buffer through an area filter: no full-size NV12 conversion and
++     * no second swscale pass. Anything else falls through to the path below unchanged. */
++    if ((f->format==AV_PIX_FMT_YUV420P || f->format==AV_PIX_FMT_YUVJ420P) && f->width>0 && f->height>0 &&
++        (uint64_t)align((uint32_t)f->width,64)*align((uint32_t)f->height,16)*3/2<=buffer->frame_buffer_size) {
++        uint32_t area_width=0, area_height=0;
++        if (gow3_movie_scale_i420((uint64_t)(uintptr_t)buffer->frame_buffer, buffer->frame_buffer_size,
++                                  f->data[0], f->data[1], f->data[2], (uint32_t)f->width, (uint32_t)f->height,
++                                  f->linesize[0], f->linesize[1], f->linesize[2], &area_width, &area_height)) {
++            const uint32_t pitch=align(area_width,64), rows=align(area_height,16);
++            runtime_video_frame_lo=(uint64_t)(uintptr_t)buffer->frame_buffer;
++            runtime_video_frame_hi=runtime_video_frame_lo+(uint64_t)pitch*align(area_height,64)*3/2;
++            info->is_valid=1; info->codec_type=0;
++            info->frame_width=align(area_width,16);
++            info->frame_pitch=pitch;
++            info->frame_height=rows;
++            info->is_error_pic=0;
++            info->pts_data=(uint64_t)f->pts;
++            info->attached_data=(uint64_t)(uintptr_t)f->opaque;
++            memset(&info->codec,0,sizeof(info->codec));
++            info->codec.avc.colour_primaries=(uint8_t)f->color_primaries;
++            info->codec.avc.crop_right=pitch-area_width;
++            info->codec.avc.crop_bottom=rows-area_height;
++            return 0;
++        }
++    }
+     if (f->format!=AV_PIX_FMT_NV12) {
+         av_frame_unref(d->nv12);
+         d->nv12->format=AV_PIX_FMT_NV12; d->nv12->width=f->width; d->nv12->height=f->height;
+diff --git a/gow3_pc/tests/test_tlou_movie_area.cpp b/gow3_pc/tests/test_tlou_movie_area.cpp
+new file mode 100644
+index 0000000..8a3c895
+--- /dev/null
++++ b/gow3_pc/tests/test_tlou_movie_area.cpp
+@@ -0,0 +1,63 @@
++// The movie area filter (gpu/shim/tlou_movie_area.h) against an exact box-filter reference:
++// 1080p 4:2:0 into 720p (3:2) and 540p (2:1) NV12, luma and interleaved chroma.
++#include "../gpu/shim/tlou_movie_area.h"
++#include <cmath>
++#include <cstdio>
++#include <cstdlib>
++#include <vector>
++
++static double Reference(const std::vector<unsigned char>& p, unsigned pw, double s, unsigned ox,
++                        unsigned oy) {
++    const double x0 = ox * s, x1 = x0 + s, y0 = oy * s, y1 = y0 + s;
++    double acc = 0;
++    for (int yy = int(y0); yy < int(std::ceil(y1)); ++yy)
++        for (int xx = int(x0); xx < int(std::ceil(x1)); ++xx)
++            acc += (std::fmin(xx + 1, x1) - std::fmax(xx, x0)) *
++                   (std::fmin(yy + 1, y1) - std::fmax(yy, y0)) * p[std::size_t(yy) * pw + xx];
++    return acc / (s * s);
++}
++
++int main() {
++    for (unsigned x = 0; x <= 9 * 255; ++x)
++        if (TlouMovieArea::Div9(x) != unsigned(std::lround(x / 9.0))) {
++            std::fprintf(stderr, "Div9(%u) wrong\n", x);
++            return 1;
++        }
++    const unsigned W = 1920, H = 1080;
++    std::vector<unsigned char> y(W * H), u(W * H / 4), v(W * H / 4);
++    std::srand(7);
++    for (auto& b : y) b = (unsigned char)std::rand();
++    for (auto& b : u) b = (unsigned char)std::rand();
++    for (auto& b : v) b = (unsigned char)std::rand();
++    for (const unsigned w : {1280u, 960u}) {
++        const unsigned h = w == 1280 ? 720 : 540, pitch = (w + 63) & ~63u;
++        const double s = double(W) / w;
++        for (const bool scalar : {true, false}) {
++            std::vector<unsigned char> luma(pitch * h), chroma(pitch * h / 2);
++            if (!TlouMovieArea::Downscale(y.data(), u.data(), v.data(), W, W / 2, W / 2, W, H,
++                                          luma.data(), chroma.data(), pitch, pitch, w, h, scalar)) {
++                std::fprintf(stderr, "%ux%u not handled\n", w, h);
++                return 1;
++            }
++            for (unsigned r = 0; r < h; ++r)
++                for (unsigned c = 0; c < w; ++c)
++                    if (luma[r * pitch + c] != std::lround(Reference(y, W, s, c, r))) {
++                        std::fprintf(stderr, "luma %ux%u at %u,%u\n", w, h, c, r);
++                        return 1;
++                    }
++            for (unsigned r = 0; r < h / 2; ++r)
++                for (unsigned c = 0; c < w / 2; ++c)
++                    if (chroma[r * pitch + 2 * c] != std::lround(Reference(u, W / 2, s, c, r)) ||
++                        chroma[r * pitch + 2 * c + 1] != std::lround(Reference(v, W / 2, s, c, r))) {
++                        std::fprintf(stderr, "chroma %ux%u at %u,%u\n", w, h, c, r);
++                        return 1;
++                    }
++        }
++    }
++    if (TlouMovieArea::Ratio(1920, 1080, 1600, 900) || TlouMovieArea::Ratio(1920, 1080, 1920, 1080)) {
++        std::fprintf(stderr, "unsupported sizes must use swscale\n");
++        return 1;
++    }
++    std::puts("tlou movie area filter: exact");
++    return 0;
++}
