@@ -123,6 +123,10 @@ private:
     Instance instance;
     HostPasses::FsrPass fsr_pass;
     HostPasses::FsrPass::Settings fsr_settings{};
+    /// The FSR pass exists: always on desktop, on Android only with GOW3_ANDROID_FSR=1.
+    bool fsr_available{false};
+    /// Last FSR mode written to the log (-1 none yet, 0 off, 1 RCAS, 2 EASU+RCAS).
+    int fsr_logged_mode{-1};
     HostPasses::PostProcessingPass::Settings pp_settings{};
     HostPasses::PostProcessingPass pp_pass;
     AmdGpu::Liverpool* liverpool;
