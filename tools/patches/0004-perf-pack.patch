@@ -1,0 +1,210 @@
+# Subject: Performance: render thread priority on Android, armv8.2-a (inline LSE atomics), GPU idle wake only at idle, Scheduler::Wait fast path, shader-scan profiler only with its diagnostic
+
+diff --git a/android-launcher/app/src/main/assets/ui-translations.tsv b/android-launcher/app/src/main/assets/ui-translations.tsv
+index 4e66766..f27020e 100644
+--- a/android-launcher/app/src/main/assets/ui-translations.tsv
++++ b/android-launcher/app/src/main/assets/ui-translations.tsv
+@@ -268,3 +268,5 @@ Apertar os dois analógicos ao mesmo tempo também sacode a lanterna, útil com
+ Cópia de segurança dos jogos salvos em um arquivo ZIP. Exporte antes de reinstalar o aplicativo ou trocar de versão.	Backs up your saved games into a ZIP file. Export before reinstalling the app or switching versions.	Copia de seguridad de las partidas guardadas en un archivo ZIP. Exporta antes de reinstalar la aplicación o cambiar de versión.	Sauvegarde de vos parties dans un fichier ZIP. Exportez avant de réinstaller l'application ou de changer de version.	Sichert die Spielstände in eine ZIP-Datei. Vor einer Neuinstallation oder einem Versionswechsel exportieren.	Copia di sicurezza dei salvataggi in un file ZIP. Esporta prima di reinstallare l'app o cambiare versione.	Kayıtlı oyunların ZIP dosyasına yedeği. Uygulamayı yeniden kurmadan veya sürüm değiştirmeden önce dışa aktarın.	Kopia zapasowa zapisów gry w pliku ZIP. Eksportuj przed ponowną instalacją aplikacji lub zmianą wersji.	Резервная копия сохранений в ZIP-архиве. Экспортируйте перед переустановкой приложения или сменой версии.	सेव किए गेम का ZIP फ़ाइल में बैकअप। ऐप दोबारा इंस्टॉल करने या संस्करण बदलने से पहले एक्सपोर्ट करें।
+ Modo rápido da CPU sem TSO (experimental)	Fast CPU mode without TSO (experimental)	Modo rápido de CPU sin TSO (experimental)	Mode CPU rapide sans TSO (expérimental)	Schneller CPU-Modus ohne TSO (experimentell)	Modalità CPU veloce senza TSO (sperimentale)	TSO'suz hızlı CPU modu (deneysel)	Szybki tryb CPU bez TSO (eksperymentalne)	Быстрый режим CPU без TSO (экспериментально)	TSO के बिना तेज़ CPU मोड (प्रायोगिक)
+ Desliga a emulação da ordem de memória do x86 no FEX: o código do jogo roda mais rápido, mas o próprio FEX avisa que isso pode quebrar programas com vários threads (travamentos, objetos estranhos, quedas). Teste curto: se algo der errado, desligue. Reinicie o jogo para aplicar.	Turns off FEX's emulation of x86 memory ordering: game code runs faster, but FEX itself warns this can break multithreaded programs (freezes, odd objects, crashes). Test briefly; if anything goes wrong, turn it off. Restart the game to apply.	Desactiva la emulación del orden de memoria de x86 en FEX: el código del juego va más rápido, pero el propio FEX advierte que puede romper programas con varios hilos (cuelgues, objetos raros, cierres). Prueba un rato; si algo falla, desactívalo. Reinicia el juego para aplicarlo.	Désactive l'émulation de l'ordre mémoire x86 dans FEX : le code du jeu tourne plus vite, mais FEX lui-même prévient que cela peut casser les programmes multithreads (blocages, objets étranges, plantages). Testez brièvement ; en cas de problème, désactivez. Redémarrez le jeu pour appliquer.	Schaltet die Emulation der x86-Speicherreihenfolge in FEX ab: Spielcode läuft schneller, aber FEX warnt selbst, dass Programme mit mehreren Threads brechen können (Hänger, seltsame Objekte, Abstürze). Kurz testen; bei Problemen ausschalten. Spiel zum Übernehmen neu starten.	Disattiva l'emulazione dell'ordine di memoria x86 in FEX: il codice del gioco va più veloce, ma FEX stesso avverte che può rompere i programmi multithread (blocchi, oggetti strani, crash). Prova per poco; se qualcosa va storto, disattivalo. Riavvia il gioco per applicare.	FEX'te x86 bellek sırası emülasyonunu kapatır: oyun kodu daha hızlı çalışır, ancak FEX çok iş parçacıklı programları bozabileceği konusunda uyarır (donma, garip nesneler, çökme). Kısa test edin; sorun olursa kapatın. Uygulamak için oyunu yeniden başlatın.	Wyłącza w FEX emulację kolejności pamięci x86: kod gry działa szybciej, ale sam FEX ostrzega, że może to psuć programy wielowątkowe (zawieszenia, dziwne obiekty, awarie). Testuj krótko; jeśli coś pójdzie źle, wyłącz. Uruchom grę ponownie, aby zastosować.	Отключает в FEX эмуляцию порядка памяти x86: код игры работает быстрее, но сам FEX предупреждает, что это может ломать многопоточные программы (зависания, странные объекты, вылеты). Проверяйте недолго; если что-то пошло не так — выключите. Перезапустите игру, чтобы применить.	FEX में x86 मेमोरी क्रम का अनुकरण बंद करता है: गेम कोड तेज़ चलता है, पर FEX ख़ुद चेतावनी देता है कि इससे कई थ्रेड वाले प्रोग्राम टूट सकते हैं (अटकना, अजीब चीज़ें, क्रैश)। थोड़ी देर आज़माएँ; कुछ गड़बड़ हो तो बंद करें। लागू करने के लिए गेम फिर से शुरू करें।
++Prioridade dos threads de renderização	Render thread priority	Prioridad de los hilos de renderizado	Priorité des threads de rendu	Priorität der Render-Threads	Priorità dei thread di rendering	Render iş parçacıklarının önceliği	Priorytet wątków renderowania	Приоритет потоков рендера	रेंडर थ्रेड्स की प्राथमिकता
++Os três threads que enviam o trabalho para a GPU ganham prioridade um pouco maior que os threads de tarefas do jogo, para não ficarem na fila atrás deles. No port para PC isso evitou quedas de 47 para 33 FPS. Não aumenta a frequência da CPU. Ligado por padrão; reinicie o jogo para aplicar.	The three threads that send work to the GPU get a slightly higher priority than the game's job threads, so they don't queue behind them. In the PC port this prevented drops from 47 to 33 FPS. It doesn't raise the CPU clock. On by default; restart the game to apply.	Los tres hilos que envían el trabajo a la GPU reciben una prioridad algo mayor que los hilos de tareas del juego, para no quedar en cola detrás de ellos. En el port de PC esto evitó caídas de 47 a 33 FPS. No sube la frecuencia de la CPU. Activado por defecto; reinicia el juego para aplicarlo.	Les trois threads qui envoient le travail au GPU reçoivent une priorité un peu plus élevée que les threads de tâches du jeu, pour ne pas attendre derrière eux. Sur le portage PC, cela a évité des chutes de 47 à 33 FPS. N'augmente pas la fréquence du CPU. Activé par défaut ; redémarrez le jeu pour appliquer.	Die drei Threads, die der GPU Arbeit schicken, erhalten eine etwas höhere Priorität als die Job-Threads des Spiels, damit sie nicht hinter ihnen warten. Im PC-Port verhinderte das Einbrüche von 47 auf 33 FPS. Erhöht den CPU-Takt nicht. Standardmäßig an; Spiel zum Übernehmen neu starten.	I tre thread che inviano il lavoro alla GPU ricevono una priorità un po' più alta dei thread di lavoro del gioco, per non restare in coda dietro di loro. Nel port PC questo ha evitato cali da 47 a 33 FPS. Non aumenta la frequenza della CPU. Attivo per impostazione predefinita; riavvia il gioco per applicare.	GPU'ya iş gönderen üç iş parçacığı, oyunun görev iş parçacıklarından biraz daha yüksek öncelik alır, böylece onların arkasında sıra beklemez. PC portunda bu, 47'den 33 FPS'e düşüşleri önledi. CPU frekansını artırmaz. Varsayılan olarak açık; uygulamak için oyunu yeniden başlatın.	Trzy wątki wysyłające pracę do GPU dostają nieco wyższy priorytet niż wątki zadań gry, aby nie czekały za nimi w kolejce. W porcie PC zapobiegło to spadkom z 47 do 33 FPS. Nie podnosi taktowania CPU. Domyślnie włączone; uruchom grę ponownie, aby zastosować.	Три потока, которые отправляют работу на GPU, получают чуть более высокий приоритет, чем потоки задач игры, чтобы не стоять за ними в очереди. В PC-порте это убирало просадки с 47 до 33 FPS. Частоту CPU не повышает. Включено по умолчанию; перезапустите игру, чтобы применить.	GPU को काम भेजने वाले तीन थ्रेड्स को गेम के टास्क थ्रेड्स से थोड़ी ज़्यादा प्राथमिकता मिलती है, ताकि वे उनके पीछे कतार में न रुकें। PC पोर्ट में इससे 47 से 33 FPS की गिरावट रुकी। CPU की फ़्रीक्वेंसी नहीं बढ़ाता। डिफ़ॉल्ट रूप से चालू; लागू करने के लिए गेम फिर से शुरू करें।
+diff --git a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/MainActivity.java b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/MainActivity.java
+index 2502954..5139854 100644
+--- a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/MainActivity.java
++++ b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/MainActivity.java
+@@ -353,6 +353,9 @@ public final class MainActivity extends Activity {
+             option(cpu,"pause_wfe","Espera econômica dos threads (menos aquecimento)",
+                 "Quando um thread do jogo fica girando à espera de outro, o processador dorme até o próximo evento em vez de consumir energia (como no port de Uncharted para Android). Menos calor e bateria; em raros casos pode custar alguns FPS. Desligado por padrão; reinicie o jogo para aplicar.",false);
+             divider(cpu);
++            option(cpu,"gpu_thread_priority","Prioridade dos threads de renderização",
++                "Os três threads que enviam o trabalho para a GPU ganham prioridade um pouco maior que os threads de tarefas do jogo, para não ficarem na fila atrás deles. No port para PC isso evitou quedas de 47 para 33 FPS. Não aumenta a frequência da CPU. Ligado por padrão; reinicie o jogo para aplicar.",true);
++            divider(cpu);
+             option(cpu,"fex_no_tso","Modo rápido da CPU sem TSO (experimental)",
+                 "Desliga a emulação da ordem de memória do x86 no FEX: o código do jogo roda mais rápido, mas o próprio FEX avisa que isso pode quebrar programas com vários threads (travamentos, objetos estranhos, quedas). Teste curto: se algo der errado, desligue. Reinicie o jogo para aplicar.",false);
+             divider(cpu);
+diff --git a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortSettings.java b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortSettings.java
+index d15509b..831b632 100644
+--- a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortSettings.java
++++ b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortSettings.java
+@@ -141,7 +141,9 @@ final class PortSettings {
+         // Diagnostic-only branch: report real per-thread shader scan frequency
+         // and sampled scalar vs NEON cost every 5 seconds during gameplay.
+         // The production launcher does not set this variable.
+-        env.put("TLOU_SHADER_SCAN_PROFILE","1");
++        // Now only while the A/B diagnostic below is on: it timed both scans on sampled shader
++        // lookups (~67,000 a second) during normal play as well.
++        env.put("TLOU_SHADER_SCAN_PROFILE",p.getBoolean("shader_scan_scalar",false)?"1":"0");
+         env.put("TLOU_SHADER_SCAN_SCALAR",
+                 p.getBoolean("shader_scan_scalar",false)?"1":"0");
+         // Leave profiling truly disabled. Some native switches check presence,
+@@ -196,6 +198,10 @@ final class PortSettings {
+         // code; FEX itself warns it can break multithreaded programs. Only set when chosen.
+         if(p.getBoolean("fex_no_tso",false))env.put("FEX_TSOENABLED","0");
+         else env.remove("FEX_TSOENABLED");
++        // GPU command, draw recording and Vulkan recording threads at nice -4 (gow3_threads.h),
++        // as the PC port's "above" priority: not queued behind the six busy job workers.
++        if(p.getBoolean("gpu_thread_priority",true))env.put("GOW3_GPU_THREAD_PRIORITY","above");
++        else env.remove("GOW3_GPU_THREAD_PRIORITY");
+         // runtime_pad_bionic.c prints every pad-file change unless this is set (~14 lines/s).
+         env.put("GOW3_PAD_QUIET","1");
+         env.remove("TLOU_PREP_NORMAL_PRIORITY");
+@@ -253,6 +259,7 @@ final class PortSettings {
+         result.append("; compute-exact-memo=").append(env.getOrDefault("GOW3_TLOU_COMPUTE_MEMO","0"));
+         result.append("; compute-wait-defer=").append(env.getOrDefault("TLOU_COMPUTE_WAIT_DEFER","0"));
+         result.append("; guest-job-worker-wake=patched-sleep");
++        result.append("; gpu-thread-priority=").append(prefs(context).getBoolean("gpu_thread_priority",true)?"above":"normal");
+         result.append("; tso=").append(prefs(context).getBoolean("fex_no_tso",false)?"OFF":"on");
+         result.append("; pause=").append(prefs(context).getBoolean("pause_wfe",false)?"wfe":"yield");
+         result.append("; job-wake=").append(prefs(context).getBoolean("job_wake",true)?"fast":"off");
+diff --git a/android/bionic/build_gpu.sh b/android/bionic/build_gpu.sh
+index 418a0f1..2cc6d7d 100644
+--- a/android/bionic/build_gpu.sh
++++ b/android/bionic/build_gpu.sh
+@@ -26,6 +26,10 @@ done
+ # TLOU PC gains ~10% from trained PGO+LTO; an x86 profile cannot train ARM64.
+ # Reuse its LTO setup for the Android GPU only. Can disable at build time with
+ # TLOU_ANDROID_LTO=OFF; this is a binary setting, not a launcher experiment.
++# TLOU_ANDROID_MARCH (default armv8.2-a, as FEX's TUNE_ARCH): every 64-bit Snapdragon since the
++# 845 has it, the AYN Odin 3 (Snapdragon 8 Elite) far more. Atomics become single LSE
++# instructions instead of LL/SC loops or outlined helper calls - the draw pipe, rings and
++# counters of the GPU threads run on them. TLOU_ANDROID_MARCH=armv8-a restores the baseline.
+ # Let CMake discover include/vma as well as include; discard the old forced cache path.
+ mkdir -p "$build/.cmake/api/v1/query"
+ touch "$build/.cmake/api/v1/query/codemodel-v2"
+@@ -33,6 +37,8 @@ cmake -S gow3_pc/gpu -B "$build" -G Ninja \
+     -DCMAKE_TOOLCHAIN_FILE="$ndk/build/cmake/android.toolchain.cmake" \
+   -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM="android-$api" -DANDROID_STL=c++_shared \
+     -DCMAKE_BUILD_TYPE=RelWithDebInfo -DGOW3_PGO=off -DGOW3_LTO="${TLOU_ANDROID_LTO:-ON}" \
++    "-DCMAKE_C_FLAGS=-march=${TLOU_ANDROID_MARCH:-armv8.2-a}" \
++    "-DCMAKE_CXX_FLAGS=-march=${TLOU_ANDROID_MARCH:-armv8.2-a}" \
+     -DCMAKE_FIND_ROOT_PATH="$prefix" -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH \
+     -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -Dpkgcfg_lib_FFMPEG_atomic:FILEPATH="$atomic" \
+     -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=BOTH "-DCMAKE_PREFIX_PATH=$prefix;$headers" \
+diff --git a/android/bionic/build_runtime.sh b/android/bionic/build_runtime.sh
+index 3dc4362..c741348 100644
+--- a/android/bionic/build_runtime.sh
++++ b/android/bionic/build_runtime.sh
+@@ -21,14 +21,16 @@ for path in "$out/lib/libgow3gpu.so" "$out/lib/libgow3cpu.so" "$prefix/lib/libav
+ done
+ mkdir -p "$out/bin" "$out/lib" "$out/objects" "$out/atrac9"
+ cc="$llvm/bin/aarch64-linux-android${api}-clang"
++# Same CPU baseline as libgow3gpu and FEX (build_gpu.sh): LSE atomics inline.
++march="-march=${TLOU_ANDROID_MARCH:-armv8.2-a}"
+ for source in gow3_pc/third_party/LibAtrac9/C/src/*.c; do
+-  "$cc" -std=c99 -O2 -fPIC -w -c "$source" -o "$out/atrac9/$(basename "${source%.c}").o"
++  "$cc" -std=c99 -O2 $march -fPIC -w -c "$source" -o "$out/atrac9/$(basename "${source%.c}").o"
+ done
+ "$llvm/bin/llvm-ar" rcs "$out/libatrac9.a" "$out"/atrac9/*.o
+ objects=()
+ for source in gow3_pc/src/probe.c gow3_pc/src/runtime*.c gow3_pc/src/vulkan_smoke.c; do
+   object="$out/objects/$(basename "${source%.c}").o"
+-  "$cc" -std=c11 -O2 -g -fPIE -Wall -Wextra -Werror -DGOW3_NO_SDL=1 -pthread \
++  "$cc" -std=c11 -O2 $march -g -fPIE -Wall -Wextra -Werror -DGOW3_NO_SDL=1 -pthread \
+     -I "$prefix/include" -I gow3_pc -I gow3_pc/src -c "$source" -o "$object"
+   objects+=("$object")
+ done
+diff --git a/android/tests/test_tlou_shader_scan_diagnostic.py b/android/tests/test_tlou_shader_scan_diagnostic.py
+index 0fb0e07..9a4760f 100644
+--- a/android/tests/test_tlou_shader_scan_diagnostic.py
++++ b/android/tests/test_tlou_shader_scan_diagnostic.py
+@@ -12,7 +12,7 @@ class TestScanAB(unittest.TestCase):
+         assert 'const auto& bininfo' in SRC
+     def test_launcher_exposes_restartable_ab(self):
+         assert 'option(diagnostics,"shader_scan_scalar"' in UI
+-        assert 'env.put("TLOU_SHADER_SCAN_PROFILE","1")' in SET
++        assert 'env.put("TLOU_SHADER_SCAN_PROFILE",p.getBoolean("shader_scan_scalar",false)?"1":"0")' in SET
+         assert 'getBoolean("shader_scan_scalar",false)' in SET
+         assert 'shader-scan-method=' in SET
+ if __name__=="__main__": unittest.main()
+diff --git a/gow3_pc/gpu/shadps4/video_core/amdgpu/liverpool.cpp b/gow3_pc/gpu/shadps4/video_core/amdgpu/liverpool.cpp
+index b689e2a..462edd7 100644
+--- a/gow3_pc/gpu/shadps4/video_core/amdgpu/liverpool.cpp
++++ b/gow3_pc/gpu/shadps4/video_core/amdgpu/liverpool.cpp
+@@ -349,6 +349,7 @@ void Liverpool::ProcessLoop(std::stop_token stoken) {
+     Common::SetCurrentThreadName("shadPS4:GpuCommandProcessor");
+ #ifdef __ANDROID__
+     tlou_cpu_policy_apply("GPU command",1);
++    Gow3Threads::ApplyGpuThreadPriority("GPU command thread");
+ #endif
+ #ifndef _WIN32
+     if (clockid_t clock; pthread_getcpuclockid(pthread_self(), &clock) == 0) {
+@@ -489,9 +490,13 @@ void Liverpool::ProcessLoop(std::stop_token stoken) {
+                 std::scoped_lock lock{queue.m_access};
+                 queue.submits.pop();
+ 
+-                --num_submits;
+-                std::scoped_lock lock2{submit_mutex};
+-                submit_cv.notify_all();
++                // Only WaitGpuIdle waits on this for num_submits == 0: wake it when the last
++                // submission retires, not on each of the many a frame (Uncharted Android port
++                // 0062: ~100 futex wakes a frame and thousands of context switches a second).
++                if (--num_submits == 0) {
++                    std::scoped_lock lock2{submit_mutex};
++                    submit_cv.notify_all();
++                }
+             }
+         }
+ 
+diff --git a/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/vk_draw_pipe.h b/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/vk_draw_pipe.h
+index af4b6a8..df692a6 100644
+--- a/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/vk_draw_pipe.h
++++ b/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/vk_draw_pipe.h
+@@ -256,6 +256,7 @@ private:
+         Common::SetCurrentThreadName("gow3:DrawRec");
+ #ifdef __ANDROID__
+         tlou_cpu_policy_apply("draw recording",1);
++        Gow3Threads::ApplyGpuThreadPriority("draw recording thread");
+ #endif
+ #ifndef _WIN32
+         if (clockid_t clock; pthread_getcpuclockid(pthread_self(), &clock) == 0)
+diff --git a/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/vk_scheduler.cpp b/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/vk_scheduler.cpp
+index 4b8aa3f..bfcab06 100644
+--- a/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/vk_scheduler.cpp
++++ b/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/vk_scheduler.cpp
+@@ -397,6 +397,7 @@ void Scheduler::RecorderThread(std::stop_token stoken) {
+     Common::SetCurrentThreadName("gow3:VkRecorder");
+ #ifdef __ANDROID__
+     tlou_cpu_policy_apply("Vulkan recorder",1);
++    Gow3Threads::ApplyGpuThreadPriority("Vulkan recording thread");
+     native_recorder_tid.store(static_cast<u32>(syscall(SYS_gettid)), std::memory_order_release);
+ #endif
+ #ifndef _WIN32
+@@ -621,6 +622,11 @@ void Scheduler::WaitSubmitted(std::source_location caller) {
+ }
+ 
+ void Scheduler::Wait(u64 tick, std::source_location caller, u64 submit_ns) {
++    // A tick the GPU is known to have passed: nothing to flush, time or wait for (Uncharted
++    // Android port 0155). IsFree reads the cached GPU tick only.
++    if (work_semaphore.IsFree(tick)) {
++        return;
++    }
+     const bool diagnose = WaitDiagnostics::Enabled();
+     auto start = diagnose ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point{};
+     if (tick >= work_semaphore.CurrentTick()) {
+diff --git a/gow3_pc/gpu/shim/gow3_threads.h b/gow3_pc/gpu/shim/gow3_threads.h
+index 0939251..0a31e59 100644
+--- a/gow3_pc/gpu/shim/gow3_threads.h
++++ b/gow3_pc/gpu/shim/gow3_threads.h
+@@ -56,6 +56,20 @@ inline void ApplyGpuThreadPriority(const char* name) {
+ }
+ #else
+ 
++/// GOW3_GPU_THREAD_PRIORITY=above|high on Linux/Android: the calling thread's nice level -4 or
++/// -8 (Android's DISPLAY / URGENT_DISPLAY), so the GPU command, draw recording and Vulkan
++/// recording threads are not queued behind the game's six busy job workers. The PC port measured
++/// the Windows equivalent: 33-34 instead of 46-47 FPS in 5 of 11 runs without it. Unset: unchanged.
++inline void ApplyGpuThreadPriority(const char* name) {
++    const char* env = std::getenv("GOW3_GPU_THREAD_PRIORITY");
++    if (!env || !*env) {
++        return;
++    }
++    const int nice = !std::strcmp(env, "high") ? -8 : !std::strcmp(env, "above") ? -4 : 0;
++    const int result = setpriority(PRIO_PROCESS, static_cast<id_t>(gettid()), nice);
++    std::printf("%s: priority %s (nice %d)%s\n", name, env, nice, result ? " refused" : "");
++}
++
+ /// Hardware threads available to the process.
+ inline unsigned Available() {
+     cpu_set_t set;
