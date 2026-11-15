@@ -301,6 +301,15 @@ public final class MainActivity extends Activity {
             LinearLayout app=card(root,"IDIOMA E INTERFACE");
             languageChoice(app);
             app.addView(text("O idioma do jogo é escolhido no próprio The Last of Us.",12,MUTED));
+            LinearLayout motion=card(root,"SENSORES DE MOVIMENTO");
+            motion.addView(text("Em The Last of Us, sacudir o controle conserta a lanterna quando ela começa a piscar. Em um portátil como o AYN Odin 3, o próprio aparelho faz o papel do controle.",12,MUTED));
+            toggleSetting(motion,"motion_shake","Sacudir o aparelho = sacudir o controle",true);
+            choice(motion,"motion_sensitivity","Sensibilidade da sacudida",
+                new String[]{"Baixa","Média","Alta"},
+                new String[]{"low","medium","high"},"medium");
+            toggleSetting(motion,"shake_button","L3 + R3 juntos = sacudir",true);
+            motion.addView(text("Como ativar: ligue a opção acima e, quando a lanterna piscar, sacuda o aparelho com força algumas vezes. Vale na hora, sem reiniciar.",12,MUTED));
+            motion.addView(text("Como desativar: desligue a opção acima. Se L3 + R3 estiver ligado, a sacudida pelos botões continua disponível.",12,MUTED));
             LinearLayout controls=card(root,"CONTROLES E HUD");
             toggleSetting(controls,"hud_visible","Mostrar FPS",true);
             choice(controls,"hud_mode","Estilo do HUD",
