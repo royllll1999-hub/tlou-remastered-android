@@ -119,7 +119,7 @@ public final class MainActivity extends Activity {
     }
     private void choice(LinearLayout parent,String key,String heading,
                         String[] names,String[] values,String fallback) {
-        parent.addView(text(heading,13,ACCENT));
+        TextView title=text(heading,15,TEXT);title.setTypeface(null,Typeface.BOLD);parent.addView(title);
         Spinner spinner=new Spinner(this,Spinner.MODE_DROPDOWN);
         String[] translated=new String[names.length];
         for(int i=0;i<names.length;i++)translated[i]=TlouLanguage.t(this,names[i]);
@@ -144,8 +144,40 @@ public final class MainActivity extends Activity {
         sw.setOnCheckedChangeListener((v,checked)->prefs.edit().putBoolean(key,checked).apply());
         parent.addView(sw);
     }
+    /** A switch row: title and, under it, what the option does. */
+    private void option(LinearLayout parent,String key,String title,String description,boolean fallback) {
+        LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);
+        row.setPadding(0,dp(6),0,dp(6));
+        LinearLayout words=column();
+        TextView heading=text(title,15,TEXT);heading.setTypeface(null,Typeface.BOLD);heading.setPadding(0,dp(2),0,dp(2));
+        words.addView(heading);
+        if(description!=null){TextView about=text(description,12,MUTED);about.setPadding(0,dp(2),0,dp(2));about.setLineSpacing(0,1.1f);words.addView(about);}
+        row.addView(words,new LinearLayout.LayoutParams(0,-2,1));
+        Switch sw=new Switch(this);sw.setChecked(prefs.getBoolean(key,fallback));
+        sw.setThumbTintList(android.content.res.ColorStateList.valueOf(prefs.getBoolean(key,fallback)?ACCENT:0xff8c968a));
+        sw.setOnCheckedChangeListener((v,checked)->{prefs.edit().putBoolean(key,checked).apply();
+            sw.setThumbTintList(android.content.res.ColorStateList.valueOf(checked?ACCENT:0xff8c968a));});
+        sw.setContentDescription(TlouLanguage.t(this,title));
+        LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-2,-2);lp.leftMargin=dp(14);row.addView(sw,lp);
+        row.setOnClickListener(v->sw.toggle());
+        parent.addView(row);
+    }
+    /** A list choice with its explanation. */
+    private void choiceRow(LinearLayout parent,String key,String title,String description,
+                           String[] names,String[] values,String fallback) {
+        choice(parent,key,title,names,values,fallback);
+        if(description!=null)hint(parent,description);
+    }
+    private void hint(LinearLayout parent,String message) {
+        TextView t=text(message,12,MUTED);t.setLineSpacing(0,1.1f);parent.addView(t);
+    }
+    private void divider(LinearLayout parent) {
+        View line=new View(this);line.setBackgroundColor(0x22c2cf96);
+        LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,dp(1));lp.topMargin=dp(6);lp.bottomMargin=dp(6);
+        parent.addView(line,lp);
+    }
     private void languageChoice(LinearLayout parent) {
-        parent.addView(text("Idioma do aplicativo",13,ACCENT));
+        TextView title=text("Idioma do aplicativo",15,TEXT);title.setTypeface(null,Typeface.BOLD);parent.addView(title);
         Spinner spinner=new Spinner(this,Spinner.MODE_DROPDOWN);
         ArrayAdapter<String> adapter=new ArrayAdapter<>(this,
             android.R.layout.simple_spinner_dropdown_item,TlouLanguage.options(this));
@@ -161,7 +193,7 @@ public final class MainActivity extends Activity {
         });parent.addView(spinner,new LinearLayout.LayoutParams(-1,dp(48)));
     }
     private void screenChoice(LinearLayout parent) {
-        parent.addView(text("Tela",13,ACCENT));
+        TextView title=text("Tela",15,TEXT);title.setTypeface(null,Typeface.BOLD);parent.addView(title);
         Spinner spinner=new Spinner(this,Spinner.MODE_DROPDOWN);
         String[] labels={
             TlouLanguage.t(this,"Ajustar à tela (proporção original)"),
@@ -221,10 +253,15 @@ public final class MainActivity extends Activity {
             subtitle.setPadding(0,0,0,dp(14));root.addView(subtitle);
         }
 
+        // Launcher layout (Odin 3 build): five tabs, one topic each. Every option carries a line
+        // saying what it does; all texts go through TlouLanguage (ui-translations.tsv).
+        if(currentTab.equals("patches")||currentTab.equals("settings")||currentTab.equals("about"))
+            currentTab=currentTab.equals("patches")?"graphics":currentTab.equals("settings")?"performance":"system";
         LinearLayout tabs=new LinearLayout(this);
         tabs.setOrientation(LinearLayout.HORIZONTAL);
-        addTab(tabs,"Início","home");addTab(tabs,"Patches","patches");
-        addTab(tabs,"Ajustes","settings");addTab(tabs,"Sobre","about");
+        addTab(tabs,"Início","home");addTab(tabs,"Gráficos","graphics");
+        addTab(tabs,"Desempenho","performance");addTab(tabs,"Controles","controls");
+        addTab(tabs,"Sistema","system");
         LinearLayout.LayoutParams tabLP=new LinearLayout.LayoutParams(-1,dp(45));
         tabLP.bottomMargin=dp(18);root.addView(tabs,tabLP);
 
@@ -237,109 +274,154 @@ public final class MainActivity extends Activity {
             add(game,"Instalar por PKG",false,()->withAccess(()->pickFile(PICK_PKG)));
             TextView manual=text("Informar caminho da pasta",12,ACCENT);
             manual.setOnClickListener(v->{if(!busy)manualPath();});game.addView(manual);
-            toggleSetting(game,"launch_direct","Entrar direto no jogo",false);
+            option(game,"launch_direct","Entrar direto no jogo",
+                "Ao abrir o aplicativo, o jogo começa sozinho, sem passar por este menu.",false);
             LinearLayout updates=card(root,"ATUALIZAÇÃO DO JOGO");
             updates.addView(text("Aplique um PKG de update ou selecione uma pasta extraída. O jogo base e os saves não serão sobrescritos.",12,MUTED));
             add(updates,"Atualizar por PKG",false,()->withAccess(()->pickFile(PICK_UPDATE_PKG)));
             add(updates,"Atualizar por pasta",false,()->withAccess(()->pickFolder(PICK_UPDATE_FOLDER)));
             add(game,"Sair do aplicativo",false,this::finishAffinity);
-        } else if(currentTab.equals("patches")) {
-            LinearLayout box=card(root,"PATCHES");
-            box.addView(text("Patches validados para o eboot reconhecido. Reinicie para aplicar.",12,MUTED));
-            choice(box,"resolution","Resolução interna",
+        } else if(currentTab.equals("graphics")) {
+            LinearLayout image=card(root,"RESOLUÇÃO E IMAGEM");
+            choiceRow(image,"resolution","Resolução interna",
+                "Resolução em que o jogo é desenhado. Menor = mais FPS e menos calor; 720p é o melhor equilíbrio no AYN Odin 3. Reinicie o jogo para aplicar.",
                 new String[]{"Original (1080p)","1280 × 720","960 × 540","640 × 360"},
                 new String[]{"original","720","540","360"},"original");
-            toggleSetting(box,"fps_unlock","Desbloquear FPS (até 120, experimental)",false);
-            toggleSetting(box,"shader_scan_scalar","Diagnóstico CPU: usar busca original (A/B)",false);
-            box.addView(text("Desligado = NEON; ligado = original. Reinicie o jogo entre os testes e exporte os logs.",12,MUTED));
-            box.addView(text("O desbloqueio desliga o VSync durante a sessão para evitar o teto de 60 FPS. Cinemáticas mantêm o ritmo de 60 Hz.",12,MUTED));
-            toggleSetting(box,"ssao","Desativar SSAO",true);
-            toggleSetting(box,"motion_blur","Desativar desfoque de movimento",true);
-            toggleSetting(box,"depth_of_field","Desativar profundidade de campo",true);
-            toggleSetting(box,"bloom","Desativar bloom",true);
-            toggleSetting(box,"sunlight_shadows","Desativar sombras solares",true);
-            toggleSetting(box,"subsurface","Desativar subsurface",true);
-            toggleSetting(box,"omni_light_shadows","Desativar sombras de luzes omni (1.11)",false);
-            toggleSetting(box,"spot_light_shadows","Desativar sombras de holofotes (1.11)",false);
-            add(box,"Restaurar patches e resolução",false,()->{
+            divider(image);
+            screenChoice(image);
+            hint(image,"Ajustar mantém a proporção 16:9 com faixas pretas; Preencher estica a imagem para a tela inteira.");
+            LinearLayout fsr=card(root,"AMD FSR 1.0");
+            option(fsr,"fsr","Ativar AMD FSR 1.0",
+                "Melhora a nitidez da imagem quando o jogo roda abaixo da resolução da tela.",false);
+            divider(fsr);
+            choiceRow(fsr,"fsr_sharpness","Nitidez do FSR",
+                "Força do filtro de nitidez (RCAS). Suave deixa a imagem mais macia; Forte, mais definida.",
+                new String[]{"Suave","Média","Forte"},
+                new String[]{"50","75","90"},"75");
+            hint(fsr,"Como ativar: ligue a opção acima, escolha 720p, 540p ou 360p em Resolução interna e reinicie o jogo.");
+            hint(fsr,"Como desativar: desligue a opção acima e reinicie o jogo. A imagem volta à exibição original.");
+            hint(fsr,"Em 1080p (Original) o FSR só aumenta a nitidez.");
+            LinearLayout pacing=card(root,"FPS E SINCRONIZAÇÃO");
+            choiceRow(pacing,"fps_limit","Limite de FPS",
+                "Teto de quadros por segundo. 60 é o padrão; 30 reduz bastante o aquecimento e o consumo de bateria.",
+                new String[]{"30 FPS","60 FPS"},
+                new String[]{"30","60"},"60");
+            divider(pacing);
+            option(pacing,"vsync","VSync",
+                "Sincroniza os quadros com a tela para evitar imagem cortada (tearing). Recomendado ligado.",true);
+            divider(pacing);
+            option(pacing,"fps_unlock","Desbloquear FPS (até 120, experimental)",
+                "O desbloqueio desliga o VSync durante a sessão para evitar o teto de 60 FPS. Cinemáticas mantêm o ritmo de 60 Hz.",false);
+            LinearLayout effects=card(root,"EFEITOS GRÁFICOS");
+            hint(effects,"Desligar efeitos alivia a GPU e aumenta o FPS. Patches validados para o eboot reconhecido; reinicie o jogo para aplicar.");
+            option(effects,"ssao","Desativar SSAO",
+                "Sombras suaves de contato nos cantos e entre objetos. Desligar dá FPS com pouca perda visual.",true);
+            divider(effects);
+            option(effects,"motion_blur","Desativar desfoque de movimento",
+                "Borrão ao girar a câmera rapidamente. Muitos jogadores preferem sem ele.",true);
+            divider(effects);
+            option(effects,"depth_of_field","Desativar profundidade de campo",
+                "Desfoque do fundo ao mirar e em cenas próximas.",true);
+            divider(effects);
+            option(effects,"bloom","Desativar bloom",
+                "Brilho ao redor de luzes fortes e do céu.",true);
+            divider(effects);
+            option(effects,"sunlight_shadows","Desativar sombras solares",
+                "Sombras projetadas pelo sol em áreas abertas. O maior ganho de FPS, mas a cena fica mais plana.",true);
+            divider(effects);
+            option(effects,"subsurface","Desativar subsurface",
+                "Luz que atravessa a pele dos personagens (rostos mais naturais). Desligar alivia a GPU em diálogos.",true);
+            divider(effects);
+            option(effects,"omni_light_shadows","Desativar sombras de luzes omni (1.11)",
+                "Sombras de lâmpadas e luzes pontuais. Somente na versão 1.11; experimental.",false);
+            divider(effects);
+            option(effects,"spot_light_shadows","Desativar sombras de holofotes (1.11)",
+                "Sombras de lanternas e holofotes. Somente na versão 1.11; experimental.",false);
+            add(effects,"Restaurar patches e resolução",false,()->{
                 SharedPreferences.Editor edit=prefs.edit().putString("resolution","original");
                 for(String key:PortSettings.EFFECTS)edit.putBoolean(key,false);
                 edit.putBoolean("fps_unlock",false);
                 edit.putBoolean("fsr",false).putString("fsr_sharpness","75");
                 edit.apply();buildHome();
             });
-            LinearLayout fsr=card(root,"AMD FSR 1.0");
-            fsr.addView(text("Melhora a nitidez da imagem quando o jogo roda abaixo da resolução da tela.",12,MUTED));
-            toggleSetting(fsr,"fsr","Ativar AMD FSR 1.0",false);
-            choice(fsr,"fsr_sharpness","Nitidez do FSR",
-                new String[]{"Suave","Média","Forte"},
-                new String[]{"50","75","90"},"75");
-            fsr.addView(text("Como ativar: ligue a opção acima, escolha 720p, 540p ou 360p em Resolução interna e reinicie o jogo.",12,MUTED));
-            fsr.addView(text("Como desativar: desligue a opção acima e reinicie o jogo. A imagem volta à exibição original.",12,MUTED));
-            fsr.addView(text("Em 1080p (Original) o FSR só aumenta a nitidez.",12,MUTED));
-        } else if(currentTab.equals("settings")) {
-            LinearLayout video=card(root,"VÍDEO E TELA");
-            screenChoice(video);
-            choice(video,"fps_limit","Limite de FPS",
-                new String[]{"30 FPS","60 FPS"},
-                new String[]{"30","60"},"60");
-            toggleSetting(video,"vsync","VSync",true);
-            video.addView(text("Para desbloquear FPS até 120, abra a aba Patches. Quando ativo, o VSync é desativado na sessão sem alterar sua preferência salva.",12,MUTED));
-            video.addView(text("Modo Unificado padrão: jogo, interface e mira na mesma resolução. Vídeos mantêm a decodificação original.",12,MUTED));
-            video.addView(text("Sincronização da geometria: Completo (único modo). "
-                +"Correção de deformações mantida sem opções que não melhoraram o FPS.",12,MUTED));
-            LinearLayout drivers=card(root,"DRIVER VULKAN");
+        } else if(currentTab.equals("performance")) {
+            LinearLayout cpu=card(root,"CPU E DESEMPENHO");
+            hint(cpu,"Estas opções reduzem o trabalho do processador; nenhuma aumenta a frequência da CPU. Reinicie o jogo para aplicar.");
+            option(cpu,"job_wake","Despertar rápido dos threads do jogo",
+                "Os threads de tarefas do jogo acordam assim que há trabalho, em vez de esperar até 10 ms (como no port de Uncharted para Android). Mais FPS e menos travadas, sem esquentar mais. Reinicie o jogo para aplicar; desligue se notar instabilidade.",true);
+            divider(cpu);
+            option(cpu,"pause_wfe","Espera econômica dos threads (menos aquecimento)",
+                "Quando um thread do jogo fica girando à espera de outro, o processador dorme até o próximo evento em vez de consumir energia (como no port de Uncharted para Android). Menos calor e bateria; em raros casos pode custar alguns FPS. Desligado por padrão; reinicie o jogo para aplicar.",false);
+            divider(cpu);
+            option(cpu,"fast_render_cores","Priorizar núcleos rápidos (experimental)",
+                "Não força o clock. Limita as threads críticas aos núcleos mais rápidos; reinicie o jogo para aplicar. Pode aumentar a disputa entre threads.",false);
+            divider(cpu);
+            option(cpu,"adpf","ADPF — ajuste dinâmico de desempenho",
+                "Informa ao Android quanto tempo cada quadro leva, para o sistema ajustar a CPU por conta própria (Android 13+). Não desativa os limites térmicos.",false);
+            LinearLayout drivers=card(root,"GPU E DRIVER VULKAN");
             driverInfo=text("",12,MUTED);drivers.addView(driverInfo);
             add(drivers,"Selecionar driver Vulkan",false,this::selectDriver);
             add(drivers,"Importar driver ZIP ou SO",false,()->pickFile(PICK_DRIVER));
-            toggleSetting(drivers,"gpu_turbo","Adreno Turbo (sem root)",false);
-            drivers.addView(text("Política KGSL de máximo desempenho; a proteção térmica continua ativa. Pode não funcionar em todos os dispositivos.",12,MUTED));
-            LinearLayout cpu=card(root,"CPU E DESEMPENHO");
-            toggleSetting(cpu,"fast_render_cores","Priorizar núcleos rápidos (experimental)",false);
-            cpu.addView(text("Não força o clock. Limita as threads críticas aos núcleos mais rápidos; reinicie o jogo para aplicar. Pode aumentar a disputa entre threads.",12,MUTED));
-            toggleSetting(cpu,"adpf","ADPF — ajuste dinâmico de desempenho",false);
-            toggleSetting(cpu,"job_wake","Despertar rápido dos threads do jogo",true);
-            cpu.addView(text("Os threads de tarefas do jogo acordam assim que há trabalho, em vez de esperar até 10 ms (como no port de Uncharted para Android). Mais FPS e menos travadas, sem esquentar mais. Reinicie o jogo para aplicar; desligue se notar instabilidade.",12,MUTED));
-            toggleSetting(cpu,"pause_wfe","Espera econômica dos threads (menos aquecimento)",false);
-            cpu.addView(text("Quando um thread do jogo fica girando à espera de outro, o processador dorme até o próximo evento em vez de consumir energia (como no port de Uncharted para Android). Menos calor e bateria; em raros casos pode custar alguns FPS. Desligado por padrão; reinicie o jogo para aplicar.",12,MUTED));
-            LinearLayout app=card(root,"IDIOMA E INTERFACE");
-            languageChoice(app);
-            app.addView(text("O idioma do jogo é escolhido no próprio The Last of Us.",12,MUTED));
-            LinearLayout motion=card(root,"SENSORES DE MOVIMENTO");
-            motion.addView(text("Em The Last of Us, sacudir o controle conserta a lanterna quando ela começa a piscar. Em um portátil como o AYN Odin 3, o próprio aparelho faz o papel do controle.",12,MUTED));
-            toggleSetting(motion,"motion_shake","Sacudir o aparelho = sacudir o controle",true);
-            choice(motion,"motion_sensitivity","Sensibilidade da sacudida",
-                new String[]{"Baixa","Média","Alta"},
-                new String[]{"low","medium","high"},"medium");
-            toggleSetting(motion,"shake_button","L3 + R3 juntos = sacudir",true);
-            motion.addView(text("Como ativar: ligue a opção acima e, quando a lanterna piscar, sacuda o aparelho com força algumas vezes. Vale na hora, sem reiniciar.",12,MUTED));
-            motion.addView(text("Como desativar: desligue a opção acima. Se L3 + R3 estiver ligado, a sacudida pelos botões continua disponível.",12,MUTED));
-            LinearLayout controls=card(root,"CONTROLES E HUD");
-            toggleSetting(controls,"hud_visible","Mostrar FPS",true);
-            choice(controls,"hud_mode","Estilo do HUD",
+            hint(drivers,"O driver Turnip incluído é o recomendado. Troque só para testar outra versão; o jogo usa o driver escolhido na próxima vez que abrir.");
+            divider(drivers);
+            option(drivers,"gpu_turbo","Adreno Turbo (sem root)",
+                "Política KGSL de máximo desempenho; a proteção térmica continua ativa. Pode não funcionar em todos os dispositivos.",false);
+            LinearLayout diagnostics=card(root,"DIAGNÓSTICO");
+            option(diagnostics,"shader_scan_scalar","Diagnóstico CPU: usar busca original (A/B)",
+                "Desligado = NEON; ligado = original. Reinicie o jogo entre os testes e exporte os logs.",false);
+            hint(diagnostics,"Modo Unificado padrão: jogo, interface e mira na mesma resolução. Vídeos mantêm a decodificação original.");
+            hint(diagnostics,"Sincronização da geometria: Completo (único modo). "
+                +"Correção de deformações mantida sem opções que não melhoraram o FPS.");
+        } else if(currentTab.equals("controls")) {
+            LinearLayout touch=card(root,"CONTROLES NA TELA");
+            choiceRow(touch,"touch_mode","Controles na tela",
+                "Botões virtuais por cima do jogo. Automático os esconde quando há um controle físico, como os botões do Odin.",
+                new String[]{"Automático (ocultar com controle conectado)","Sempre mostrar","Desligado"},
+                new String[]{"auto","on","off"},"auto");
+            divider(touch);
+            choiceRow(touch,"control_color","Cor dos controles",
+                "Cor dos botões virtuais na tela.",
+                new String[]{"Verde oliva","Âmbar","Branco","Vermelho","Azul"},
+                new String[]{"olive","amber","white","red","blue"},"olive");
+            hint(touch,"Editar posição dos botões: deslize da borda esquerda para abrir o menu.");
+            LinearLayout hud=card(root,"HUD DE DESEMPENHO");
+            option(hud,"hud_visible","Mostrar FPS",
+                "Mostra o contador de desempenho por cima do jogo.",true);
+            divider(hud);
+            choiceRow(hud,"hud_mode","Estilo do HUD",
+                "Quanta informação aparece: completa (FPS, GPU e CPU), FPS com tempo de quadro ou apenas FPS.",
                 new String[]{"Completa (FPS / GPU / CPU)","FPS + tempo de frame","Apenas FPS"},
                 new String[]{"full","compact","minimal"},"full");
-            choice(controls,"hud_corner","Posição do HUD",
+            divider(hud);
+            choiceRow(hud,"hud_corner","Posição do HUD",
+                "Onde o contador aparece. Personalizada: arraste-o com o dedo durante o jogo.",
                 new String[]{"Superior esquerdo","Superior direito","Inferior esquerdo",
                     "Inferior direito","Superior central","Centro da tela",
                     "Inferior central","Central esquerdo","Central direito",
                     "Personalizada (arrastar)"},
                 new String[]{"0","1","2","3","4","5","6","7","8","-1"},"0");
-            // The HUD style controls whether GPU/CPU are displayed; no duplicate toggles.
-            choice(controls,"touch_mode","Controles na tela",
-                new String[]{"Automático (ocultar com controle conectado)","Sempre mostrar","Desligado"},
-                new String[]{"auto","on","off"},"auto");
-            choice(controls,"control_color","Cor dos controles",
-                new String[]{"Verde oliva","Âmbar","Branco","Vermelho","Azul"},
-                new String[]{"olive","amber","white","red","blue"},"olive");
-            controls.addView(text("Editar posição dos botões: deslize da borda esquerda para abrir o menu.",12,MUTED));
-            toggleSetting(app,"launch_direct","Entrar direto no jogo",false);
+            LinearLayout motion=card(root,"SENSORES DE MOVIMENTO");
+            hint(motion,"Em The Last of Us, sacudir o controle conserta a lanterna quando ela começa a piscar. Em um portátil como o AYN Odin 3, o próprio aparelho faz o papel do controle.");
+            option(motion,"motion_shake","Sacudir o aparelho = sacudir o controle",
+                "Como ativar: ligue a opção acima e, quando a lanterna piscar, sacuda o aparelho com força algumas vezes. Vale na hora, sem reiniciar.",true);
+            divider(motion);
+            choiceRow(motion,"motion_sensitivity","Sensibilidade da sacudida",
+                "Quão forte é preciso sacudir. Alta reage a movimentos leves; Baixa evita acionamentos acidentais.",
+                new String[]{"Baixa","Média","Alta"},
+                new String[]{"low","medium","high"},"medium");
+            divider(motion);
+            option(motion,"shake_button","L3 + R3 juntos = sacudir",
+                "Apertar os dois analógicos ao mesmo tempo também sacode a lanterna, útil com o aparelho apoiado.",true);
+            hint(motion,"Como desativar: desligue a opção acima. Se L3 + R3 estiver ligado, a sacudida pelos botões continua disponível.");
+        } else {
+            LinearLayout app=card(root,"IDIOMA E INTERFACE");
+            languageChoice(app);
+            hint(app,"O idioma do jogo é escolhido no próprio The Last of Us.");
             LinearLayout data=card(root,"SAVES");
+            hint(data,"Cópia de segurança dos jogos salvos em um arquivo ZIP. Exporte antes de reinstalar o aplicativo ou trocar de versão.");
             add(data,"Exportar saves ZIP",false,this::exportSaves);
             add(data,"Importar saves ZIP",false,()->pickFile(IMPORT_SAVES));
-        } else {
             root.addView(AboutPanel.create(this,this::showLog,this::exportLogs));
-
         }
 
         progress=new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);
@@ -448,9 +530,14 @@ public final class MainActivity extends Activity {
     }
     private GradientDrawable background(int color) { GradientDrawable d=new GradientDrawable(); d.setColor(color); d.setCornerRadius(dp(12)); return d; }
     private LinearLayout card(LinearLayout root,String title) {
-        LinearLayout c=column(); c.setPadding(dp(16),dp(12),dp(16),dp(12)); c.setBackground(background(PANEL));
+        LinearLayout c=column(); c.setPadding(dp(18),dp(14),dp(18),dp(14));
+        GradientDrawable bg=background(PANEL); bg.setStroke(dp(1),0x33c2cf96); c.setBackground(bg);
         LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2); lp.bottomMargin=dp(14); root.addView(c,lp);
-        TextView heading=text(title,11,ACCENT); heading.setLetterSpacing(0.12f); c.addView(heading); return c;
+        LinearLayout head=new LinearLayout(this); head.setGravity(Gravity.CENTER_VERTICAL);
+        View mark=new View(this); GradientDrawable dot=new GradientDrawable(); dot.setColor(ACCENT); dot.setCornerRadius(dp(2)); mark.setBackground(dot);
+        LinearLayout.LayoutParams ml=new LinearLayout.LayoutParams(dp(4),dp(16)); ml.rightMargin=dp(10); head.addView(mark,ml);
+        TextView heading=text(title,12,ACCENT); heading.setLetterSpacing(0.12f); heading.setTypeface(null,Typeface.BOLD); head.addView(heading);
+        LinearLayout.LayoutParams hl=new LinearLayout.LayoutParams(-1,-2); hl.bottomMargin=dp(6); c.addView(head,hl); return c;
     }
     private void add(LinearLayout parent,String label,boolean primary,Runnable action) {
         Button b=new Button(this); b.setText(TlouLanguage.t(this,label)); b.setTextSize(14); b.setAllCaps(false); b.setMinHeight(dp(48));

@@ -12,11 +12,11 @@ EMU=(ROOT/"gow3_pc/gpu/shim/core/emulator_settings.h").read_text()
 class TlouFpsUnlockRuntimeContracts(unittest.TestCase):
     def test_launcher_exposes_unlock_and_all_effects(self):
         main=(JAVA/"MainActivity.java").read_text()
-        self.assertIn('toggleSetting(box,"fps_unlock","Desbloquear FPS (até 120, experimental)",false)',main)
-        self.assertIn('toggleSetting(box,"omni_light_shadows"',main)
-        self.assertIn('toggleSetting(box,"spot_light_shadows"',main)
+        self.assertIn('option(pacing,"fps_unlock","Desbloquear FPS (até 120, experimental)",',main)
+        self.assertIn('option(effects,"omni_light_shadows"',main)
+        self.assertIn('option(effects,"spot_light_shadows"',main)
         self.assertIn('edit.putBoolean("fps_unlock",false)',main)
-        self.assertIn('choice(controls,"touch_mode"',main)
+        self.assertIn('choiceRow(touch,"touch_mode"',main)
         self.assertNotIn('toggleSetting(controls,"touch_visible"',main)
 
     def test_unlock_overrides_only_runtime_vsync(self):
