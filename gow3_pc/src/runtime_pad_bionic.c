@@ -20,6 +20,7 @@
 #include <string.h>
 #include <pthread.h>
 #include <time.h>
+#include <math.h>
 #ifndef __ANDROID__
 #include <SDL3/SDL.h>
 #endif
@@ -35,6 +36,8 @@ enum {
     BTN_L3=0x2, BTN_R3=0x4, BTN_OPTIONS=0x8, BTN_UP=0x10, BTN_RIGHT=0x20, BTN_DOWN=0x40, BTN_LEFT=0x80,
     BTN_L2=0x100, BTN_R2=0x200, BTN_L1=0x400, BTN_R1=0x800, BTN_TRIANGLE=0x1000, BTN_CIRCLE=0x2000,
     BTN_CROSS=0x4000, BTN_SQUARE=0x8000, BTN_TOUCHPAD=0x100000,
+    /* Not a PS4 button: "shake" in the pad file, never reaches the game (play_shake). */
+    PAD_SHAKE=0x20000000,
 };
 typedef struct { uint16_t x, y; uint8_t id, reserve[3]; } PadTouch;
 typedef struct {
@@ -117,6 +120,7 @@ static const struct { const char *name; uint32_t ps; } ps_names[]={
     {"l1",BTN_L1}, {"r1",BTN_R1}, {"l2",BTN_L2}, {"r2",BTN_R2}, {"l3",BTN_L3}, {"r3",BTN_R3},
     {"options",BTN_OPTIONS}, {"touchpad",BTN_TOUCHPAD},
     {"up",BTN_UP}, {"down",BTN_DOWN}, {"left",BTN_LEFT}, {"right",BTN_RIGHT},
+    {"shake",PAD_SHAKE},
 };
 #ifndef __ANDROID__
 typedef struct { int source; uint32_t ps; } ButtonSource;
@@ -396,6 +400,29 @@ static void replay_sample(PadData *d) {
 /* After the menu or the text dialog closes, buttons still held (the Cross that accepted a
  * name) stay hidden until released: the game would take them as a new press. */
 static int hold_after_capture;
+/* "shake" in the pad file (the Android app writes it while the device is shaken, or while the
+ * shake button is held): the motion sensors then report a controller shaken by hand, about 8 Hz
+ * at +-2.5 g with the matching rotation, as in the desktop port (runtime_pad.c). The Last of Us
+ * Remastered fixes a flickering flashlight when the DualShock 4 is shaken. GOW3_AUTO_SHAKE=<s>:
+ * also a half-second shake every <s> seconds on its own (0 or unset: off). At rest the sensors
+ * read zero, as before. */
+static int auto_shake_due(uint64_t now) {
+    static int period_s=-1;
+    if (period_s<0) { const char *e=getenv("GOW3_AUTO_SHAKE"); period_s=e ? atoi(e) : 0; if (period_s<0) period_s=0; }
+    return period_s>0 && now%((uint64_t)period_s*1000000)<500000;
+}
+static void play_shake(PadData *d) {
+    const int held=(d->buttons & PAD_SHAKE)!=0;
+    d->buttons&=~(uint32_t)PAD_SHAKE;
+    if (!held && !auto_shake_due(d->timestamp)) return;
+    const float t=(float)(d->timestamp%1000000)/1e6f;
+    const float wave=sinf(2.0f*3.14159265f*8.0f*t);
+    d->acceleration[0]=2.5f*wave;
+    d->acceleration[2]=1.5f*cosf(2.0f*3.14159265f*8.0f*t);
+    d->angular_velocity[1]=6.0f*wave;
+    d->angular_velocity[2]=4.0f*wave;
+}
+
 static void sample(PadData *d) {
     sample_host(d);
     const int capture = gow3gpu_overlay_captures_input();
@@ -406,7 +433,7 @@ static void sample(PadData *d) {
      * drives the game, not the overlay dialogs, and a script that needs the dialogs writes the
      * pad file directly instead. */
     read_inject();
-    gow3gpu_pad_publish(injected.buttons);
+    gow3gpu_pad_publish(injected.buttons & ~(uint32_t)PAD_SHAKE);
     if (capture) { hold_after_capture=1; return; }
     record_sample(d);
     replay_sample(d);
@@ -425,6 +452,7 @@ static void sample(PadData *d) {
     if (d->r2>30) d->buttons|=BTN_R2;
     uint8_t *axes[4]={&d->left_x,&d->left_y,&d->right_x,&d->right_y};
     for (int i=0;i<4;++i) if (injected.stick[i]>=0) *axes[i]=(uint8_t)injected.stick[i];
+    play_shake(d);
     if (hold_after_capture) {
         if (d->buttons) d->buttons=0;
         else hold_after_capture=0;
