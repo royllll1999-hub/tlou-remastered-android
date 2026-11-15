@@ -190,6 +190,8 @@ final class PortSettings {
         // Do not enable automatically: command, draw and recorder threads could contend on two prime cores.
         env.put("TLOU_FAST_RENDER_CORES",p.getBoolean("fast_render_cores",false)?"1":"0");
         env.put("GOW3_ADPF", p.getBoolean("adpf",false) ? "1" : "0");
+        // Guest x86 PAUSE -> ARM wfe in FEX (Uncharted Android fex-0002): optional, off by default.
+        env.put("GOW3_PAUSE_WFE", p.getBoolean("pause_wfe",false) ? "1" : "0");
         env.remove("TLOU_PREP_NORMAL_PRIORITY");
         env.remove("TLOU_PREP_HIT_STATS");
         env.put("GOW3_DEFERRED_READBACK","0");
@@ -245,6 +247,7 @@ final class PortSettings {
         result.append("; compute-exact-memo=").append(env.getOrDefault("GOW3_TLOU_COMPUTE_MEMO","0"));
         result.append("; compute-wait-defer=").append(env.getOrDefault("TLOU_COMPUTE_WAIT_DEFER","0"));
         result.append("; guest-job-worker-wake=patched-sleep");
+        result.append("; pause=").append(prefs(context).getBoolean("pause_wfe",false)?"wfe":"yield");
         result.append("; job-wake=").append(prefs(context).getBoolean("job_wake",true)?"fast":"off");
         return result.toString();
     }

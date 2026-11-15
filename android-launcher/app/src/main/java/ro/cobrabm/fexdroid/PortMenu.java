@@ -252,6 +252,8 @@ final class PortMenu {
                 toggle("adpf","ADPF — ajuste dinâmico de desempenho",false);
                 toggle("job_wake","Despertar rápido dos threads do jogo",true);
                 note("Os threads de tarefas do jogo acordam assim que há trabalho, em vez de esperar até 10 ms (como no port de Uncharted para Android). Mais FPS e menos travadas, sem esquentar mais. Reinicie o jogo para aplicar; desligue se notar instabilidade.");
+                toggle("pause_wfe","Espera econômica dos threads (menos aquecimento)",false);
+                note("Quando um thread do jogo fica girando à espera de outro, o processador dorme até o próximo evento em vez de consumir energia (como no port de Uncharted para Android). Menos calor e bateria; em raros casos pode custar alguns FPS. Desligado por padrão; reinicie o jogo para aplicar.");
                 toggle("fast_render_cores","Priorizar núcleos rápidos (experimental)",false);
                 note("Não força o clock. Limita as threads críticas aos núcleos mais rápidos; reinicie o jogo para aplicar. Pode aumentar a disputa entre threads.");
                 note("Usa dicas de desempenho na thread nativa de comandos. "

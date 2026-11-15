@@ -28,6 +28,35 @@ if [[ ${TLOU_ALLOW_DIFFERENT_FEX:-0} != 1 ]]; then
   fi
 fi
 git -C "$fex" submodule update --init --recursive
+# Guest PAUSE (x86 spin-wait hint) -> optional ARM wfe, ported from the Uncharted Android port
+# (fex-0002-pause-wfe). Off unless GOW3_PAUSE_WFE=1 (launcher: "Economical waiting"): spinning
+# guest threads then idle until the next event (at most ~100 us, the timer event stream) instead
+# of polling at full clock, which saves power and heat. Idempotent on a cached FEX source.
+python3 - "$fex/FEXCore/Source/Interface/Core/JIT/MiscOps.cpp" <<'PY'
+import sys
+path = sys.argv[1]
+src = open(path).read()
+if "GOW3_PAUSE_WFE" not in src:
+    old = "DEF_OP(Yield) {\n  yield();\n}"
+    new = """DEF_OP(Yield) {
+  // TLOU Android: GOW3_PAUSE_WFE=1 turns the guest pause into wfe (Uncharted Android port).
+  static const bool use_wfe = [] {
+    const char* env = getenv("GOW3_PAUSE_WFE");
+    return env && env[0] == '1' && env[1] == 0;
+  }();
+  if (use_wfe) {
+    wfe();
+  } else {
+    yield();
+  }
+}"""
+    if src.count(old) != 1:
+        sys.exit("FEX MiscOps.cpp: DEF_OP(Yield) not found; update the pause patch")
+    src = src.replace(old, new)
+    if "#include <cstdlib>" not in src:
+        src = src.replace("namespace FEXCore::CPU {", "#include <cstdlib>\n\nnamespace FEXCore::CPU {", 1)
+    open(path, "w").write(src)
+PY
 unset CFLAGS CXXFLAGS CPPFLAGS LDFLAGS CPATH C_INCLUDE_PATH CPLUS_INCLUDE_PATH LIBRARY_PATH CMAKE_PREFIX_PATH
 cmake -S "$fex" -B "$output/fex" -G Ninja \
   -DCMAKE_TOOLCHAIN_FILE="$ndk/build/cmake/android.toolchain.cmake" \

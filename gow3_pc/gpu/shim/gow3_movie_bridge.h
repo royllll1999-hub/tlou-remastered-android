@@ -27,6 +27,13 @@ int gow3_movie_scale_nv12(uint64_t guest_base, uint64_t guest_capacity,
                           uint32_t src_width, uint32_t src_height,
                           int src_y_stride, int src_uv_stride,
                           uint32_t* display_width, uint32_t* display_height);
+// The decoder's 4:2:0 picture (separate U and V planes) area-filtered by an exact 3:2 or 2:1
+// straight into the game's frame buffer (in place). 0: not handled, use the path above.
+int gow3_movie_scale_i420(uint64_t guest_base, uint64_t guest_capacity,
+                          const uint8_t* src_y, const uint8_t* src_u, const uint8_t* src_v,
+                          uint32_t src_width, uint32_t src_height,
+                          int src_y_stride, int src_u_stride, int src_v_stride,
+                          uint32_t* display_width, uint32_t* display_height);
 #ifdef __cplusplus
 }
 #endif

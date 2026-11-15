@@ -1,6 +1,7 @@
 #include "gow3_movie.h"
 #include "gow3_movie_bridge.h"
 #include "tlou_movie_111_planes.h"
+#include "tlou_movie_area.h"
 #include "core/memory.h"
 
 #include <array>
@@ -421,6 +422,86 @@ extern "C" int gow3_movie_scale_nv12(
                     src_width, src_height, width, height, in_place ? "in-place" : "scratch",
                     static_cast<unsigned long long>(address), pitch, rows,
                     chroma_pitch, static_cast<unsigned long long>(bytes));
+        std::fflush(stdout);
+    }
+    return 1;
+}
+
+// TLOU Android (ported from the Uncharted Android port, patch 0084): the decoder's 4:2:0 picture
+// (separate U and V planes) shown at exactly 2/3 or 1/2 of its size goes straight into the
+// game's frame buffer through an area filter, in place. This skips both swscale passes of the
+// path above (the full 1080p YUV420P -> NV12 conversion, then the NV12 downscale): the movie
+// thread reads the picture once. Any other size, format or a frame buffer too small returns 0
+// and the caller keeps the original path. GOW3_MOVIE_AREA=0 turns it off.
+extern "C" int gow3_movie_scale_i420(
+    std::uint64_t guest_base, std::uint64_t guest_capacity, const std::uint8_t* src_y,
+    const std::uint8_t* src_u, const std::uint8_t* src_v, std::uint32_t src_width,
+    std::uint32_t src_height, int src_y_stride, int src_u_stride, int src_v_stride,
+    std::uint32_t* display_width, std::uint32_t* display_height) {
+    static const bool enabled = [] {
+        const char* env = std::getenv("GOW3_MOVIE_AREA");
+        return !(env && env[0] == '0' && env[1] == 0);
+    }();
+    std::uint32_t width = 0, height = 0;
+    if (!enabled || !guest_base || !src_y || !src_u || !src_v || !display_width ||
+        !display_height || !Gow3Movie::DisplaySize(width, height) ||
+        !TlouMovieArea::Ratio(src_width, src_height, width, height) ||
+        src_y_stride < int(src_width) || src_u_stride < int(src_width / 2) ||
+        src_v_stride < int(src_width / 2))
+        return 0;
+    const std::uint32_t pitch = Gow3Movie::ScaledPitch();
+    const std::uint32_t chroma_pitch = Gow3Movie::ScaledChromaPitch();
+    const std::uint32_t rows = Gow3Movie::ScaledRows();
+    const std::uint64_t bytes = Gow3Movie::ScaledFrameBytes();
+    if (!bytes || bytes > 128ull * 1024 * 1024 ||
+        !gow3_movie_can_scale_in_place(src_width, src_height, width, height, bytes,
+                                       guest_capacity))
+        return 0;
+    std::uint8_t* target =
+        reinterpret_cast<std::uint8_t*>(static_cast<std::uintptr_t>(guest_base));
+
+    thread_local std::vector<std::uint8_t> output;
+    output.resize(static_cast<std::size_t>(bytes));
+    std::uint8_t* y_out = output.data();
+    std::uint8_t* uv_out = y_out + std::uint64_t(pitch) * rows;
+    if (!TlouMovieArea::Downscale(src_y, src_u, src_v, src_y_stride, src_u_stride, src_v_stride,
+                                  src_width, src_height, y_out, uv_out, pitch, chroma_pitch,
+                                  width, height))
+        return 0;
+    // Black (video range) right of the picture when the pitch is wider; rows below repeat the
+    // last one, as in the swscale path (the shaders sample a 64-row-aligned layout).
+    if (pitch > width) {
+        for (std::uint32_t y = 0; y < height; ++y)
+            std::memset(y_out + std::uint64_t(y) * pitch + width, 16, pitch - width);
+    }
+    if (chroma_pitch > width) {
+        for (std::uint32_t y = 0; y < height / 2; ++y)
+            std::memset(uv_out + std::uint64_t(y) * chroma_pitch + width, 128,
+                        chroma_pitch - width);
+    }
+    for (std::uint32_t y = height; y < rows; ++y)
+        std::memcpy(y_out + std::uint64_t(y) * pitch,
+                    y_out + std::uint64_t(height - 1) * pitch, pitch);
+    for (std::uint32_t y = height / 2; y < rows / 2; ++y)
+        std::memcpy(uv_out + std::uint64_t(y) * chroma_pitch,
+                    uv_out + std::uint64_t(height / 2 - 1) * chroma_pitch, chroma_pitch);
+
+    const auto address = static_cast<VAddr>(reinterpret_cast<std::uintptr_t>(target));
+    auto* memory = Core::Memory::Instance();
+    if (!memory) return 0;
+    memory->InvalidateMemory(address, bytes);
+    if (!memory->TryWriteBacking(target, output.data(), bytes))
+        std::memcpy(target, output.data(), bytes);
+    memory->InvalidateMemory(address, bytes);
+    Gow3Movie::RecordFrame(guest_base, width, height, pitch, rows);
+    *display_width = width;
+    *display_height = height;
+    static std::atomic<unsigned> recorded{0};
+    if (recorded.fetch_add(1, std::memory_order_relaxed) < 2) {
+        std::printf("TLOU movie area filter: decoded %ux%u -> %ux%u in-place %#llx "
+                    "(one pass, no swscale)\n",
+                    src_width, src_height, width, height,
+                    static_cast<unsigned long long>(address));
         std::fflush(stdout);
     }
     return 1;

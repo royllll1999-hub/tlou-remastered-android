@@ -300,6 +300,8 @@ public final class MainActivity extends Activity {
             toggleSetting(cpu,"adpf","ADPF — ajuste dinâmico de desempenho",false);
             toggleSetting(cpu,"job_wake","Despertar rápido dos threads do jogo",true);
             cpu.addView(text("Os threads de tarefas do jogo acordam assim que há trabalho, em vez de esperar até 10 ms (como no port de Uncharted para Android). Mais FPS e menos travadas, sem esquentar mais. Reinicie o jogo para aplicar; desligue se notar instabilidade.",12,MUTED));
+            toggleSetting(cpu,"pause_wfe","Espera econômica dos threads (menos aquecimento)",false);
+            cpu.addView(text("Quando um thread do jogo fica girando à espera de outro, o processador dorme até o próximo evento em vez de consumir energia (como no port de Uncharted para Android). Menos calor e bateria; em raros casos pode custar alguns FPS. Desligado por padrão; reinicie o jogo para aplicar.",12,MUTED));
             LinearLayout app=card(root,"IDIOMA E INTERFACE");
             languageChoice(app);
             app.addView(text("O idioma do jogo é escolhido no próprio The Last of Us.",12,MUTED));

@@ -105,6 +105,11 @@ g++ -std=c++20 -O2 -Wall -Wextra -Werror \
 g++ -std=c++20 -O2 -Wall -Wextra -Werror \
     gow3_pc/tests/test_tlou_movie_111_planes.cpp -o "$test_dir/tlou-movie-111-planes"
 "$test_dir/tlou-movie-111-planes"
+# 1080p movies shown at 720p: one area-filter pass from the decoder's planes (Uncharted 0084).
+g++ -std=c++20 -O2 -Wall -Wextra -Werror \
+    gow3_pc/tests/test_tlou_movie_area.cpp -o "$test_dir/tlou-movie-area"
+"$test_dir/tlou-movie-area"
+grep -Fq 'gow3_movie_scale_i420(' gow3_pc/src/runtime_videodec.c
 # Both 01.00 and 01.11 now use the same guarded movie-only 64-row
 # NV12 plane remapper. Fail with an actionable diagnostic if either end is
 # missing instead of silently rejecting the correctly generalized fix.

@@ -98,6 +98,32 @@ static ABI int32_t videodec_create(const ConfigInfo *config, const ResourceInfo 
  * of the width aligned to 64 and the height aligned to 16 (the last rows repeated). */
 static int32_t picture(Decoder *d, FrameBuffer *buffer, PictureInfo *info) {
     AVFrame *f=d->frame;
+    /* A 4:2:0 picture shown at exactly 2/3 or 1/2 of its size (1080p movies at 720p) goes
+     * straight into the frame buffer through an area filter: no full-size NV12 conversion and
+     * no second swscale pass. Anything else falls through to the path below unchanged. */
+    if ((f->format==AV_PIX_FMT_YUV420P || f->format==AV_PIX_FMT_YUVJ420P) && f->width>0 && f->height>0 &&
+        (uint64_t)align((uint32_t)f->width,64)*align((uint32_t)f->height,16)*3/2<=buffer->frame_buffer_size) {
+        uint32_t area_width=0, area_height=0;
+        if (gow3_movie_scale_i420((uint64_t)(uintptr_t)buffer->frame_buffer, buffer->frame_buffer_size,
+                                  f->data[0], f->data[1], f->data[2], (uint32_t)f->width, (uint32_t)f->height,
+                                  f->linesize[0], f->linesize[1], f->linesize[2], &area_width, &area_height)) {
+            const uint32_t pitch=align(area_width,64), rows=align(area_height,16);
+            runtime_video_frame_lo=(uint64_t)(uintptr_t)buffer->frame_buffer;
+            runtime_video_frame_hi=runtime_video_frame_lo+(uint64_t)pitch*align(area_height,64)*3/2;
+            info->is_valid=1; info->codec_type=0;
+            info->frame_width=align(area_width,16);
+            info->frame_pitch=pitch;
+            info->frame_height=rows;
+            info->is_error_pic=0;
+            info->pts_data=(uint64_t)f->pts;
+            info->attached_data=(uint64_t)(uintptr_t)f->opaque;
+            memset(&info->codec,0,sizeof(info->codec));
+            info->codec.avc.colour_primaries=(uint8_t)f->color_primaries;
+            info->codec.avc.crop_right=pitch-area_width;
+            info->codec.avc.crop_bottom=rows-area_height;
+            return 0;
+        }
+    }
     if (f->format!=AV_PIX_FMT_NV12) {
         av_frame_unref(d->nv12);
         d->nv12->format=AV_PIX_FMT_NV12; d->nv12->width=f->width; d->nv12->height=f->height;
