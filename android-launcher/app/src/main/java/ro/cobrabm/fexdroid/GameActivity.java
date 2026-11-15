@@ -47,6 +47,7 @@ public final class GameActivity extends Activity {
     private SurfaceView surface;
     private TouchControllerOverlay touch;
     private PadBridge pad;
+    private MotionShake motion;
     private InputManager inputManager;
     private final InputManager.InputDeviceListener controllerListener=new InputManager.InputDeviceListener() {
         @Override public void onInputDeviceAdded(int deviceId) { updateControllerVisibility(); }
@@ -106,6 +107,9 @@ public final class GameActivity extends Activity {
         File input=new File(stateDir,"controller.state");
         RunLog.write(this,"Inicializando controle e áudio");
         pad=new PadBridge(input);
+        motion=new MotionShake(this,pad);
+        RunLog.write(this,"Sensores de movimento: "+(MotionShake.available(this)?"acelerômetro disponível":"sem acelerômetro"));
+        if(resumed)motion.resume();
         inputManager=(InputManager)getSystemService(INPUT_SERVICE);
         if(inputManager!=null)inputManager.registerInputDeviceListener(controllerListener,handler);
         runtimePidFile=new File(stateDir,"runtime.pid");
@@ -533,6 +537,7 @@ public final class GameActivity extends Activity {
         resumed=false;
         fpsMeter.reset();
         if(audio!=null) audio.pause();
+        if(motion!=null) motion.pause();
     }
 
     @Override protected void onResume() {
@@ -541,6 +546,7 @@ public final class GameActivity extends Activity {
         fpsMeter.reset();
         getWindow().getDecorView().post(this::immersive);
         if(audio!=null) audio.resume();
+        if(motion!=null) motion.resume();
     }
 
     @Override public void onWindowFocusChanged(boolean hasFocus) {
@@ -554,6 +560,7 @@ public final class GameActivity extends Activity {
         if(playerMenu!=null)playerMenu.dismiss();
         if(gameChoices!=null)gameChoices.close();
         if(hudTelemetry!=null)hudTelemetry.close();
+        if(motion!=null)motion.close();
         super.onDestroy();
     }
 }
