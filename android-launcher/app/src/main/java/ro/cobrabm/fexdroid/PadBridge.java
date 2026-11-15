@@ -22,10 +22,24 @@ final class PadBridge {
     private int virtualLx=128, virtualLy=128, virtualRx=128, virtualRy=128, virtualL2, virtualR2;
     private boolean virtualLeftActive, virtualRightActive;
     private boolean queued;
+    /** Motion: the device is being shaken (MotionShake), or L3+R3 together act as a shake. */
+    private boolean sensorShake, shakeButton=true;
 
     PadBridge(File state) { this.state=state; reset(); }
 
     void setSwapFaceButtons(boolean enabled) { reset(); swapFaceButtons=enabled; }
+
+    void setSensorShake(boolean shaking) {
+        if (sensorShake==shaking) return;
+        sensorShake=shaking;
+        write();
+    }
+
+    void setShakeButton(boolean enabled) {
+        if (shakeButton==enabled) return;
+        shakeButton=enabled;
+        write();
+    }
 
     String name(KeyEvent e) {
         // Xbox / XInput controllers supply standardized Android KEYCODE_BUTTON_*
@@ -135,6 +149,10 @@ final class PadBridge {
     private void write() {
         StringBuilder text=new StringBuilder();
         Set<String> all=new LinkedHashSet<>(keys); all.addAll(virtualKeys);
+        // L3+R3 pressed together is the shake button: the game sees a shaken controller only.
+        final boolean shakeCombo=shakeButton && all.contains("l3") && all.contains("r3");
+        if (shakeCombo) { all.remove("l3"); all.remove("r3"); }
+        if (shakeCombo || sensorShake) text.append("shake ");
         int leftTrigger=Math.max(l2,virtualL2), rightTrigger=Math.max(r2,virtualR2);
         for (String key:all) {
             if ((key.equals("l2") && leftTrigger>0) || (key.equals("r2") && rightTrigger>0)) continue;
