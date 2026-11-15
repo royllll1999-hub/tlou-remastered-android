@@ -162,9 +162,16 @@ Presenter::Presenter(Frontend::WindowSDL& window_, AmdGpu::Liverpool* liverpool_
         free_queue.push(&frame);
     }
 
-    // TLOU: Android uses direct presentation until FSR is verified on the device.
-    if (!std::getenv("GOW3_ANDROID_PORT")) {
+    // TLOU: Android presents directly unless the launcher opts in to FSR 1
+    // (GOW3_ANDROID_FSR=1). The EASU/RCAS shaders use fp16, so the device must
+    // expose shaderFloat16; otherwise Android stays on direct presentation.
+    fsr_available = !std::getenv("GOW3_ANDROID_PORT") ||
+                    (EmulatorSettingsImpl::Flag("GOW3_ANDROID_FSR", false) &&
+                     instance.IsShaderFloat16Enabled());
+    if (fsr_available) {
         fsr_pass.Create(device, instance.GetAllocator(), num_images);
+    } else if (EmulatorSettingsImpl::Flag("GOW3_ANDROID_FSR", false)) {
+        std::printf("FSR: requested on Android but shaderFloat16 is unavailable; direct presentation\n");
     }
     pp_pass.Create(device, swapchain.GetSurfaceFormat().format);
     Gow3Overlay::Init(instance, swapchain.GetSurfaceFormat().format, num_images);
@@ -627,9 +634,8 @@ Frame* Presenter::PrepareFrame(const Libraries::VideoOut::BufferAttributeGroup& 
 
     // gow3: FSR 1, RCAS and its strength come from the in-game menu, every frame.
     const auto& graphics = Gow3Settings::Get();
-    const bool native_android = std::getenv("GOW3_ANDROID_PORT") != nullptr;
-    fsr_settings.enable = !native_android && graphics.fsr1;
-    fsr_settings.use_rcas = !native_android && graphics.rcas;
+    fsr_settings.enable = fsr_available && graphics.fsr1;
+    fsr_settings.use_rcas = fsr_available && graphics.rcas;
     fsr_settings.rcas_attenuation = Gow3Graphics::RcasAttenuation(graphics.rcas_strength);
     Gow3Settings::Get().image_width = int(image_size.width);
     Gow3Settings::Get().image_height = int(image_size.height);
@@ -639,9 +645,19 @@ Frame* Presenter::PrepareFrame(const Libraries::VideoOut::BufferAttributeGroup& 
         fsr_settings.use_rcas &&
         Gow3Graphics::FsrPassRuns(fsr_settings.enable, true, int(image_size.width), int(image_size.height),
                                   int(frame->width), int(frame->height));
-    if (!native_android) {
+    if (fsr_available) {
         image_view = fsr_pass.Render(cmdbuf, image_view, image_size, {frame->width, frame->height},
                                      fsr_settings, frame->is_hdr);
+        // One line per mode change, so a device log shows what FSR actually did.
+        const bool easu = fsr_settings.enable && image_size.width < frame->width &&
+                          image_size.height < frame->height;
+        const int mode = DebugState.is_using_fsr ? (easu ? 2 : 1) : 0;
+        if (mode != fsr_logged_mode) {
+            fsr_logged_mode = mode;
+            std::printf("FSR: %s %ux%u -> %ux%u\n",
+                        mode == 2 ? "EASU+RCAS" : mode == 1 ? "RCAS only" : "off",
+                        image_size.width, image_size.height, frame->width, frame->height);
+        }
     }
 
     // Vulkan has no sRGB variant of the 10-bit format, so an A2R10G10B10Srgb buffer reaches
