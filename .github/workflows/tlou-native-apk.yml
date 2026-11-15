@@ -39,6 +39,8 @@ jobs:
     env:
       TLOU_JOBS: '3'
       TLOU_ANDROID_API: '30'
+      # Only forks may sign with a new key (upstream keeps its cached identity).
+      TLOU_ALLOW_NEW_SIGNING_KEY: ${{ github.repository != 'erickmendes22/tlou-remastered-android' && '1' || '0' }}
     steps:
       - uses: actions/checkout@v4
         with:
