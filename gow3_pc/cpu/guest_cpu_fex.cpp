@@ -338,8 +338,10 @@ void guest_cpu_init(void* (*map)(size_t size, int prot)) {
     }();
     FEXCore::Config::Set(FEXCore::Config::CONFIG_DYNAMICL1CACHE,
                          dynamic_l1 ? "1" : "0");
-    std::printf("TLOU FEX cache: dynamic_l1=%d disk_cache=unchanged tso=unchanged\n",
-                int(dynamic_l1));
+    // TSO stays on unless the launcher's experimental switch sets FEX_TSOENABLED=0 (read by
+    // the environment layer of LoadConfig above); the log says which one ran.
+    std::printf("TLOU FEX cache: dynamic_l1=%d disk_cache=unchanged tso=%s\n",
+                int(dynamic_l1), FEXCore::Config::Get_TSOENABLED()() ? "on" : "OFF (experimental)");
     const auto features = FEX::FetchHostFeatures();
     wide_xmm = features.SupportsAVX && features.SupportsSVE256;
     ctx = FEXCore::Context::Context::CreateNewContext(features).release();

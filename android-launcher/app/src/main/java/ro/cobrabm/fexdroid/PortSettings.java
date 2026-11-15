@@ -192,6 +192,12 @@ final class PortSettings {
         env.put("GOW3_ADPF", p.getBoolean("adpf",false) ? "1" : "0");
         // Guest x86 PAUSE -> ARM wfe in FEX (Uncharted Android fex-0002): optional, off by default.
         env.put("GOW3_PAUSE_WFE", p.getBoolean("pause_wfe",false) ? "1" : "0");
+        // Experimental, off by default: FEX without x86 memory-order (TSO) emulation. Faster guest
+        // code; FEX itself warns it can break multithreaded programs. Only set when chosen.
+        if(p.getBoolean("fex_no_tso",false))env.put("FEX_TSOENABLED","0");
+        else env.remove("FEX_TSOENABLED");
+        // runtime_pad_bionic.c prints every pad-file change unless this is set (~14 lines/s).
+        env.put("GOW3_PAD_QUIET","1");
         env.remove("TLOU_PREP_NORMAL_PRIORITY");
         env.remove("TLOU_PREP_HIT_STATS");
         env.put("GOW3_DEFERRED_READBACK","0");
@@ -247,6 +253,7 @@ final class PortSettings {
         result.append("; compute-exact-memo=").append(env.getOrDefault("GOW3_TLOU_COMPUTE_MEMO","0"));
         result.append("; compute-wait-defer=").append(env.getOrDefault("TLOU_COMPUTE_WAIT_DEFER","0"));
         result.append("; guest-job-worker-wake=patched-sleep");
+        result.append("; tso=").append(prefs(context).getBoolean("fex_no_tso",false)?"OFF":"on");
         result.append("; pause=").append(prefs(context).getBoolean("pause_wfe",false)?"wfe":"yield");
         result.append("; job-wake=").append(prefs(context).getBoolean("job_wake",true)?"fast":"off");
         return result.toString();
