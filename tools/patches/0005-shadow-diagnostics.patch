@@ -1,0 +1,108 @@
+# Subject: In-game shadow diagnostics: live compare/border/clear/bias switches (golden hair in dark scenes)
+
+diff --git a/android-launcher/app/src/main/assets/ui-translations.tsv b/android-launcher/app/src/main/assets/ui-translations.tsv
+index f27020e..477b8c2 100644
+--- a/android-launcher/app/src/main/assets/ui-translations.tsv
++++ b/android-launcher/app/src/main/assets/ui-translations.tsv
+@@ -270,3 +270,22 @@ Modo rápido da CPU sem TSO (experimental)	Fast CPU mode without TSO (experiment
+ Desliga a emulação da ordem de memória do x86 no FEX: o código do jogo roda mais rápido, mas o próprio FEX avisa que isso pode quebrar programas com vários threads (travamentos, objetos estranhos, quedas). Teste curto: se algo der errado, desligue. Reinicie o jogo para aplicar.	Turns off FEX's emulation of x86 memory ordering: game code runs faster, but FEX itself warns this can break multithreaded programs (freezes, odd objects, crashes). Test briefly; if anything goes wrong, turn it off. Restart the game to apply.	Desactiva la emulación del orden de memoria de x86 en FEX: el código del juego va más rápido, pero el propio FEX advierte que puede romper programas con varios hilos (cuelgues, objetos raros, cierres). Prueba un rato; si algo falla, desactívalo. Reinicia el juego para aplicarlo.	Désactive l'émulation de l'ordre mémoire x86 dans FEX : le code du jeu tourne plus vite, mais FEX lui-même prévient que cela peut casser les programmes multithreads (blocages, objets étranges, plantages). Testez brièvement ; en cas de problème, désactivez. Redémarrez le jeu pour appliquer.	Schaltet die Emulation der x86-Speicherreihenfolge in FEX ab: Spielcode läuft schneller, aber FEX warnt selbst, dass Programme mit mehreren Threads brechen können (Hänger, seltsame Objekte, Abstürze). Kurz testen; bei Problemen ausschalten. Spiel zum Übernehmen neu starten.	Disattiva l'emulazione dell'ordine di memoria x86 in FEX: il codice del gioco va più veloce, ma FEX stesso avverte che può rompere i programmi multithread (blocchi, oggetti strani, crash). Prova per poco; se qualcosa va storto, disattivalo. Riavvia il gioco per applicare.	FEX'te x86 bellek sırası emülasyonunu kapatır: oyun kodu daha hızlı çalışır, ancak FEX çok iş parçacıklı programları bozabileceği konusunda uyarır (donma, garip nesneler, çökme). Kısa test edin; sorun olursa kapatın. Uygulamak için oyunu yeniden başlatın.	Wyłącza w FEX emulację kolejności pamięci x86: kod gry działa szybciej, ale sam FEX ostrzega, że może to psuć programy wielowątkowe (zawieszenia, dziwne obiekty, awarie). Testuj krótko; jeśli coś pójdzie źle, wyłącz. Uruchom grę ponownie, aby zastosować.	Отключает в FEX эмуляцию порядка памяти x86: код игры работает быстрее, но сам FEX предупреждает, что это может ломать многопоточные программы (зависания, странные объекты, вылеты). Проверяйте недолго; если что-то пошло не так — выключите. Перезапустите игру, чтобы применить.	FEX में x86 मेमोरी क्रम का अनुकरण बंद करता है: गेम कोड तेज़ चलता है, पर FEX ख़ुद चेतावनी देता है कि इससे कई थ्रेड वाले प्रोग्राम टूट सकते हैं (अटकना, अजीब चीज़ें, क्रैश)। थोड़ी देर आज़माएँ; कुछ गड़बड़ हो तो बंद करें। लागू करने के लिए गेम फिर से शुरू करें।
+ Prioridade dos threads de renderização	Render thread priority	Prioridad de los hilos de renderizado	Priorité des threads de rendu	Priorität der Render-Threads	Priorità dei thread di rendering	Render iş parçacıklarının önceliği	Priorytet wątków renderowania	Приоритет потоков рендера	रेंडर थ्रेड्स की प्राथमिकता
+ Os três threads que enviam o trabalho para a GPU ganham prioridade um pouco maior que os threads de tarefas do jogo, para não ficarem na fila atrás deles. No port para PC isso evitou quedas de 47 para 33 FPS. Não aumenta a frequência da CPU. Ligado por padrão; reinicie o jogo para aplicar.	The three threads that send work to the GPU get a slightly higher priority than the game's job threads, so they don't queue behind them. In the PC port this prevented drops from 47 to 33 FPS. It doesn't raise the CPU clock. On by default; restart the game to apply.	Los tres hilos que envían el trabajo a la GPU reciben una prioridad algo mayor que los hilos de tareas del juego, para no quedar en cola detrás de ellos. En el port de PC esto evitó caídas de 47 a 33 FPS. No sube la frecuencia de la CPU. Activado por defecto; reinicia el juego para aplicarlo.	Les trois threads qui envoient le travail au GPU reçoivent une priorité un peu plus élevée que les threads de tâches du jeu, pour ne pas attendre derrière eux. Sur le portage PC, cela a évité des chutes de 47 à 33 FPS. N'augmente pas la fréquence du CPU. Activé par défaut ; redémarrez le jeu pour appliquer.	Die drei Threads, die der GPU Arbeit schicken, erhalten eine etwas höhere Priorität als die Job-Threads des Spiels, damit sie nicht hinter ihnen warten. Im PC-Port verhinderte das Einbrüche von 47 auf 33 FPS. Erhöht den CPU-Takt nicht. Standardmäßig an; Spiel zum Übernehmen neu starten.	I tre thread che inviano il lavoro alla GPU ricevono una priorità un po' più alta dei thread di lavoro del gioco, per non restare in coda dietro di loro. Nel port PC questo ha evitato cali da 47 a 33 FPS. Non aumenta la frequenza della CPU. Attivo per impostazione predefinita; riavvia il gioco per applicare.	GPU'ya iş gönderen üç iş parçacığı, oyunun görev iş parçacıklarından biraz daha yüksek öncelik alır, böylece onların arkasında sıra beklemez. PC portunda bu, 47'den 33 FPS'e düşüşleri önledi. CPU frekansını artırmaz. Varsayılan olarak açık; uygulamak için oyunu yeniden başlatın.	Trzy wątki wysyłające pracę do GPU dostają nieco wyższy priorytet niż wątki zadań gry, aby nie czekały za nimi w kolejce. W porcie PC zapobiegło to spadkom z 47 do 33 FPS. Nie podnosi taktowania CPU. Domyślnie włączone; uruchom grę ponownie, aby zastosować.	Три потока, которые отправляют работу на GPU, получают чуть более высокий приоритет, чем потоки задач игры, чтобы не стоять за ними в очереди. В PC-порте это убирало просадки с 47 до 33 FPS. Частоту CPU не повышает. Включено по умолчанию; перезапустите игру, чтобы применить.	GPU को काम भेजने वाले तीन थ्रेड्स को गेम के टास्क थ्रेड्स से थोड़ी ज़्यादा प्राथमिकता मिलती है, ताकि वे उनके पीछे कतार में न रुकें। PC पोर्ट में इससे 47 से 33 FPS की गिरावट रुकी। CPU की फ़्रीक्वेंसी नहीं बढ़ाता। डिफ़ॉल्ट रूप से चालू; लागू करने के लिए गेम फिर से शुरू करें।
++Diagnóstico de sombras	Shadow diagnostics	Diagnóstico de sombras	Diagnostic des ombres	Schattendiagnose	Diagnostica ombre	Gölge tanılama	Diagnostyka cieni	Диагностика теней	छाया डायग्नोस्टिक
++DIAGNÓSTICO DE SOMBRAS	SHADOW DIAGNOSTICS	DIAGNÓSTICO DE SOMBRAS	DIAGNOSTIC DES OMBRES	SCHATTENDIAGNOSE	DIAGNOSTICA OMBRE	GÖLGE TANILAMA	DIAGNOSTYKA CIENI	ДИАГНОСТИКА ТЕНЕЙ	छाया डायग्नोस्टिक
++Para encontrar por que cabelo e barba ficam dourados em cenas escuras. Pare num lugar escuro com o rosto do Joel visível, toque numa opção, feche o menu e veja se o cabelo muda. Nada fica salvo: ao reiniciar o jogo tudo volta ao normal.	To find why hair and beards turn golden in dark scenes. Stop in a dark place with Joel's face visible, tap an option, close the menu and see whether the hair changes. Nothing is saved: restarting the game returns everything to normal.	Para descubrir por qué el pelo y la barba se vuelven dorados en escenas oscuras. Detente en un lugar oscuro con la cara de Joel visible, toca una opción, cierra el menú y mira si el pelo cambia. No se guarda nada: al reiniciar el juego todo vuelve a la normalidad.	Pour trouver pourquoi cheveux et barbe deviennent dorés dans les scènes sombres. Arrêtez-vous dans un endroit sombre avec le visage de Joel visible, touchez une option, fermez le menu et regardez si les cheveux changent. Rien n'est enregistré : au redémarrage, tout redevient normal.	Um herauszufinden, warum Haare und Bart in dunklen Szenen golden werden. In einer dunklen Stelle mit sichtbarem Gesicht von Joel anhalten, eine Option antippen, das Menü schließen und prüfen, ob sich die Haare ändern. Nichts wird gespeichert: Nach einem Neustart ist alles wieder normal.	Per capire perché capelli e barba diventano dorati nelle scene buie. Fermati in un punto buio con il volto di Joel visibile, tocca un'opzione, chiudi il menu e guarda se i capelli cambiano. Nulla viene salvato: riavviando il gioco tutto torna normale.	Karanlık sahnelerde saç ve sakalın neden altın rengine döndüğünü bulmak için. Joel'in yüzü görünür şekilde karanlık bir yerde durun, bir seçeneğe dokunun, menüyü kapatın ve saçın değişip değişmediğine bakın. Hiçbir şey kaydedilmez: oyunu yeniden başlatınca her şey normale döner.	Aby ustalić, dlaczego włosy i broda robią się złote w ciemnych scenach. Zatrzymaj się w ciemnym miejscu z widoczną twarzą Joela, dotknij opcji, zamknij menu i sprawdź, czy włosy się zmieniają. Nic nie jest zapisywane: po ponownym uruchomieniu gry wszystko wraca do normy.	Чтобы найти, почему волосы и борода становятся золотыми в тёмных сценах. Остановитесь в тёмном месте, где видно лицо Джоэла, нажмите вариант, закройте меню и посмотрите, изменились ли волосы. Ничего не сохраняется: после перезапуска игры всё вернётся как было.	यह पता लगाने के लिए कि अंधेरे दृश्यों में बाल और दाढ़ी सुनहरे क्यों हो जाते हैं। अंधेरी जगह पर रुकें जहाँ जोएल का चेहरा दिखे, कोई विकल्प दबाएँ, मेन्यू बंद करें और देखें कि बाल बदलते हैं या नहीं। कुछ भी सेव नहीं होता: गेम फिर से शुरू करने पर सब सामान्य हो जाता है।
++Comparação de profundidade das sombras:	Shadow depth comparison:	Comparación de profundidad de sombras:	Comparaison de profondeur des ombres :	Tiefenvergleich der Schatten:	Confronto di profondità delle ombre:	Gölge derinlik karşılaştırması:	Porównanie głębi cieni:	Сравнение глубины теней:	छाया गहराई की तुलना:
++Normal	Normal	Normal	Normal	Normal	Normale	Normal	Normalne	Обычное	सामान्य
++Nunca (tudo na sombra)	Never (everything in shadow)	Nunca (todo en sombra)	Jamais (tout dans l'ombre)	Nie (alles im Schatten)	Mai (tutto in ombra)	Asla (her şey gölgede)	Nigdy (wszystko w cieniu)	Никогда (всё в тени)	कभी नहीं (सब छाया में)
++Sempre (tudo iluminado)	Always (everything lit)	Siempre (todo iluminado)	Toujours (tout éclairé)	Immer (alles beleuchtet)	Sempre (tutto illuminato)	Her zaman (her şey aydınlık)	Zawsze (wszystko oświetlone)	Всегда (всё освещено)	हमेशा (सब रोशन)
++Borda preta	Black border	Borde negro	Bordure noire	Schwarzer Rand	Bordo nero	Siyah kenar	Czarna krawędź	Чёрная граница	काली किनारी
++Borda branca	White border	Borde blanco	Bordure blanche	Weißer Rand	Bordo bianco	Beyaz kenar	Biała krawędź	Белая граница	सफ़ेद किनारी
++Borda: repetir a beira	Border: repeat the edge	Borde: repetir el borde	Bordure : répéter le bord	Rand: Kante wiederholen	Bordo: ripeti il margine	Kenar: kenarı tekrarla	Krawędź: powtórz brzeg	Граница: повторять край	किनारी: किनारा दोहराएँ
++Limpeza do mapa de sombras:	Shadow map clear:	Limpieza del mapa de sombras:	Effacement de la carte d'ombres :	Löschen der Schattenkarte:	Pulizia della mappa d'ombra:	Gölge haritası temizleme:	Czyszczenie mapy cieni:	Очистка карты теней:	छाया मैप की सफ़ाई:
++Limpeza normal	Normal clear	Limpieza normal	Effacement normal	Normales Löschen	Pulizia normale	Normal temizleme	Normalne czyszczenie	Обычная очистка	सामान्य सफ़ाई
++Limpeza para longe (1.0)	Clear to far (1.0)	Limpieza a lejos (1.0)	Effacer au loin (1.0)	Auf fern löschen (1.0)	Pulizia a lontano (1.0)	Uzağa temizle (1.0)	Czyszczenie na daleko (1.0)	Очистка на «далеко» (1.0)	दूर तक सफ़ाई (1.0)
++Profundidade 16 bits e desvio:	16-bit depth and bias:	Profundidad de 16 bits y desvío:	Profondeur 16 bits et biais :	16-Bit-Tiefe und Bias:	Profondità a 16 bit e bias:	16 bit derinlik ve sapma:	Głębia 16-bitowa i przesunięcie:	16-битная глубина и смещение:	16-बिट गहराई और बायस:
++Limpeza 16 bits normal	Normal 16-bit clear	Limpieza de 16 bits normal	Effacement 16 bits normal	Normales 16-Bit-Löschen	Pulizia a 16 bit normale	Normal 16 bit temizleme	Normalne czyszczenie 16-bit	Обычная очистка 16 бит	सामान्य 16-बिट सफ़ाई
++Limpeza 16 bits = 1.0	16-bit clear = 1.0	Limpieza de 16 bits = 1.0	Effacement 16 bits = 1.0	16-Bit-Löschen = 1.0	Pulizia a 16 bit = 1.0	16 bit temizleme = 1.0	Czyszczenie 16-bit = 1.0	Очистка 16 бит = 1.0	16-बिट सफ़ाई = 1.0
++Desvio de profundidade normal	Normal depth bias	Desvío de profundidad normal	Biais de profondeur normal	Normaler Tiefen-Bias	Bias di profondità normale	Normal derinlik sapması	Normalne przesunięcie głębi	Обычное смещение глубины	सामान्य डेप्थ बायस
++Desvio de profundidade desligado	Depth bias off	Desvío de profundidad desactivado	Biais de profondeur désactivé	Tiefen-Bias aus	Bias di profondità disattivato	Derinlik sapması kapalı	Przesunięcie głębi wyłączone	Смещение глубины выключено	डेप्थ बायस बंद
++Última escolha	Last choice	Última elección	Dernier choix	Letzte Auswahl	Ultima scelta	Son seçim	Ostatni wybór	Последний выбор	आख़िरी चुनाव
+diff --git a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/GameActivity.java b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/GameActivity.java
+index 3654d06..90ef63e 100644
+--- a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/GameActivity.java
++++ b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/GameActivity.java
+@@ -302,6 +302,10 @@ public final class GameActivity extends Activity {
+             env.put("GOW3_ANDROID_PORT","1");
+             env.put("GOW3_ANDROID_INPUT","1");
+             env.put("GOW3_PAD_FILE",new File(state,"controller.state").getAbsolutePath());
++            // In-game menu > shadow diagnostics writes here; the GPU reads it every 0.5 s.
++            File shadowTrigger=new File(state,"shadow.trigger");
++            if(shadowTrigger.exists())shadowTrigger.delete();
++            env.put("GOW3_DMA_TRIGGER",shadowTrigger.getAbsolutePath());
+             env.put("GOW3_AUDIO_FIFO",new File(state,"audio.fifo").getAbsolutePath());
+             env.put("GOW3_PRESENT_SOCKET",new File(state,"present.sock").getAbsolutePath());
+             env.put("GOW3_SCREEN_W",String.valueOf(getResources().getDisplayMetrics().widthPixels));
+diff --git a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortMenu.java b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortMenu.java
+index 4bcbf92..b020615 100644
+--- a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortMenu.java
++++ b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortMenu.java
+@@ -93,6 +93,21 @@ final class PortMenu {
+         LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,dp(48));
+         lp.bottomMargin=dp(7);content.addView(b,lp);b.setOnClickListener(v->callback.run());
+     }
++    private static String shadowChoice;
++    /** Writes one command for the GPU (GOW3_DMA_TRIGGER, GameActivity); it applies in-game. */
++    private void shadowRow(String label,String command) {
++        row(label,()->{
++            java.io.File trigger=new java.io.File(activity.getFilesDir(),"tlou/shadow.trigger");
++            try(java.io.FileOutputStream out=new java.io.FileOutputStream(trigger)) {
++                out.write((command+"\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
++                shadowChoice=label;
++                Toast.makeText(activity,tr(label),Toast.LENGTH_SHORT).show();
++            } catch(java.io.IOException error) {
++                Toast.makeText(activity,error.getMessage(),Toast.LENGTH_LONG).show();
++            }
++            render();
++        });
++    }
+     private void action(String label,Runnable callback) {
+         row(label,()->{dialog.dismiss();callback.run();});
+     }
+@@ -192,6 +207,7 @@ final class PortMenu {
+                     row("Jogo e drivers",()->go("library"));
+                     row("Saves",()->go("saves"));
+                 }
++                if(inGame)row("Diagnóstico de sombras",()->go("shadows"));
+                 row("Sobre",()->go("about"));
+                 action("Voltar ao launcher",actions::exitGame);
+                 action("Sair do aplicativo",actions::quitApp);
+@@ -313,6 +329,29 @@ final class PortMenu {
+                 action("Exportar saves ZIP",actions::exportSaves);
+                 action("Importar saves ZIP",actions::importSaves);
+                 break;
++            case "shadows":
++                // Live switches of the GPU's shadow handling (vk_rasterizer.cpp SyncDmaMemory, read
++                // from GOW3_DMA_TRIGGER within half a second): to find why hair and beards turn
++                // golden in dark scenes. Nothing is saved; a restart returns to normal.
++                heading("DIAGNÓSTICO DE SOMBRAS");
++                note("Para encontrar por que cabelo e barba ficam dourados em cenas escuras. Pare num lugar escuro com o rosto do Joel visível, toque numa opção, feche o menu e veja se o cabelo muda. Nada fica salvo: ao reiniciar o jogo tudo volta ao normal.");
++                note("Comparação de profundidade das sombras:");
++                shadowRow("Normal","cmp normal");
++                shadowRow("Nunca (tudo na sombra)","cmp never");
++                shadowRow("Sempre (tudo iluminado)","cmp always");
++                shadowRow("Borda preta","cmp border-black");
++                shadowRow("Borda branca","cmp border-white");
++                shadowRow("Borda: repetir a beira","cmp edge");
++                note("Limpeza do mapa de sombras:");
++                shadowRow("Limpeza normal","clear normal");
++                shadowRow("Limpeza para longe (1.0)","clear far");
++                note("Profundidade 16 bits e desvio:");
++                shadowRow("Limpeza 16 bits normal","dbclear normal");
++                shadowRow("Limpeza 16 bits = 1.0","dbclear one");
++                shadowRow("Desvio de profundidade normal","bias normal");
++                shadowRow("Desvio de profundidade desligado","bias off");
++                if(shadowChoice!=null)note(tr("Última escolha")+": "+tr(shadowChoice));
++                break;
+             case "about":
+                 content.addView(AboutPanel.create(activity,actions::logs,null));
+                 break;
