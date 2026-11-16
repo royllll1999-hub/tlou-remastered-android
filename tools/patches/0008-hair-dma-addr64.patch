@@ -1,0 +1,235 @@
+# Subject: Hair fix: guest-memory reads for MUBUF ADDR64 loads only (GOW3_DMA_ADDR64), not every dynamic ReadConst
+
+diff --git a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/GameActivity.java b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/GameActivity.java
+index 2e54153..e7d83d4 100644
+--- a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/GameActivity.java
++++ b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/GameActivity.java
+@@ -308,8 +308,9 @@ public final class GameActivity extends Activity {
+             env.put("GOW3_DMA_TRIGGER",shadowTrigger.getAbsolutePath());
+             // Hair/beard lighting fix (PortSettings "hair_dma"): its translated shaders differ, so
+             // they get their own shader/pipeline cache instead of reusing the non-DMA ones.
++            deleteTree(new File(state,"cache-dma")); // v0.1.7 all-DMA shader cache, never used again
+             if(PortSettings.prefs(this).getBoolean("hair_dma",false))
+-                env.put("GOW3_GPU_CACHE_DIR",new File(state,"cache-dma").getAbsolutePath());
++                env.put("GOW3_GPU_CACHE_DIR",new File(state,"cache-dma64").getAbsolutePath());
+             env.put("GOW3_AUDIO_FIFO",new File(state,"audio.fifo").getAbsolutePath());
+             env.put("GOW3_PRESENT_SOCKET",new File(state,"present.sock").getAbsolutePath());
+             env.put("GOW3_SCREEN_W",String.valueOf(getResources().getDisplayMetrics().widthPixels));
+@@ -571,4 +572,12 @@ public final class GameActivity extends Activity {
+         if(motion!=null)motion.close();
+         super.onDestroy();
+     }
++    /** Removes a folder and its contents; missing folders and errors are ignored. */
++    private static void deleteTree(File file) {
++        if(!file.exists())return;
++        File[] children=file.listFiles();
++        if(children!=null)for(File child:children)deleteTree(child);
++        //noinspection ResultOfMethodCallIgnored
++        file.delete();
++    }
+ }
+diff --git a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortSettings.java b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortSettings.java
+index a9d1d34..5a350ee 100644
+--- a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortSettings.java
++++ b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortSettings.java
+@@ -201,13 +201,17 @@ final class PortSettings {
+         // Shaders that read guest memory through raw 64-bit addresses (MUBUF ADDR64): Naughty Dog's
+         // hair, beard and transparent shaders load their sun-shadow cascade matrices that way.
+         // Without direct memory access those loads read the flat constant buffer instead, the
+-        // shadow lookups land in lit texels and hair glows golden in the dark. The PC port runs
+-        // with it on and syncs 256 KiB windows around the addresses (tools/probe_tlou.py).
++        // shadow lookups land in lit texels and hair glows golden in the dark.
++        // GOW3_DMA_ADDR64 (emulator_settings.h) gives guest-memory reads to those loads only.
++        // v0.1.7 used GOW3_DIRECT_MEMORY_ACCESS=1 (all dynamic reads, as the PC port): it
++        // synchronized ~740 MB in 5 s at a cutscene start and the job system deadlocked.
++        // DMA shaders sync 256 KiB windows around the guest addresses in their user data.
++        env.remove("GOW3_DIRECT_MEMORY_ACCESS");
+         if(p.getBoolean("hair_dma",false)) {
+-            env.put("GOW3_DIRECT_MEMORY_ACCESS","1");
++            env.put("GOW3_DMA_ADDR64","1");
+             env.put("GOW3_DMA_SYNC","pointers 256");
+         } else {
+-            env.remove("GOW3_DIRECT_MEMORY_ACCESS");
++            env.remove("GOW3_DMA_ADDR64");
+             env.remove("GOW3_DMA_SYNC");
+         }
+         // gow3_movie.cpp gow3_movie_scale_i420: one-pass NEON downscale of 1080p movies (v0.1.3).
+diff --git a/android/tests/test_tlou_hair_dma_addr64.py b/android/tests/test_tlou_hair_dma_addr64.py
+new file mode 100644
+index 0000000..632bc93
+--- /dev/null
++++ b/android/tests/test_tlou_hair_dma_addr64.py
+@@ -0,0 +1,43 @@
++"""Hair/beard lighting fix: guest-memory reads for MUBUF ADDR64 loads only (GOW3_DMA_ADDR64).
++
++v0.1.7 enabled GOW3_DIRECT_MEMORY_ACCESS for every dynamic ReadConst; at a cutscene start that
++synchronized ~740 MB in 5 s and the job system deadlocked. The ADDR64 loads (hair, beard and
++transparent shaders reading their shadow cascade matrices) are marked in the IR and are the only
++ones the new switch sends through guest memory; the info pass and the SPIR-V backend must agree.
++"""
++import pathlib
++import unittest
++
++ROOT = pathlib.Path(__file__).resolve().parents[2]
++GPU = ROOT / "gow3_pc/gpu"
++
++
++def read(path):
++    return (GPU / path).read_text(encoding="utf-8")
++
++
++class HairDmaAddr64(unittest.TestCase):
++    def test_addr64_loads_are_marked(self):
++        vm = read("shadps4/shader_recompiler/frontend/translate/vector_memory.cpp")
++        self.assertIn("ir.ReadConstAddr64(base, ir.Imm32(i))", vm)
++        emitter = read("shadps4/shader_recompiler/ir/ir_emitter.cpp")
++        self.assertIn("Flags{u32(ReadConstAddr64Flag)}", emitter)
++        self.assertIn("ReadConstAddr64Flag = 1u << 16", read("shadps4/shader_recompiler/ir/ir_emitter.h"))
++
++    def test_info_pass_and_backend_use_the_same_rule(self):
++        rule = "flags == IR::IREmitter::ReadConstAddr64Flag"
++        info = read("shadps4/shader_recompiler/ir/passes/shader_info_collection_pass.cpp")
++        spirv = read("shadps4/shader_recompiler/backend/spirv/emit_spirv_context_get_set.cpp")
++        self.assertIn(rule, info)
++        self.assertIn(rule, spirv)
++        self.assertIn("flags & 0xFFFFu", spirv)
++        self.assertIn("!EmulatorSettings.IsAddr64DmaEnabled()", info)
++
++    def test_launcher_uses_the_narrow_switch(self):
++        java = (ROOT / "android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortSettings.java").read_text(encoding="utf-8")
++        self.assertIn('env.put("GOW3_DMA_ADDR64","1")', java)
++        self.assertNotIn('env.put("GOW3_DIRECT_MEMORY_ACCESS","1")', java)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/gow3_pc/gpu/shadps4/shader_recompiler/backend/spirv/emit_spirv_context_get_set.cpp b/gow3_pc/gpu/shadps4/shader_recompiler/backend/spirv/emit_spirv_context_get_set.cpp
+index 04412f7..839addf 100644
+--- a/gow3_pc/gpu/shadps4/shader_recompiler/backend/spirv/emit_spirv_context_get_set.cpp
++++ b/gow3_pc/gpu/shadps4/shader_recompiler/backend/spirv/emit_spirv_context_get_set.cpp
+@@ -3,6 +3,7 @@
+ 
+ #include "common/assert.h"
+ #include "core/emulator_settings.h"
++#include "shader_recompiler/ir/ir_emitter.h"
+ #include "shader_recompiler/backend/spirv/emit_spirv_instructions.h"
+ #include "shader_recompiler/backend/spirv/spirv_emit_context.h"
+ #include "shader_recompiler/backend/spirv/tlou_split_compute.h"
+@@ -59,15 +60,17 @@ Id EmitGetUserData(EmitContext& ctx, IR::ScalarReg reg) {
+ }
+ 
+ Id EmitReadConst(EmitContext& ctx, IR::Inst* inst, Id addr, Id offset) {
+-    const u32 flatbuf_off_dw = inst->Flags<u32>();
+-    if (!EmulatorSettings.IsDirectMemoryAccessEnabled()) {
+-        return ctx.EmitFlatbufferLoad(ctx.ConstU32(flatbuf_off_dw));
+-    }
+-    if (flatbuf_off_dw == 0) {
++    const u32 flags = inst->Flags<u32>();
++    const u32 flatbuf_off_dw = flags & 0xFFFFu;
++    // The same rule as CollectShaderInfoPass: only what it counted as a DMA read goes there.
++    const bool dynamic = flatbuf_off_dw == 0 &&
++                         (EmulatorSettings.IsDirectMemoryAccessEnabled() ||
++                          (flags == IR::IREmitter::ReadConstAddr64Flag &&
++                           EmulatorSettings.IsAddr64DmaEnabled()));
++    if (dynamic) {
+         return ctx.OpFunctionCall(ctx.U32[1], ctx.read_const_dynamic, addr, offset);
+-    } else {
+-        return ctx.EmitFlatbufferLoad(ctx.ConstU32(flatbuf_off_dw));
+     }
++    return ctx.EmitFlatbufferLoad(ctx.ConstU32(flatbuf_off_dw));
+ }
+ 
+ Id EmitReadConstBuffer(EmitContext& ctx, u32 handle, Id index) {
+diff --git a/gow3_pc/gpu/shadps4/shader_recompiler/frontend/translate/vector_memory.cpp b/gow3_pc/gpu/shadps4/shader_recompiler/frontend/translate/vector_memory.cpp
+index 8e78ab2..d0e3420 100644
+--- a/gow3_pc/gpu/shadps4/shader_recompiler/frontend/translate/vector_memory.cpp
++++ b/gow3_pc/gpu/shadps4/shader_recompiler/frontend/translate/vector_memory.cpp
+@@ -249,7 +249,7 @@ void Translator::BUFFER_LOAD(u32 num_dwords, bool is_inst_typed, bool is_buffer_
+         const IR::Value base{ir.UnpackUint2x32(address64)};
+         const IR::VectorReg dst{inst.src[1].code};
+         for (u32 i = 0; i < num_dwords; i++) {
+-            ir.SetVectorReg(dst + i, ir.ReadConst(base, ir.Imm32(i)));
++            ir.SetVectorReg(dst + i, ir.ReadConstAddr64(base, ir.Imm32(i)));
+         }
+         return;
+     }
+diff --git a/gow3_pc/gpu/shadps4/shader_recompiler/ir/ir_emitter.cpp b/gow3_pc/gpu/shadps4/shader_recompiler/ir/ir_emitter.cpp
+index 7df243b..ef532be 100644
+--- a/gow3_pc/gpu/shadps4/shader_recompiler/ir/ir_emitter.cpp
++++ b/gow3_pc/gpu/shadps4/shader_recompiler/ir/ir_emitter.cpp
+@@ -424,6 +424,13 @@ U32 IREmitter::ReadConst(const Value& base, const U32& offset) {
+     return Inst<U32>(Opcode::ReadConst, base, offset);
+ }
+ 
++U32 IREmitter::ReadConstAddr64(const Value& base, const U32& offset) {
++    // Low 16 flag bits: the flat-buffer offset (set by the SRT flattening pass, 0 = dynamic).
++    // Bit 16 marks a MUBUF ADDR64 load (ReadConstAddr64Flag): GOW3_DMA_ADDR64 reads only these
++    // through guest memory. Flattening a read replaces the flags, marker included.
++    return Inst<U32>(Opcode::ReadConst, Flags{u32(ReadConstAddr64Flag)}, base, offset);
++}
++
+ U32 IREmitter::ReadConstBuffer(const Value& handle, const U32& index, BufferInstInfo info) {
+     return Inst<U32>(Opcode::ReadConstBuffer, Flags{info}, handle, index);
+ }
+diff --git a/gow3_pc/gpu/shadps4/shader_recompiler/ir/ir_emitter.h b/gow3_pc/gpu/shadps4/shader_recompiler/ir/ir_emitter.h
+index 508565d..ca7718f 100644
+--- a/gow3_pc/gpu/shadps4/shader_recompiler/ir/ir_emitter.h
++++ b/gow3_pc/gpu/shadps4/shader_recompiler/ir/ir_emitter.h
+@@ -113,6 +113,8 @@ public:
+     [[nodiscard]] T SharedAtomicDec(const U32& address, bool is_gds);
+ 
+     [[nodiscard]] U32 ReadConst(const Value& base, const U32& offset);
++    static constexpr u32 ReadConstAddr64Flag = 1u << 16;
++    [[nodiscard]] U32 ReadConstAddr64(const Value& base, const U32& offset);
+     [[nodiscard]] U32 ReadConstBuffer(const Value& handle, const U32& index, BufferInstInfo info);
+ 
+     [[nodiscard]] U8 LoadBufferU8(const Value& handle, const Value& address, BufferInstInfo info);
+diff --git a/gow3_pc/gpu/shadps4/shader_recompiler/ir/passes/shader_info_collection_pass.cpp b/gow3_pc/gpu/shadps4/shader_recompiler/ir/passes/shader_info_collection_pass.cpp
+index d473b49..002e71b 100644
+--- a/gow3_pc/gpu/shadps4/shader_recompiler/ir/passes/shader_info_collection_pass.cpp
++++ b/gow3_pc/gpu/shadps4/shader_recompiler/ir/passes/shader_info_collection_pass.cpp
+@@ -2,6 +2,7 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ 
+ #include "core/emulator_settings.h"
++#include "shader_recompiler/ir/ir_emitter.h"
+ #include "shader_recompiler/ir/program.h"
+ #include "shader_recompiler/profile.h"
+ #include "video_core/buffer_cache/buffer_cache.h"
+@@ -154,7 +155,11 @@ void Visit(Info& info, const IR::Inst& inst) {
+             });
+             info.has_readconst = true;
+         }
+-        if (inst.Flags<u32>() == 0) {
++        // Dynamic (no flat-buffer offset): through guest memory with GOW3_DIRECT_MEMORY_ACCESS,
++        // or with GOW3_DMA_ADDR64 when it is a MUBUF ADDR64 load (IREmitter::ReadConstAddr64).
++        if (const u32 flags = inst.Flags<u32>(); (flags & 0xFFFFu) == 0 &&
++            (EmulatorSettings.IsDirectMemoryAccessEnabled() ||
++             (flags == IR::IREmitter::ReadConstAddr64Flag && EmulatorSettings.IsAddr64DmaEnabled()))) {
+             info.readconst_types |= Info::ReadConstType::Immediate;
+             info.readconst_types |= Info::ReadConstType::Dynamic;
+             info.uses_dma = true;
+@@ -179,7 +184,7 @@ void CollectShaderInfoPass(IR::Program& program, const Profile& profile) {
+         }
+     }
+ 
+-    if (!EmulatorSettings.IsDirectMemoryAccessEnabled()) {
++    if (!EmulatorSettings.IsDirectMemoryAccessEnabled() && !EmulatorSettings.IsAddr64DmaEnabled()) {
+         info.uses_dma = false;
+         info.readconst_types = Info::ReadConstType::None;
+     }
+diff --git a/gow3_pc/gpu/shim/core/emulator_settings.h b/gow3_pc/gpu/shim/core/emulator_settings.h
+index 13ef6e4..965ce96 100644
+--- a/gow3_pc/gpu/shim/core/emulator_settings.h
++++ b/gow3_pc/gpu/shim/core/emulator_settings.h
+@@ -52,6 +52,10 @@ public:
+     }
+     bool IsCopyGpuBuffers() { static const auto value = Flag("GOW3_COPY_GPU_BUFFERS", false); return value; }
+     bool IsDirectMemoryAccessEnabled() { static const auto value = Flag("GOW3_DIRECT_MEMORY_ACCESS", false); return value; }
++    // TLOU Android: direct memory access only for MUBUF ADDR64 loads (raw 64-bit guest addresses:
++    // Naughty Dog's hair, beard and transparent shaders reading their shadow cascade matrices).
++    // Every other dynamic ReadConst keeps the flat-buffer path of GOW3_DIRECT_MEMORY_ACCESS=0.
++    bool IsAddr64DmaEnabled() { static const auto value = Flag("GOW3_DMA_ADDR64", false); return value; }
+     bool IsDumpShaders() { static const auto value = Flag("GOW3_DUMP_SHADERS", false); return value; }
+     bool IsHdrAllowed() { static const auto value = Flag("GOW3_HDR", false); return value; }
+     bool IsNullGPU() { static const auto value = Flag("GOW3_NULL_GPU", false); return value; }
