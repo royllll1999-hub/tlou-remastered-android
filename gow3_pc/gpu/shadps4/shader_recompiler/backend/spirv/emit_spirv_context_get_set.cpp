@@ -3,6 +3,7 @@
 
 #include "common/assert.h"
 #include "core/emulator_settings.h"
+#include "shader_recompiler/ir/ir_emitter.h"
 #include "shader_recompiler/backend/spirv/emit_spirv_instructions.h"
 #include "shader_recompiler/backend/spirv/spirv_emit_context.h"
 #include "shader_recompiler/backend/spirv/tlou_split_compute.h"
@@ -59,15 +60,17 @@ Id EmitGetUserData(EmitContext& ctx, IR::ScalarReg reg) {
 }
 
 Id EmitReadConst(EmitContext& ctx, IR::Inst* inst, Id addr, Id offset) {
-    const u32 flatbuf_off_dw = inst->Flags<u32>();
-    if (!EmulatorSettings.IsDirectMemoryAccessEnabled()) {
-        return ctx.EmitFlatbufferLoad(ctx.ConstU32(flatbuf_off_dw));
-    }
-    if (flatbuf_off_dw == 0) {
+    const u32 flags = inst->Flags<u32>();
+    const u32 flatbuf_off_dw = flags & 0xFFFFu;
+    // The same rule as CollectShaderInfoPass: only what it counted as a DMA read goes there.
+    const bool dynamic = flatbuf_off_dw == 0 &&
+                         (EmulatorSettings.IsDirectMemoryAccessEnabled() ||
+                          (flags == IR::IREmitter::ReadConstAddr64Flag &&
+                           EmulatorSettings.IsAddr64DmaEnabled()));
+    if (dynamic) {
         return ctx.OpFunctionCall(ctx.U32[1], ctx.read_const_dynamic, addr, offset);
-    } else {
-        return ctx.EmitFlatbufferLoad(ctx.ConstU32(flatbuf_off_dw));
     }
+    return ctx.EmitFlatbufferLoad(ctx.ConstU32(flatbuf_off_dw));
 }
 
 Id EmitReadConstBuffer(EmitContext& ctx, u32 handle, Id index) {

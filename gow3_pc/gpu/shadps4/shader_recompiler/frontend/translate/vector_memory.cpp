@@ -249,7 +249,7 @@ void Translator::BUFFER_LOAD(u32 num_dwords, bool is_inst_typed, bool is_buffer_
         const IR::Value base{ir.UnpackUint2x32(address64)};
         const IR::VectorReg dst{inst.src[1].code};
         for (u32 i = 0; i < num_dwords; i++) {
-            ir.SetVectorReg(dst + i, ir.ReadConst(base, ir.Imm32(i)));
+            ir.SetVectorReg(dst + i, ir.ReadConstAddr64(base, ir.Imm32(i)));
         }
         return;
     }

@@ -52,6 +52,10 @@ public:
     }
     bool IsCopyGpuBuffers() { static const auto value = Flag("GOW3_COPY_GPU_BUFFERS", false); return value; }
     bool IsDirectMemoryAccessEnabled() { static const auto value = Flag("GOW3_DIRECT_MEMORY_ACCESS", false); return value; }
+    // TLOU Android: direct memory access only for MUBUF ADDR64 loads (raw 64-bit guest addresses:
+    // Naughty Dog's hair, beard and transparent shaders reading their shadow cascade matrices).
+    // Every other dynamic ReadConst keeps the flat-buffer path of GOW3_DIRECT_MEMORY_ACCESS=0.
+    bool IsAddr64DmaEnabled() { static const auto value = Flag("GOW3_DMA_ADDR64", false); return value; }
     bool IsDumpShaders() { static const auto value = Flag("GOW3_DUMP_SHADERS", false); return value; }
     bool IsHdrAllowed() { static const auto value = Flag("GOW3_HDR", false); return value; }
     bool IsNullGPU() { static const auto value = Flag("GOW3_NULL_GPU", false); return value; }

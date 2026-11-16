@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "core/emulator_settings.h"
+#include "shader_recompiler/ir/ir_emitter.h"
 #include "shader_recompiler/ir/program.h"
 #include "shader_recompiler/profile.h"
 #include "video_core/buffer_cache/buffer_cache.h"
@@ -154,7 +155,11 @@ void Visit(Info& info, const IR::Inst& inst) {
             });
             info.has_readconst = true;
         }
-        if (inst.Flags<u32>() == 0) {
+        // Dynamic (no flat-buffer offset): through guest memory with GOW3_DIRECT_MEMORY_ACCESS,
+        // or with GOW3_DMA_ADDR64 when it is a MUBUF ADDR64 load (IREmitter::ReadConstAddr64).
+        if (const u32 flags = inst.Flags<u32>(); (flags & 0xFFFFu) == 0 &&
+            (EmulatorSettings.IsDirectMemoryAccessEnabled() ||
+             (flags == IR::IREmitter::ReadConstAddr64Flag && EmulatorSettings.IsAddr64DmaEnabled()))) {
             info.readconst_types |= Info::ReadConstType::Immediate;
             info.readconst_types |= Info::ReadConstType::Dynamic;
             info.uses_dma = true;
@@ -179,7 +184,7 @@ void CollectShaderInfoPass(IR::Program& program, const Profile& profile) {
         }
     }
 
-    if (!EmulatorSettings.IsDirectMemoryAccessEnabled()) {
+    if (!EmulatorSettings.IsDirectMemoryAccessEnabled() && !EmulatorSettings.IsAddr64DmaEnabled()) {
         info.uses_dma = false;
         info.readconst_types = Info::ReadConstType::None;
     }

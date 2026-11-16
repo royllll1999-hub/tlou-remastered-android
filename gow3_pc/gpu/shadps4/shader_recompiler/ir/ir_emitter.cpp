@@ -424,6 +424,13 @@ U32 IREmitter::ReadConst(const Value& base, const U32& offset) {
     return Inst<U32>(Opcode::ReadConst, base, offset);
 }
 
+U32 IREmitter::ReadConstAddr64(const Value& base, const U32& offset) {
+    // Low 16 flag bits: the flat-buffer offset (set by the SRT flattening pass, 0 = dynamic).
+    // Bit 16 marks a MUBUF ADDR64 load (ReadConstAddr64Flag): GOW3_DMA_ADDR64 reads only these
+    // through guest memory. Flattening a read replaces the flags, marker included.
+    return Inst<U32>(Opcode::ReadConst, Flags{u32(ReadConstAddr64Flag)}, base, offset);
+}
+
 U32 IREmitter::ReadConstBuffer(const Value& handle, const U32& index, BufferInstInfo info) {
     return Inst<U32>(Opcode::ReadConstBuffer, Flags{info}, handle, index);
 }

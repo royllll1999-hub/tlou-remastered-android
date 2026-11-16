@@ -201,13 +201,17 @@ final class PortSettings {
         // Shaders that read guest memory through raw 64-bit addresses (MUBUF ADDR64): Naughty Dog's
         // hair, beard and transparent shaders load their sun-shadow cascade matrices that way.
         // Without direct memory access those loads read the flat constant buffer instead, the
-        // shadow lookups land in lit texels and hair glows golden in the dark. The PC port runs
-        // with it on and syncs 256 KiB windows around the addresses (tools/probe_tlou.py).
+        // shadow lookups land in lit texels and hair glows golden in the dark.
+        // GOW3_DMA_ADDR64 (emulator_settings.h) gives guest-memory reads to those loads only.
+        // v0.1.7 used GOW3_DIRECT_MEMORY_ACCESS=1 (all dynamic reads, as the PC port): it
+        // synchronized ~740 MB in 5 s at a cutscene start and the job system deadlocked.
+        // DMA shaders sync 256 KiB windows around the guest addresses in their user data.
+        env.remove("GOW3_DIRECT_MEMORY_ACCESS");
         if(p.getBoolean("hair_dma",false)) {
-            env.put("GOW3_DIRECT_MEMORY_ACCESS","1");
+            env.put("GOW3_DMA_ADDR64","1");
             env.put("GOW3_DMA_SYNC","pointers 256");
         } else {
-            env.remove("GOW3_DIRECT_MEMORY_ACCESS");
+            env.remove("GOW3_DMA_ADDR64");
             env.remove("GOW3_DMA_SYNC");
         }
         // gow3_movie.cpp gow3_movie_scale_i420: one-pass NEON downscale of 1080p movies (v0.1.3).

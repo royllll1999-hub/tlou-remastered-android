@@ -308,8 +308,9 @@ public final class GameActivity extends Activity {
             env.put("GOW3_DMA_TRIGGER",shadowTrigger.getAbsolutePath());
             // Hair/beard lighting fix (PortSettings "hair_dma"): its translated shaders differ, so
             // they get their own shader/pipeline cache instead of reusing the non-DMA ones.
+            deleteTree(new File(state,"cache-dma")); // v0.1.7 all-DMA shader cache, never used again
             if(PortSettings.prefs(this).getBoolean("hair_dma",false))
-                env.put("GOW3_GPU_CACHE_DIR",new File(state,"cache-dma").getAbsolutePath());
+                env.put("GOW3_GPU_CACHE_DIR",new File(state,"cache-dma64").getAbsolutePath());
             env.put("GOW3_AUDIO_FIFO",new File(state,"audio.fifo").getAbsolutePath());
             env.put("GOW3_PRESENT_SOCKET",new File(state,"present.sock").getAbsolutePath());
             env.put("GOW3_SCREEN_W",String.valueOf(getResources().getDisplayMetrics().widthPixels));
@@ -570,5 +571,13 @@ public final class GameActivity extends Activity {
         if(hudTelemetry!=null)hudTelemetry.close();
         if(motion!=null)motion.close();
         super.onDestroy();
+    }
+    /** Removes a folder and its contents; missing folders and errors are ignored. */
+    private static void deleteTree(File file) {
+        if(!file.exists())return;
+        File[] children=file.listFiles();
+        if(children!=null)for(File child:children)deleteTree(child);
+        //noinspection ResultOfMethodCallIgnored
+        file.delete();
     }
 }

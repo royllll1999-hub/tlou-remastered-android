@@ -113,6 +113,8 @@ public:
     [[nodiscard]] T SharedAtomicDec(const U32& address, bool is_gds);
 
     [[nodiscard]] U32 ReadConst(const Value& base, const U32& offset);
+    static constexpr u32 ReadConstAddr64Flag = 1u << 16;
+    [[nodiscard]] U32 ReadConstAddr64(const Value& base, const U32& offset);
     [[nodiscard]] U32 ReadConstBuffer(const Value& handle, const U32& index, BufferInstInfo info);
 
     [[nodiscard]] U8 LoadBufferU8(const Value& handle, const Value& address, BufferInstInfo info);
