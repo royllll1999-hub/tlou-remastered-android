@@ -1,0 +1,974 @@
+# Subject: v0.1.9: SGSR upscaler, 900p/828p (1.11), 40 FPS at 120 Hz, crash log archive, render profile, fork version line
+diff --git a/android-launcher/app/build.gradle b/android-launcher/app/build.gradle
+index e5ed3dc..85dab4c 100644
+--- a/android-launcher/app/build.gradle
++++ b/android-launcher/app/build.gradle
+@@ -10,8 +10,8 @@ android {
+         // Android 10/11 allow execution of extracted native payload in app-private files
+         // for legacy target SDK. Keep separate from SDK version for compilation.
+         targetSdk 28
+-        versionCode 41
+-        versionName '0.1.1'
++        versionCode 49
++        versionName '0.1.9'
+     }
+     buildTypes {
+         release { minifyEnabled false }
+diff --git a/android-launcher/app/src/main/assets/ui-translations.tsv b/android-launcher/app/src/main/assets/ui-translations.tsv
+index 7064ab9..7a450f1 100644
+--- a/android-launcher/app/src/main/assets/ui-translations.tsv
++++ b/android-launcher/app/src/main/assets/ui-translations.tsv
+@@ -147,7 +147,6 @@ THE LAST OF US / DAEDALUS	THE LAST OF US / DAEDALUS	THE LAST OF US / DAEDALUS	TH
+ Versão	Version	Versión	Version	Version	Versione	Sürüm	Wersja	Версия	संस्करण
+ Port para Android com runtime Bionic.	Android port with a Bionic runtime.	Port para Android con runtime Bionic.	Portage Android avec un runtime Bionic.	Android-Port mit Bionic-Runtime.	Port per Android con runtime Bionic.	Bionic çalışma ortamıyla Android portu.	Port na Androida ze środowiskiem Bionic.	Порт для Android на базе Bionic.	Bionic रनटाइम वाला Android पोर्ट।
+ DESENVOLVIMENTO	DEVELOPMENT	DESARROLLO	DÉVELOPPEMENT	ENTWICKLUNG	SVILUPPO	GELİŞTİRME	ROZWÓJ	РАЗРАБОТКА	विकास
+-Fork e modificações	Fork and modifications	Fork y modificaciones	Fork et modifications	Fork und Änderungen	Fork e modifiche	Fork ve değişiklikler	Fork i modyfikacje	Форк и изменения	फ़ोर्क और बदलाव
+ PROJETOS	PROJECTS	PROYECTOS	PROJETS	PROJEKTE	PROGETTI	PROJELER	PROJEKTY	ПРОЕКТЫ	प्रोजेक्ट
+ Projeto Android	Android project	Proyecto Android	Projet Android	Android-Projekt	Progetto Android	Android projesi	Projekt Android	Проект Android	Android प्रोजेक्ट
+ Bugs e sugestões	Bugs and suggestions	Errores y sugerencias	Bugs et suggestions	Fehler und Vorschläge	Bug e suggerimenti	Hatalar ve öneriler	Błędy i sugestie	Ошибки и предложения	बग और सुझाव
+@@ -197,11 +196,8 @@ Suave	Soft	Suave	Douce	Weich	Morbida	Yumuşak	Łagodne	Мягкая	हल्क
+ Média	Medium	Media	Moyenne	Mittel	Media	Orta	Średnie	Средняя	मध्यम
+ Forte	Strong	Fuerte	Forte	Stark	Forte	Güçlü	Mocne	Сильная	तेज़
+ AMD FSR 1.0	AMD FSR 1.0	AMD FSR 1.0	AMD FSR 1.0	AMD FSR 1.0	AMD FSR 1.0	AMD FSR 1.0	AMD FSR 1.0	AMD FSR 1.0	AMD FSR 1.0
+-Ativar AMD FSR 1.0	Enable AMD FSR 1.0	Activar AMD FSR 1.0	Activer AMD FSR 1.0	AMD FSR 1.0 aktivieren	Attiva AMD FSR 1.0	AMD FSR 1.0'ı etkinleştir	Włącz AMD FSR 1.0	Включить AMD FSR 1.0	AMD FSR 1.0 चालू करें
+ Melhora a nitidez da imagem quando o jogo roda abaixo da resolução da tela.	Makes the image sharper when the game runs below the screen resolution.	Mejora la nitidez de la imagen cuando el juego funciona por debajo de la resolución de la pantalla.	Améliore la netteté de l’image lorsque le jeu tourne sous la résolution de l’écran.	Macht das Bild schärfer, wenn das Spiel unter der Bildschirmauflösung läuft.	Migliora la nitidezza dell’immagine quando il gioco gira sotto la risoluzione dello schermo.	Oyun ekran çözünürlüğünün altında çalışırken görüntüyü daha keskin yapar.	Poprawia ostrość obrazu, gdy gra działa poniżej rozdzielczości ekranu.	Делает изображение чётче, когда игра работает ниже разрешения экрана.	जब गेम स्क्रीन रिज़ॉल्यूशन से कम पर चलता है तो छवि को अधिक स्पष्ट बनाता है।
+-Como ativar: ligue a opção acima, escolha 720p, 540p ou 360p em Resolução interna e reinicie o jogo.	How to enable: turn on the option above, choose 720p, 540p or 360p in Internal resolution and restart the game.	Cómo activarlo: activa la opción de arriba, elige 720p, 540p o 360p en Resolución interna y reinicia el juego.	Pour l’activer : activez l’option ci-dessus, choisissez 720p, 540p ou 360p dans Résolution interne et redémarrez le jeu.	Aktivieren: Schalte die Option oben ein, wähle 720p, 540p oder 360p unter Interne Auflösung und starte das Spiel neu.	Come attivarlo: attiva l’opzione qui sopra, scegli 720p, 540p o 360p in Risoluzione interna e riavvia il gioco.	Etkinleştirmek için: yukarıdaki seçeneği açın, Dahili çözünürlükte 720p, 540p veya 360p seçin ve oyunu yeniden başlatın.	Jak włączyć: włącz opcję powyżej, wybierz 720p, 540p lub 360p w Rozdzielczości wewnętrznej i uruchom grę ponownie.	Как включить: включите опцию выше, выберите 720p, 540p или 360p во «Внутреннем разрешении» и перезапустите игру.	चालू करने के लिए: ऊपर का विकल्प चालू करें, आंतरिक रिज़ॉल्यूशन में 720p, 540p या 360p चुनें और गेम फिर से शुरू करें।
+ Como desativar: desligue a opção acima e reinicie o jogo. A imagem volta à exibição original.	How to disable: turn off the option above and restart the game. The image returns to the original display.	Cómo desactivarlo: desactiva la opción de arriba y reinicia el juego. La imagen vuelve a la visualización original.	Pour le désactiver : désactivez l’option ci-dessus et redémarrez le jeu. L’image revient à l’affichage d’origine.	Deaktivieren: Schalte die Option oben aus und starte das Spiel neu. Das Bild kehrt zur ursprünglichen Darstellung zurück.	Come disattivarlo: disattiva l’opzione qui sopra e riavvia il gioco. L’immagine torna alla visualizzazione originale.	Devre dışı bırakmak için: yukarıdaki seçeneği kapatın ve oyunu yeniden başlatın. Görüntü orijinal hâline döner.	Jak wyłączyć: wyłącz opcję powyżej i uruchom grę ponownie. Obraz wróci do oryginalnego wyświetlania.	Как выключить: отключите опцию выше и перезапустите игру. Изображение вернётся к исходному виду.	बंद करने के लिए: ऊपर का विकल्प बंद करें और गेम फिर से शुरू करें। छवि मूल प्रदर्शन पर लौट आएगी।
+-Em 1080p (Original) o FSR só aumenta a nitidez.	At 1080p (Original) FSR only increases sharpness.	En 1080p (Original) FSR solo aumenta la nitidez.	En 1080p (Original), FSR ne fait qu’augmenter la netteté.	Bei 1080p (Original) erhöht FSR nur die Schärfe.	A 1080p (Originale) FSR aumenta solo la nitidezza.	1080p'de (Orijinal) FSR yalnızca keskinliği artırır.	W 1080p (Oryginalna) FSR tylko zwiększa ostrość.	В 1080p (Оригинал) FSR только повышает резкость.	1080p (मूल) पर FSR केवल शार्पनेस बढ़ाता है।
+ SENSORES DE MOVIMENTO	MOTION SENSORS	SENSORES DE MOVIMIENTO	CAPTEURS DE MOUVEMENT	BEWEGUNGSSENSOREN	SENSORI DI MOVIMENTO	HAREKET SENSÖRLERİ	CZUJNIKI RUCHU	ДАТЧИКИ ДВИЖЕНИЯ	मोशन सेंसर
+ Sensores de movimento	Motion sensors	Sensores de movimiento	Capteurs de mouvement	Bewegungssensoren	Sensori di movimento	Hareket sensörleri	Czujniki ruchu	Датчики движения	मोशन सेंसर
+ Sacudir o aparelho = sacudir o controle	Shake the device = shake the controller	Agitar el dispositivo = agitar el mando	Secouer l’appareil = secouer la manette	Gerät schütteln = Controller schütteln	Scuotere il dispositivo = scuotere il controller	Cihazı sallamak = kumandayı sallamak	Potrząśnięcie urządzeniem = potrząśnięcie kontrolerem	Встряхнуть устройство = встряхнуть контроллер	डिवाइस हिलाना = कंट्रोलर हिलाना
+@@ -223,11 +219,9 @@ Sistema	System	Sistema	Système	System	Sistema	Sistem	System	Система	स
+ Ao abrir o aplicativo, o jogo começa sozinho, sem passar por este menu.	When the app opens, the game starts by itself without stopping at this menu.	Al abrir la aplicación, el juego empieza solo, sin pasar por este menú.	À l'ouverture de l'application, le jeu démarre tout seul, sans passer par ce menu.	Beim Öffnen der App startet das Spiel von selbst, ohne dieses Menü.	All'apertura dell'app il gioco parte da solo, senza passare da questo menu.	Uygulama açılınca oyun bu menüye uğramadan kendiliğinden başlar.	Po otwarciu aplikacji gra uruchamia się sama, z pominięciem tego menu.	При запуске приложения игра стартует сама, минуя это меню.	ऐप खुलते ही गेम इस मेन्यू पर रुके बिना अपने आप शुरू हो जाता है।
+ Aplique um PKG de update ou selecione uma pasta extraída. O jogo base e os saves não serão sobrescritos.	Apply an update PKG or choose an extracted folder. The base game and saves are not overwritten.	Aplica un PKG de actualización o elige una carpeta extraída. El juego base y las partidas no se sobrescriben.	Appliquez un PKG de mise à jour ou choisissez un dossier extrait. Le jeu de base et les sauvegardes ne sont pas écrasés.	Ein Update-PKG anwenden oder einen entpackten Ordner wählen. Basisspiel und Spielstände werden nicht überschrieben.	Applica un PKG di aggiornamento o scegli una cartella estratta. Il gioco base e i salvataggi non vengono sovrascritti.	Bir güncelleme PKG'si uygulayın veya çıkarılmış bir klasör seçin. Ana oyun ve kayıtların üzerine yazılmaz.	Zastosuj PKG aktualizacji lub wybierz rozpakowany folder. Gra podstawowa i zapisy nie zostaną nadpisane.	Установите PKG обновления или выберите распакованную папку. Основная игра и сохранения не перезаписываются.	अपडेट PKG लागू करें या निकाला गया फ़ोल्डर चुनें। मूल गेम और सेव ओवरराइट नहीं होंगे।
+ RESOLUÇÃO E IMAGEM	RESOLUTION AND IMAGE	RESOLUCIÓN E IMAGEN	RÉSOLUTION ET IMAGE	AUFLÖSUNG UND BILD	RISOLUZIONE E IMMAGINE	ÇÖZÜNÜRLÜK VE GÖRÜNTÜ	ROZDZIELCZOŚĆ I OBRAZ	РАЗРЕШЕНИЕ И ИЗОБРАЖЕНИЕ	रिज़ॉल्यूशन और इमेज
+-Resolução em que o jogo é desenhado. Menor = mais FPS e menos calor; 720p é o melhor equilíbrio no AYN Odin 3. Reinicie o jogo para aplicar.	The resolution the game is rendered at. Lower = more FPS and less heat; 720p is the best balance on the AYN Odin 3. Restart the game to apply.	Resolución a la que se dibuja el juego. Menor = más FPS y menos calor; 720p es el mejor equilibrio en el AYN Odin 3. Reinicia el juego para aplicarlo.	Résolution de rendu du jeu. Plus basse = plus de FPS et moins de chauffe ; 720p est le meilleur compromis sur l'AYN Odin 3. Redémarrez le jeu pour appliquer.	Auflösung, in der das Spiel gerendert wird. Niedriger = mehr FPS und weniger Wärme; 720p ist auf dem AYN Odin 3 der beste Kompromiss. Spiel neu starten.	Risoluzione a cui viene disegnato il gioco. Più bassa = più FPS e meno calore; 720p è il miglior compromesso su AYN Odin 3. Riavvia il gioco per applicare.	Oyunun çizildiği çözünürlük. Düşük = daha fazla FPS ve daha az ısı; AYN Odin 3'te en iyi denge 720p. Uygulamak için oyunu yeniden başlatın.	Rozdzielczość, w jakiej gra jest renderowana. Niższa = więcej FPS i mniej ciepła; 720p to najlepszy kompromis na AYN Odin 3. Uruchom grę ponownie.	Разрешение, в котором рисуется игра. Ниже — больше FPS и меньше нагрев; 720p — лучший баланс на AYN Odin 3. Перезапустите игру, чтобы применить.	जिस रिज़ॉल्यूशन पर गेम बनता है। कम = ज़्यादा FPS और कम गर्मी; AYN Odin 3 पर 720p सबसे अच्छा संतुलन है। लागू करने के लिए गेम फिर से शुरू करें।
+ Ajustar mantém a proporção 16:9 com faixas pretas; Preencher estica a imagem para a tela inteira.	Fit keeps the 16:9 shape with black bars; Fill stretches the picture over the whole screen.	Ajustar mantiene la proporción 16:9 con franjas negras; Rellenar estira la imagen a toda la pantalla.	Ajuster garde le format 16:9 avec des bandes noires ; Remplir étire l'image sur tout l'écran.	Anpassen behält 16:9 mit schwarzen Balken; Füllen streckt das Bild auf den ganzen Bildschirm.	Adatta mantiene il formato 16:9 con bande nere; Riempi allunga l'immagine su tutto lo schermo.	Sığdır, 16:9 oranını siyah bantlarla korur; Doldur görüntüyü tüm ekrana yayar.	Dopasuj zachowuje proporcje 16:9 z czarnymi pasami; Wypełnij rozciąga obraz na cały ekran.	«Вписать» сохраняет пропорции 16:9 с чёрными полосами; «Заполнить» растягивает картинку на весь экран.	फ़िट 16:9 अनुपात काली पट्टियों के साथ रखता है; फ़िल तस्वीर को पूरी स्क्रीन पर फैलाता है।
+ Força do filtro de nitidez (RCAS). Suave deixa a imagem mais macia; Forte, mais definida.	Strength of the sharpening filter (RCAS). Soft gives a smoother picture; Strong a crisper one.	Intensidad del filtro de nitidez (RCAS). Suave deja la imagen más blanda; Fuerte, más definida.	Force du filtre de netteté (RCAS). Doux donne une image plus douce ; Fort, plus nette.	Stärke des Schärfefilters (RCAS). Weich ergibt ein sanfteres Bild, Stark ein schärferes.	Intensità del filtro di nitidezza (RCAS). Morbida rende l'immagine più morbida; Forte più definita.	Keskinleştirme filtresinin (RCAS) gücü. Yumuşak daha yumuşak, Güçlü daha net bir görüntü verir.	Siła filtra wyostrzania (RCAS). Łagodna daje gładszy obraz, Mocna – ostrzejszy.	Сила фильтра резкости (RCAS). «Мягкая» — картинка мягче, «Сильная» — чётче.	शार्पनिंग फ़िल्टर (RCAS) की ताक़त। सॉफ़्ट से तस्वीर नरम, स्ट्रॉन्ग से ज़्यादा साफ़।
+ FPS E SINCRONIZAÇÃO	FPS AND SYNC	FPS Y SINCRONIZACIÓN	FPS ET SYNCHRONISATION	FPS UND SYNCHRONISIERUNG	FPS E SINCRONIZZAZIONE	FPS VE SENKRONİZASYON	FPS I SYNCHRONIZACJA	FPS И СИНХРОНИЗАЦИЯ	FPS और सिंक
+-Teto de quadros por segundo. 60 é o padrão; 30 reduz bastante o aquecimento e o consumo de bateria.	Frame-rate cap. 60 is the default; 30 greatly reduces heat and battery drain.	Tope de fotogramas por segundo. 60 es el predeterminado; 30 reduce mucho el calor y el consumo de batería.	Plafond d'images par seconde. 60 par défaut ; 30 réduit beaucoup la chauffe et la consommation.	Obergrenze der Bilder pro Sekunde. 60 ist Standard; 30 senkt Wärme und Akkuverbrauch deutlich.	Limite di fotogrammi al secondo. 60 è il predefinito; 30 riduce molto calore e consumo di batteria.	Saniyedeki kare sınırı. Varsayılan 60; 30 ısınmayı ve pil tüketimini ciddi ölçüde azaltır.	Limit klatek na sekundę. Domyślnie 60; 30 mocno zmniejsza nagrzewanie i zużycie baterii.	Ограничение кадров в секунду. По умолчанию 60; 30 сильно снижает нагрев и расход батареи.	प्रति सेकंड फ़्रेम की सीमा। डिफ़ॉल्ट 60; 30 से गर्मी और बैटरी खपत काफ़ी घटती है।
+ Sincroniza os quadros com a tela para evitar imagem cortada (tearing). Recomendado ligado.	Syncs frames with the screen to avoid a torn picture (tearing). Recommended on.	Sincroniza los fotogramas con la pantalla para evitar la imagen cortada (tearing). Recomendado activado.	Synchronise les images avec l'écran pour éviter le déchirement (tearing). Recommandé activé.	Synchronisiert die Bilder mit dem Bildschirm gegen Bildreißen (Tearing). Empfohlen: an.	Sincronizza i fotogrammi con lo schermo per evitare l'immagine spezzata (tearing). Consigliato attivo.	Görüntü yırtılmasını (tearing) önlemek için kareleri ekranla eşitler. Açık önerilir.	Synchronizuje klatki z ekranem, aby uniknąć rozrywania obrazu (tearing). Zalecane włączone.	Синхронизирует кадры с экраном, чтобы картинка не рвалась (тиринг). Рекомендуется включить.	फ़्रेम को स्क्रीन से सिंक करता है ताकि तस्वीर न फटे (टियरिंग)। चालू रखने की सलाह।
+ Desbloquear FPS (até 120, experimental)	Unlock FPS (up to 120, experimental)	Desbloquear FPS (hasta 120, experimental)	Débloquer les FPS (jusqu'à 120, expérimental)	FPS freischalten (bis 120, experimentell)	Sblocca FPS (fino a 120, sperimentale)	FPS kilidini aç (120'ye kadar, deneysel)	Odblokuj FPS (do 120, eksperymentalne)	Снять ограничение FPS (до 120, экспериментально)	FPS अनलॉक करें (120 तक, प्रायोगिक)
+ O desbloqueio desliga o VSync durante a sessão para evitar o teto de 60 FPS. Cinemáticas mantêm o ritmo de 60 Hz.	Unlocking turns VSync off for the session to avoid the 60 FPS cap. Cutscenes keep their 60 Hz pace.	El desbloqueo apaga el VSync durante la sesión para evitar el tope de 60 FPS. Las cinemáticas mantienen el ritmo de 60 Hz.	Le déblocage désactive le VSync pendant la session pour éviter le plafond de 60 FPS. Les cinématiques gardent le rythme de 60 Hz.	Das Freischalten schaltet VSync für die Sitzung aus, um die 60-FPS-Grenze zu umgehen. Zwischensequenzen behalten 60 Hz.	Lo sblocco disattiva il VSync durante la sessione per evitare il limite di 60 FPS. Le cinematiche mantengono i 60 Hz.	Kilidi açmak, 60 FPS sınırını aşmak için oturum boyunca VSync'i kapatır. Ara sahneler 60 Hz hızında kalır.	Odblokowanie wyłącza VSync na czas sesji, aby ominąć limit 60 FPS. Przerywniki zachowują tempo 60 Hz.	Снятие ограничения выключает VSync на время сессии, чтобы обойти потолок 60 FPS. Катсцены идут в темпе 60 Гц.	अनलॉक करने पर 60 FPS की सीमा से बचने के लिए सत्र में VSync बंद रहता है। कटसीन 60 Hz पर ही चलते हैं।
+@@ -293,3 +287,23 @@ Iluminação correta de cabelo e barba (experimental)	Correct hair and beard lig
+ Corrige cabelo e barba dourados em cenas escuras: os shaders deles leem as sombras do sol direto da memória do jogo, como no port para PC. Pode custar alguns FPS. Na primeira vez os shaders são preparados de novo (alguns travamentos curtos nos primeiros minutos). Reinicie o jogo para aplicar.	Fixes golden hair and beards in dark scenes: their shaders read the sun shadows straight from the game's memory, as in the PC port. May cost a few FPS. The first time, shaders are prepared again (a few short hitches in the first minutes). Restart the game to apply.	Corrige el pelo y la barba dorados en escenas oscuras: sus shaders leen las sombras del sol directamente de la memoria del juego, como en el port de PC. Puede costar algunos FPS. La primera vez los shaders se preparan de nuevo (algunos tirones cortos en los primeros minutos). Reinicia el juego para aplicarlo.	Corrige les cheveux et la barbe dorés dans les scènes sombres : leurs shaders lisent les ombres du soleil directement dans la mémoire du jeu, comme sur le portage PC. Peut coûter quelques FPS. La première fois, les shaders sont préparés à nouveau (quelques courts à-coups les premières minutes). Redémarrez le jeu pour appliquer.	Behebt goldene Haare und Bärte in dunklen Szenen: Ihre Shader lesen die Sonnenschatten direkt aus dem Spielspeicher, wie im PC-Port. Kann ein paar FPS kosten. Beim ersten Mal werden die Shader neu vorbereitet (einige kurze Ruckler in den ersten Minuten). Spiel zum Übernehmen neu starten.	Corregge capelli e barba dorati nelle scene buie: i loro shader leggono le ombre del sole direttamente dalla memoria del gioco, come nel port PC. Può costare qualche FPS. La prima volta gli shader vengono preparati di nuovo (qualche breve scatto nei primi minuti). Riavvia il gioco per applicare.	Karanlık sahnelerdeki altın rengi saç ve sakalı düzeltir: gölgelendiricileri güneş gölgelerini PC portundaki gibi doğrudan oyun belleğinden okur. Birkaç FPS'e mal olabilir. İlk seferde gölgelendiriciler yeniden hazırlanır (ilk dakikalarda birkaç kısa takılma). Uygulamak için oyunu yeniden başlatın.	Naprawia złote włosy i brody w ciemnych scenach: ich shadery czytają cienie słońca prosto z pamięci gry, jak w porcie PC. Może kosztować kilka FPS. Za pierwszym razem shadery są przygotowywane od nowa (kilka krótkich przycięć w pierwszych minutach). Uruchom grę ponownie, aby zastosować.	Исправляет золотые волосы и бороду в тёмных сценах: их шейдеры читают тени от солнца напрямую из памяти игры, как в PC-порте. Может стоить нескольких FPS. В первый раз шейдеры подготавливаются заново (несколько коротких подтормаживаний в первые минуты). Перезапустите игру, чтобы применить.	अंधेरे दृश्यों में सुनहरे बाल और दाढ़ी ठीक करता है: उनके शेडर PC पोर्ट की तरह सूरज की छायाएँ सीधे गेम की मेमोरी से पढ़ते हैं। कुछ FPS कम हो सकते हैं। पहली बार शेडर फिर से तैयार होते हैं (पहले कुछ मिनटों में कुछ छोटे अटकाव)। लागू करने के लिए गेम फिर से शुरू करें।
+ Vídeos: redução rápida em uma passada (NEON)	Videos: fast one-pass downscale (NEON)	Vídeos: reducción rápida en una pasada (NEON)	Vidéos : réduction rapide en une passe (NEON)	Videos: schnelle Verkleinerung in einem Durchgang (NEON)	Video: riduzione rapida in un passaggio (NEON)	Videolar: tek geçişte hızlı küçültme (NEON)	Wideo: szybkie zmniejszanie w jednym przebiegu (NEON)	Ролики: быстрое уменьшение за один проход (NEON)	वीडियो: एक पास में तेज़ छोटा करना (NEON)
+ Os vídeos das cinemáticas (1080p) são reduzidos para 720p numa só passada, com menos trabalho da CPU. Desligado = o método original do port, em duas passadas. Se o jogo travar no início de uma cinemática, desligue para testar. Reinicie o jogo para aplicar.	Cutscene videos (1080p) are reduced to 720p in a single pass, with less CPU work. Off = the port's original two-pass method. If the game freezes at the start of a cutscene, turn it off to test. Restart the game to apply.	Los vídeos de las cinemáticas (1080p) se reducen a 720p en una sola pasada, con menos trabajo de la CPU. Desactivado = el método original del port, en dos pasadas. Si el juego se congela al empezar una cinemática, desactívalo para probar. Reinicia el juego para aplicarlo.	Les vidéos des cinématiques (1080p) sont réduites en 720p en une seule passe, avec moins de travail CPU. Désactivé = la méthode d'origine du portage, en deux passes. Si le jeu se fige au début d'une cinématique, désactivez pour tester. Redémarrez le jeu pour appliquer.	Zwischensequenz-Videos (1080p) werden in einem Durchgang auf 720p verkleinert, mit weniger CPU-Arbeit. Aus = die ursprüngliche Methode des Ports in zwei Durchgängen. Friert das Spiel zu Beginn einer Zwischensequenz ein, zum Testen ausschalten. Spiel zum Übernehmen neu starten.	I video delle cinematiche (1080p) vengono ridotti a 720p in un solo passaggio, con meno lavoro della CPU. Disattivato = il metodo originale del port, in due passaggi. Se il gioco si blocca all'inizio di una cinematica, disattivalo per provare. Riavvia il gioco per applicare.	Ara sahne videoları (1080p) tek geçişte 720p'ye küçültülür, daha az CPU işiyle. Kapalı = portun orijinal iki geçişli yöntemi. Oyun bir ara sahnenin başında donarsa test için kapatın. Uygulamak için oyunu yeniden başlatın.	Filmy przerywników (1080p) są zmniejszane do 720p w jednym przebiegu, przy mniejszej pracy CPU. Wyłączone = oryginalna metoda portu w dwóch przebiegach. Jeśli gra zawiesza się na początku przerywnika, wyłącz, aby sprawdzić. Uruchom grę ponownie, aby zastosować.	Видео катсцен (1080p) уменьшаются до 720p за один проход, с меньшей нагрузкой на CPU. Выключено — исходный способ порта, в два прохода. Если игра зависает в начале катсцены, выключите для проверки. Перезапустите игру, чтобы применить.	कटसीन के वीडियो (1080p) एक ही पास में 720p तक छोटे किए जाते हैं, CPU पर कम काम के साथ। बंद = पोर्ट का मूल दो-पास तरीका। अगर कटसीन की शुरुआत में गेम अटक जाए तो जाँचने के लिए बंद करें। लागू करने के लिए गेम फिर से शुरू करें।
++Fork de royllll1999-hub · AYN Odin 3	Fork by royllll1999-hub · AYN Odin 3	Fork de royllll1999-hub · AYN Odin 3	Fork de royllll1999-hub · AYN Odin 3	Fork von royllll1999-hub · AYN Odin 3	Fork di royllll1999-hub · AYN Odin 3	royllll1999-hub fork'u · AYN Odin 3	Fork royllll1999-hub · AYN Odin 3	Форк royllll1999-hub · AYN Odin 3	royllll1999-hub का फ़ोर्क · AYN Odin 3
++Este fork (AYN Odin 3)	This fork (AYN Odin 3)	Este fork (AYN Odin 3)	Ce fork (AYN Odin 3)	Dieser Fork (AYN Odin 3)	Questo fork (AYN Odin 3)	Bu fork (AYN Odin 3)	Ten fork (AYN Odin 3)	Этот форк (AYN Odin 3)	यह फ़ोर्क (AYN Odin 3)
++Port original	Original port	Port original	Portage original	Ursprünglicher Port	Port originale	Orijinal port	Oryginalny port	Оригинальный порт	मूल पोर्ट
++1600 × 900 (1.11)	1600 × 900 (1.11)	1600 × 900 (1.11)	1600 × 900 (1.11)	1600 × 900 (1.11)	1600 × 900 (1.11)	1600 × 900 (1.11)	1600 × 900 (1.11)	1600 × 900 (1.11)	1600 × 900 (1.11)
++1472 × 828 (1.11)	1472 × 828 (1.11)	1472 × 828 (1.11)	1472 × 828 (1.11)	1472 × 828 (1.11)	1472 × 828 (1.11)	1472 × 828 (1.11)	1472 × 828 (1.11)	1472 × 828 (1.11)	1472 × 828 (1.11)
++Snapdragon GSR	Snapdragon GSR	Snapdragon GSR	Snapdragon GSR	Snapdragon GSR	Snapdragon GSR	Snapdragon GSR	Snapdragon GSR	Snapdragon GSR	Snapdragon GSR
++40 FPS (tela 120 Hz)	40 FPS (120 Hz screen)	40 FPS (pantalla a 120 Hz)	40 FPS (écran 120 Hz)	40 FPS (Bildschirm 120 Hz)	40 FPS (schermo a 120 Hz)	40 FPS (120 Hz ekran)	40 FPS (ekran 120 Hz)	40 FPS (экран 120 Гц)	40 FPS (120 Hz स्क्रीन)
++AMPLIAÇÃO (FSR / SGSR)	UPSCALING (FSR / SGSR)	ESCALADO (FSR / SGSR)	MISE À L'ÉCHELLE (FSR / SGSR)	HOCHSKALIERUNG (FSR / SGSR)	UPSCALING (FSR / SGSR)	ÖLÇEKLEME (FSR / SGSR)	SKALOWANIE (FSR / SGSR)	АПСКЕЙЛИНГ (FSR / SGSR)	अपस्केलिंग (FSR / SGSR)
++Ampliação (FSR / SGSR)	Upscaling (FSR / SGSR)	Escalado (FSR / SGSR)	Mise à l'échelle (FSR / SGSR)	Hochskalierung (FSR / SGSR)	Upscaling (FSR / SGSR)	Ölçekleme (FSR / SGSR)	Skalowanie (FSR / SGSR)	Апскейлинг (FSR / SGSR)	अपस्केलिंग (FSR / SGSR)
++Ativar ampliação da imagem	Enable image upscaling	Activar el escalado de imagen	Activer la mise à l'échelle	Bildhochskalierung aktivieren	Attiva l'upscaling dell'immagine	Görüntü ölçeklemeyi etkinleştir	Włącz skalowanie obrazu	Включить апскейлинг изображения	इमेज अपस्केलिंग चालू करें
++Método de ampliação	Upscaling method	Método de escalado	Méthode de mise à l'échelle	Hochskalierungsmethode	Metodo di upscaling	Ölçekleme yöntemi	Metoda skalowania	Метод апскейлинга	अपस्केलिंग का तरीका
++AMD FSR 1.0: duas passadas (ampliação + nitidez RCAS ajustável). Snapdragon GSR: uma passada feita para GPUs Adreno, com nitidez própria; costuma custar menos GPU. Reinicie o jogo para aplicar.	AMD FSR 1.0: two passes (upscaling + adjustable RCAS sharpening). Snapdragon GSR: one pass made for Adreno GPUs, with its own sharpening; usually costs less GPU. Restart the game to apply.	AMD FSR 1.0: dos pasadas (escalado + nitidez RCAS ajustable). Snapdragon GSR: una pasada hecha para GPU Adreno, con nitidez propia; suele costar menos GPU. Reinicia el juego para aplicar.	AMD FSR 1.0 : deux passes (mise à l'échelle + netteté RCAS réglable). Snapdragon GSR : une passe conçue pour les GPU Adreno, avec sa propre netteté ; coûte généralement moins de GPU. Redémarrez le jeu pour appliquer.	AMD FSR 1.0: zwei Durchgänge (Hochskalierung + einstellbare RCAS-Schärfe). Snapdragon GSR: ein Durchgang für Adreno-GPUs mit eigener Schärfung; kostet meist weniger GPU. Spiel zum Übernehmen neu starten.	AMD FSR 1.0: due passaggi (upscaling + nitidezza RCAS regolabile). Snapdragon GSR: un passaggio pensato per GPU Adreno, con nitidezza propria; di solito costa meno GPU. Riavvia il gioco per applicare.	AMD FSR 1.0: iki geçiş (ölçekleme + ayarlanabilir RCAS keskinliği). Snapdragon GSR: Adreno GPU'lar için tek geçiş, kendi keskinliğiyle; genelde daha az GPU harcar. Uygulamak için oyunu yeniden başlatın.	AMD FSR 1.0: dwa przebiegi (skalowanie + regulowana ostrość RCAS). Snapdragon GSR: jeden przebieg stworzony dla GPU Adreno, z własnym wyostrzaniem; zwykle mniej obciąża GPU. Uruchom grę ponownie, aby zastosować.	AMD FSR 1.0: два прохода (увеличение + настраиваемая резкость RCAS). Snapdragon GSR: один проход, сделанный для GPU Adreno, со своей резкостью; обычно меньше нагружает GPU. Перезапустите игру, чтобы применить.	AMD FSR 1.0: दो पास (अपस्केलिंग + समायोज्य RCAS शार्पनेस)। Snapdragon GSR: Adreno GPU के लिए बना एक पास, अपनी शार्पनेस के साथ; आमतौर पर GPU पर कम भार। लागू करने के लिए गेम फिर से शुरू करें।
++Como ativar: ligue a opção acima, escolha uma resolução abaixo de 1080p em Resolução interna e reinicie o jogo.	How to enable: turn on the option above, choose a resolution below 1080p in Internal resolution and restart the game.	Cómo activar: enciende la opción de arriba, elige una resolución inferior a 1080p en Resolución interna y reinicia el juego.	Pour activer : activez l'option ci-dessus, choisissez une résolution inférieure à 1080p dans Résolution interne et redémarrez le jeu.	Aktivieren: Option oben einschalten, unter Interne Auflösung eine Auflösung unter 1080p wählen und das Spiel neu starten.	Come attivare: accendi l'opzione sopra, scegli una risoluzione inferiore a 1080p in Risoluzione interna e riavvia il gioco.	Etkinleştirmek için: yukarıdaki seçeneği açın, Dahili çözünürlükte 1080p'den düşük bir çözünürlük seçin ve oyunu yeniden başlatın.	Jak włączyć: włącz opcję powyżej, wybierz rozdzielczość poniżej 1080p w Rozdzielczości wewnętrznej i uruchom grę ponownie.	Как включить: включите опцию выше, выберите разрешение ниже 1080p во «Внутреннем разрешении» и перезапустите игру.	कैसे चालू करें: ऊपर का विकल्प चालू करें, आंतरिक रेज़ोल्यूशन में 1080p से कम रेज़ोल्यूशन चुनें और गेम फिर से शुरू करें।
++Em 1080p (Original) só a nitidez RCAS é aplicada (também com Snapdragon GSR).	At 1080p (Original) only RCAS sharpening is applied (also with Snapdragon GSR).	En 1080p (Original) solo se aplica la nitidez RCAS (también con Snapdragon GSR).	En 1080p (Original), seule la netteté RCAS est appliquée (aussi avec Snapdragon GSR).	Bei 1080p (Original) wird nur die RCAS-Schärfe angewendet (auch mit Snapdragon GSR).	A 1080p (Originale) viene applicata solo la nitidezza RCAS (anche con Snapdragon GSR).	1080p'de (Orijinal) yalnızca RCAS keskinliği uygulanır (Snapdragon GSR ile de).	W 1080p (Oryginał) stosowana jest tylko ostrość RCAS (także ze Snapdragon GSR).	В 1080p (Оригинал) применяется только резкость RCAS (и со Snapdragon GSR).	1080p (मूल) में केवल RCAS शार्पनेस लगती है (Snapdragon GSR के साथ भी)।
++Resolução em que o jogo é desenhado. Menor = mais FPS e menos calor; 720p é o melhor equilíbrio no AYN Odin 3. 900p e 828p (no lugar de 810p, que não divide por igual) só na versão 1.11 do jogo. Reinicie o jogo para aplicar.	Resolution the game is drawn at. Lower = more FPS and less heat; 720p is the best balance on the AYN Odin 3. 900p and 828p (instead of 810p, which does not divide evenly) only on game version 1.11. Restart the game to apply.	Resolución a la que se dibuja el juego. Menor = más FPS y menos calor; 720p es el mejor equilibrio en el AYN Odin 3. 900p y 828p (en lugar de 810p, que no se divide de forma exacta) solo en la versión 1.11 del juego. Reinicia el juego para aplicar.	Résolution à laquelle le jeu est rendu. Plus basse = plus de FPS et moins de chaleur ; 720p est le meilleur équilibre sur l'AYN Odin 3. 900p et 828p (au lieu de 810p, qui ne se divise pas exactement) uniquement en version 1.11 du jeu. Redémarrez le jeu pour appliquer.	Auflösung, in der das Spiel gezeichnet wird. Niedriger = mehr FPS und weniger Wärme; 720p ist auf dem AYN Odin 3 der beste Kompromiss. 900p und 828p (statt 810p, das sich nicht glatt teilen lässt) nur mit Spielversion 1.11. Spiel zum Übernehmen neu starten.	Risoluzione a cui viene disegnato il gioco. Più bassa = più FPS e meno calore; 720p è il miglior equilibrio sull'AYN Odin 3. 900p e 828p (al posto di 810p, che non si divide in modo esatto) solo con la versione 1.11 del gioco. Riavvia il gioco per applicare.	Oyunun çizildiği çözünürlük. Düşük = daha fazla FPS ve daha az ısı; AYN Odin 3'te en iyi denge 720p. 900p ve 828p (tam bölünmeyen 810p yerine) yalnızca oyunun 1.11 sürümünde. Uygulamak için oyunu yeniden başlatın.	Rozdzielczość, w jakiej rysowana jest gra. Niższa = więcej FPS i mniej ciepła; 720p to najlepszy kompromis na AYN Odin 3. 900p i 828p (zamiast 810p, które nie dzieli się równo) tylko w wersji gry 1.11. Uruchom grę ponownie, aby zastosować.	Разрешение, в котором рисуется игра. Ниже = больше FPS и меньше нагрев; 720p — лучший баланс на AYN Odin 3. 900p и 828p (вместо 810p, которое не делится нацело) только для версии игры 1.11. Перезапустите игру, чтобы применить.	वह रेज़ोल्यूशन जिस पर गेम बनता है। कम = ज़्यादा FPS और कम गर्मी; AYN Odin 3 पर 720p सबसे अच्छा संतुलन है। 900p और 828p (810p की जगह, जो बराबर नहीं बंटता) केवल गेम संस्करण 1.11 में। लागू करने के लिए गेम फिर से शुरू करें।
++Teto de quadros por segundo. 60 é o padrão; 30 reduz bastante o aquecimento e o consumo de bateria. 40 coloca a tela em 120 Hz para que cada quadro dure exatamente 3 atualizações (fluido, sem trepidação); se a tela não tiver 120 Hz, fica irregular.	Frame-rate cap. 60 is the default; 30 greatly reduces heat and battery use. 40 switches the screen to 120 Hz so every frame lasts exactly 3 refreshes (smooth, no judder); without a 120 Hz screen it is uneven.	Límite de fotogramas por segundo. 60 es el predeterminado; 30 reduce mucho el calor y el consumo de batería. 40 pone la pantalla a 120 Hz para que cada fotograma dure exactamente 3 refrescos (fluido, sin tirones); sin pantalla de 120 Hz queda irregular.	Limite d'images par seconde. 60 par défaut ; 30 réduit fortement la chauffe et la consommation. 40 passe l'écran à 120 Hz pour que chaque image dure exactement 3 rafraîchissements (fluide, sans saccades) ; sans écran 120 Hz, c'est irrégulier.	Bildratenbegrenzung. 60 ist Standard; 30 senkt Wärme und Akkuverbrauch deutlich. 40 schaltet den Bildschirm auf 120 Hz, damit jedes Bild genau 3 Aktualisierungen dauert (flüssig, ohne Ruckeln); ohne 120-Hz-Bildschirm ist es ungleichmäßig.	Limite di fotogrammi al secondo. 60 è il predefinito; 30 riduce molto calore e consumo della batteria. 40 porta lo schermo a 120 Hz così ogni fotogramma dura esattamente 3 aggiornamenti (fluido, senza scatti); senza schermo a 120 Hz è irregolare.	Saniyedeki kare sınırı. Varsayılan 60; 30 ısınmayı ve pil tüketimini çok azaltır. 40 ekranı 120 Hz'e alır, böylece her kare tam 3 yenileme sürer (akıcı, takılmasız); 120 Hz ekran yoksa düzensiz olur.	Limit klatek na sekundę. 60 to domyślnie; 30 mocno zmniejsza nagrzewanie i zużycie baterii. 40 przełącza ekran na 120 Hz, aby każda klatka trwała dokładnie 3 odświeżenia (płynnie, bez szarpania); bez ekranu 120 Hz jest nierówno.	Ограничение кадров в секунду. 60 по умолчанию; 30 сильно снижает нагрев и расход батареи. 40 переводит экран в 120 Гц, чтобы каждый кадр длился ровно 3 обновления (плавно, без дрожания); без экрана 120 Гц будет неровно.	प्रति सेकंड फ़्रेम की सीमा। डिफ़ॉल्ट 60; 30 गर्मी और बैटरी खपत को काफ़ी घटाता है। 40 स्क्रीन को 120 Hz पर करता है ताकि हर फ़्रेम ठीक 3 रिफ़्रेश चले (सहज, बिना झटके); 120 Hz स्क्रीन न हो तो असमान रहेगा।
++Perfil de renderização (para otimização)	Render profile (for optimization)	Perfil de renderizado (para optimización)	Profil de rendu (pour optimisation)	Render-Profil (zur Optimierung)	Profilo di rendering (per ottimizzazione)	İşleme profili (optimizasyon için)	Profil renderowania (do optymalizacji)	Профилирование рендера (для оптимизации)	रेंडर प्रोफ़ाइल (ऑप्टिमाइज़ेशन के लिए)
++Grava no log quanto tempo de GPU cada etapa do quadro leva e onde a CPU espera. Jogue 2–3 minutos na cena que pesa, saia e exporte os logs. Custa alguns FPS: desligue depois. Reinicie o jogo para aplicar.	Logs how much GPU time each step of the frame takes and where the CPU waits. Play 2–3 minutes in the heavy scene, quit and export the logs. Costs a few FPS: turn it off afterwards. Restart the game to apply.	Registra cuánto tiempo de GPU tarda cada etapa del fotograma y dónde espera la CPU. Juega 2–3 minutos en la escena pesada, sal y exporta los registros. Cuesta algunos FPS: desactívalo después. Reinicia el juego para aplicar.	Enregistre le temps GPU de chaque étape de l'image et où le CPU attend. Jouez 2–3 minutes dans la scène lourde, quittez et exportez les journaux. Coûte quelques FPS : désactivez ensuite. Redémarrez le jeu pour appliquer.	Protokolliert, wie viel GPU-Zeit jeder Schritt des Bildes braucht und wo die CPU wartet. 2–3 Minuten in der schweren Szene spielen, beenden und Logs exportieren. Kostet einige FPS: danach ausschalten. Spiel zum Übernehmen neu starten.	Registra quanto tempo di GPU richiede ogni fase del fotogramma e dove la CPU attende. Gioca 2–3 minuti nella scena pesante, esci ed esporta i log. Costa qualche FPS: disattivalo dopo. Riavvia il gioco per applicare.	Karenin her adımının ne kadar GPU süresi aldığını ve CPU'nun nerede beklediğini kaydeder. Ağır sahnede 2–3 dakika oynayın, çıkın ve kayıtları dışa aktarın. Birkaç FPS'ye mal olur: sonra kapatın. Uygulamak için oyunu yeniden başlatın.	Zapisuje, ile czasu GPU zajmuje każdy etap klatki i gdzie CPU czeka. Zagraj 2–3 minuty w ciężkiej scenie, wyjdź i wyeksportuj logi. Kosztuje kilka FPS: potem wyłącz. Uruchom grę ponownie, aby zastosować.	Пишет в лог, сколько времени GPU занимает каждый этап кадра и где ждёт CPU. Поиграйте 2–3 минуты в тяжёлой сцене, выйдите и экспортируйте логи. Стоит несколько FPS: потом выключите. Перезапустите игру, чтобы применить.	लॉग में लिखता है कि फ़्रेम के हर चरण में कितना GPU समय लगता है और CPU कहाँ रुकता है। भारी दृश्य में 2–3 मिनट खेलें, बाहर निकलें और लॉग एक्सपोर्ट करें। कुछ FPS लगते हैं: बाद में बंद करें। लागू करने के लिए गेम फिर से शुरू करें।
++Salvar log desta sessão	Save this session's log	Guardar el registro de esta sesión	Enregistrer le journal de cette session	Log dieser Sitzung speichern	Salva il log di questa sessione	Bu oturumun kaydını kaydet	Zapisz log tej sesji	Сохранить лог этой сессии	इस सत्र का लॉग सहेजें
++Log salvo; ele entra na exportação de logs.	Log saved; it is included when you export the logs.	Registro guardado; se incluye al exportar los registros.	Journal enregistré ; il est inclus dans l'export des journaux.	Log gespeichert; er ist im Log-Export enthalten.	Log salvato; viene incluso nell'esportazione dei log.	Kayıt kaydedildi; kayıtları dışa aktarırken eklenir.	Log zapisany; trafi do eksportu logów.	Лог сохранён; он попадёт в экспорт логов.	लॉग सहेजा गया; यह लॉग एक्सपोर्ट में शामिल होगा।
+diff --git a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/AboutPanel.java b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/AboutPanel.java
+index e3def41..189a763 100644
+--- a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/AboutPanel.java
++++ b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/AboutPanel.java
+@@ -46,11 +46,12 @@ final class AboutPanel {
+     private LinearLayout build(Runnable logs,Runnable export){
+         LinearLayout root=column();
+         TextView title=text("THE LAST OF US REMASTERED",22,TEXT);title.setTypeface(Typeface.create("sans-serif-condensed",Typeface.BOLD));root.addView(title);
+-        String version="0.1.1";try{version=activity.getPackageManager().getPackageInfo(activity.getPackageName(),0).versionName;}catch(Exception ignored){}
++        String version="0.1.9";try{version=activity.getPackageManager().getPackageInfo(activity.getPackageName(),0).versionName;}catch(Exception ignored){}
+         TextView v=text(tr("Versão")+" "+version,13,ACCENT);v.setPadding(0,dp(6),0,dp(8));root.addView(v);
+         root.addView(text("Port para Android com runtime Bionic.",13,MUTED));
+         LinearLayout contact=card(root,"DESENVOLVIMENTO");
+-        row(contact,"Fork e modificações","erickmendes22 · Daedalus Emulator",null);
++        row(contact,"Este fork (AYN Odin 3)","royllll1999-hub",url("https://github.com/royllll1999-hub/tlou-remastered-android"));
++        row(contact,"Port original","erickmendes22 · Daedalus Emulator",null);
+         row(contact,"YouTube","@daedalusemulator",url("https://www.youtube.com/@daedalusemulator"));
+         LinearLayout projects=card(root,"PROJETOS");
+         row(projects,"Projeto Android","erickmendes22/tlou-remastered-android",url("https://github.com/erickmendes22/tlou-remastered-android"));
+diff --git a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/GameActivity.java b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/GameActivity.java
+index e7d83d4..2316700 100644
+--- a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/GameActivity.java
++++ b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/GameActivity.java
+@@ -88,6 +88,29 @@ public final class GameActivity extends Activity {
+         }
+     }
+ 
++    /** 40 FPS mode: ask for the screen's 120 Hz mode, where a 40 FPS frame is exactly three
++     *  refreshes (at 60 Hz it would alternate one and two, which judders). */
++    private void requestHighRefresh() {
++        if(!"40".equals(PortSettings.fpsLimit(this)))return;
++        android.view.Display display=getWindowManager().getDefaultDisplay();
++        android.view.Display.Mode current=display.getMode(), best=null;
++        for(android.view.Display.Mode mode:display.getSupportedModes()) {
++            if(mode.getPhysicalWidth()!=current.getPhysicalWidth()||
++               mode.getPhysicalHeight()!=current.getPhysicalHeight())continue;
++            float hz=mode.getRefreshRate();
++            if(Math.abs(hz-120f)<1f){best=mode;break;}
++        }
++        if(best==null) {
++            RunLog.write(this,"40 FPS: a tela não oferece 120 Hz; ritmo de 60 Hz");
++            return;
++        }
++        WindowManager.LayoutParams attrs=getWindow().getAttributes();
++        attrs.preferredDisplayModeId=best.getModeId();
++        attrs.preferredRefreshRate=best.getRefreshRate();
++        getWindow().setAttributes(attrs);
++        RunLog.write(this,"40 FPS: modo de tela "+best.getModeId()+" a "+Math.round(best.getRefreshRate())+" Hz");
++    }
++
+     private void initialize() throws Exception {
+         File logDir=new File(getFilesDir(),"tlou");
+         if(!logDir.isDirectory()&&!logDir.mkdirs())throw new java.io.IOException("Falha ao criar pasta dos logs");
+@@ -96,6 +119,7 @@ public final class GameActivity extends Activity {
+         try(FileOutputStream out=new FileOutputStream(logFile)){out.write("TLOU runtime: aguardando inicialização do processo\n".getBytes(StandardCharsets.UTF_8));}
+         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
++        requestHighRefresh();
+         prepared=getIntent().getStringExtra("prepared_path");
+         if (prepared==null) throw new IllegalStateException("Caminho preparado não informado");
+         RunLog.write(this,"Pasta preparada: "+prepared);
+@@ -200,10 +224,12 @@ public final class GameActivity extends Activity {
+         });
+     }
+ 
++    private final java.util.concurrent.atomic.AtomicBoolean crashArchived=new java.util.concurrent.atomic.AtomicBoolean();
+     private void error(String message) {
+         // Keep the technical reason in the local diagnostic archive. Never
+         // display a stack trace, private storage path or the raw log in-game.
+         RunLog.write(this,"ERRO: "+message);
++        if(crashArchived.compareAndSet(false,true))RunLog.archiveCrash(this,message);
+         handler.post(()->{
+             if(isFinishing()||isDestroyed()||closing.get())return;
+             GameFailureMessage reason=GameFailureMessage.classify(message,tailLog());
+diff --git a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/MainActivity.java b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/MainActivity.java
+index a4c7922..82f0859 100644
+--- a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/MainActivity.java
++++ b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/MainActivity.java
+@@ -218,10 +218,11 @@ public final class MainActivity extends Activity {
+         LinearLayout root=column();root.setPadding(dp(18),dp(18),dp(18),dp(22));
+         scroll.addView(root);
+         LinearLayout header=new LinearLayout(this);header.setGravity(Gravity.CENTER_VERTICAL);
+-        TextView brand=text("DAEDALUS  /  ANDROID",12,ACCENT);brand.setLetterSpacing(.14f);
++        // This build's fork (the original port's credits stay in Sobre).
++        TextView brand=text("Fork de royllll1999-hub · AYN Odin 3",12,ACCENT);brand.setLetterSpacing(.06f);
+         header.addView(brand,new LinearLayout.LayoutParams(0,-2,1));
+         TextView version=text("v"+TlouDialogs.version(this),13,ACCENT);
+-        version.setGravity(Gravity.RIGHT);header.addView(version,new LinearLayout.LayoutParams(dp(60),-2));
++        version.setGravity(Gravity.RIGHT);header.addView(version,new LinearLayout.LayoutParams(dp(72),-2));
+         root.addView(header);
+         if(currentTab.equals("home")) {
+             // The hero is bundled with the APK: shown immediately and offline,
+@@ -284,31 +285,36 @@ public final class MainActivity extends Activity {
+         } else if(currentTab.equals("graphics")) {
+             LinearLayout image=card(root,"RESOLUÇÃO E IMAGEM");
+             choiceRow(image,"resolution","Resolução interna",
+-                "Resolução em que o jogo é desenhado. Menor = mais FPS e menos calor; 720p é o melhor equilíbrio no AYN Odin 3. Reinicie o jogo para aplicar.",
+-                new String[]{"Original (1080p)","1280 × 720","960 × 540","640 × 360"},
+-                new String[]{"original","720","540","360"},"original");
++                "Resolução em que o jogo é desenhado. Menor = mais FPS e menos calor; 720p é o melhor equilíbrio no AYN Odin 3. 900p e 828p (no lugar de 810p, que não divide por igual) só na versão 1.11 do jogo. Reinicie o jogo para aplicar.",
++                new String[]{"Original (1080p)","1600 × 900 (1.11)","1472 × 828 (1.11)","1280 × 720","960 × 540","640 × 360"},
++                new String[]{"original","900","828","720","540","360"},"original");
+             divider(image);
+             screenChoice(image);
+             hint(image,"Ajustar mantém a proporção 16:9 com faixas pretas; Preencher estica a imagem para a tela inteira.");
+             divider(image);
+             option(image,"hair_dma","Iluminação correta de cabelo e barba (experimental)",
+                 "Corrige cabelo e barba dourados em cenas escuras: os shaders deles leem as sombras do sol direto da memória do jogo, como no port para PC. Pode custar alguns FPS. Na primeira vez os shaders são preparados de novo (alguns travamentos curtos nos primeiros minutos). Reinicie o jogo para aplicar.",false);
+-            LinearLayout fsr=card(root,"AMD FSR 1.0");
+-            option(fsr,"fsr","Ativar AMD FSR 1.0",
++            LinearLayout fsr=card(root,"AMPLIAÇÃO (FSR / SGSR)");
++            option(fsr,"fsr","Ativar ampliação da imagem",
+                 "Melhora a nitidez da imagem quando o jogo roda abaixo da resolução da tela.",false);
+             divider(fsr);
++            choiceRow(fsr,"upscaler","Método de ampliação",
++                "AMD FSR 1.0: duas passadas (ampliação + nitidez RCAS ajustável). Snapdragon GSR: uma passada feita para GPUs Adreno, com nitidez própria; costuma custar menos GPU. Reinicie o jogo para aplicar.",
++                new String[]{"AMD FSR 1.0","Snapdragon GSR"},
++                new String[]{"fsr","sgsr"},"fsr");
++            divider(fsr);
+             choiceRow(fsr,"fsr_sharpness","Nitidez do FSR",
+                 "Força do filtro de nitidez (RCAS). Suave deixa a imagem mais macia; Forte, mais definida.",
+                 new String[]{"Suave","Média","Forte"},
+                 new String[]{"50","75","90"},"75");
+-            hint(fsr,"Como ativar: ligue a opção acima, escolha 720p, 540p ou 360p em Resolução interna e reinicie o jogo.");
++            hint(fsr,"Como ativar: ligue a opção acima, escolha uma resolução abaixo de 1080p em Resolução interna e reinicie o jogo.");
+             hint(fsr,"Como desativar: desligue a opção acima e reinicie o jogo. A imagem volta à exibição original.");
+-            hint(fsr,"Em 1080p (Original) o FSR só aumenta a nitidez.");
++            hint(fsr,"Em 1080p (Original) só a nitidez RCAS é aplicada (também com Snapdragon GSR).");
+             LinearLayout pacing=card(root,"FPS E SINCRONIZAÇÃO");
+             choiceRow(pacing,"fps_limit","Limite de FPS",
+-                "Teto de quadros por segundo. 60 é o padrão; 30 reduz bastante o aquecimento e o consumo de bateria.",
+-                new String[]{"30 FPS","60 FPS"},
+-                new String[]{"30","60"},"60");
++                "Teto de quadros por segundo. 60 é o padrão; 30 reduz bastante o aquecimento e o consumo de bateria. 40 coloca a tela em 120 Hz para que cada quadro dure exatamente 3 atualizações (fluido, sem trepidação); se a tela não tiver 120 Hz, fica irregular.",
++                new String[]{"30 FPS","40 FPS (tela 120 Hz)","60 FPS"},
++                new String[]{"30","40","60"},"60");
+             divider(pacing);
+             option(pacing,"vsync","VSync",
+                 "Sincroniza os quadros com a tela para evitar imagem cortada (tearing). Recomendado ligado.",true);
+@@ -344,7 +350,7 @@ public final class MainActivity extends Activity {
+                 SharedPreferences.Editor edit=prefs.edit().putString("resolution","original");
+                 for(String key:PortSettings.EFFECTS)edit.putBoolean(key,false);
+                 edit.putBoolean("fps_unlock",false);
+-                edit.putBoolean("fsr",false).putString("fsr_sharpness","75");
++                edit.putBoolean("fsr",false).putString("fsr_sharpness","75").putString("upscaler","fsr");
+                 edit.apply();buildHome();
+             });
+         } else if(currentTab.equals("performance")) {
+@@ -381,6 +387,9 @@ public final class MainActivity extends Activity {
+             LinearLayout diagnostics=card(root,"DIAGNÓSTICO");
+             option(diagnostics,"shader_scan_scalar","Diagnóstico CPU: usar busca original (A/B)",
+                 "Desligado = NEON; ligado = original. Reinicie o jogo entre os testes e exporte os logs.",false);
++            divider(diagnostics);
++            option(diagnostics,"render_profile","Perfil de renderização (para otimização)",
++                "Grava no log quanto tempo de GPU cada etapa do quadro leva e onde a CPU espera. Jogue 2–3 minutos na cena que pesa, saia e exporte os logs. Custa alguns FPS: desligue depois. Reinicie o jogo para aplicar.",false);
+             hint(diagnostics,"Modo Unificado padrão: jogo, interface e mira na mesma resolução. Vídeos mantêm a decodificação original.");
+             hint(diagnostics,"Sincronização da geometria: Completo (único modo). "
+                 +"Correção de deformações mantida sem opções que não melhoraram o FPS.");
+diff --git a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortMenu.java b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortMenu.java
+index b020615..3e42585 100644
+--- a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortMenu.java
++++ b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortMenu.java
+@@ -199,7 +199,7 @@ final class PortMenu {
+                 row("Vídeo e tela",()->go("video"));
+                 screenMode(); // separate one-tap fit and fill actions in the main in-game menu
+                 row("Patches",()->go("patches"));
+-                row("AMD FSR 1.0",()->go("fsr"));
++                row("Ampliação (FSR / SGSR)",()->go("fsr"));
+                 row("Idioma e interface",()->go("settings"));
+                 row("Controles e HUD",()->go("hud"));
+                 row("Sensores de movimento",()->go("motion"));
+@@ -208,6 +208,10 @@ final class PortMenu {
+                     row("Saves",()->go("saves"));
+                 }
+                 if(inGame)row("Diagnóstico de sombras",()->go("shadows"));
++                if(inGame)row("Salvar log desta sessão",()->{
++                    RunLog.archiveCrash(activity,"salvo pelo menu do jogo");
++                    Toast.makeText(activity,tr("Log salvo; ele entra na exportação de logs."),Toast.LENGTH_LONG).show();
++                });
+                 row("Sobre",()->go("about"));
+                 action("Voltar ao launcher",actions::exitGame);
+                 action("Sair do aplicativo",actions::quitApp);
+@@ -215,11 +219,11 @@ final class PortMenu {
+             case "video":
+                 heading("VÍDEO E TELA");
+                 choice("resolution","Resolução interna",
+-                    new String[]{"Original (1080p)","1280 × 720","960 × 540","640 × 360"},
+-                    new String[]{"original","720","540","360"},"original");
++                    new String[]{"Original (1080p)","1600 × 900 (1.11)","1472 × 828 (1.11)","1280 × 720","960 × 540","640 × 360"},
++                    new String[]{"original","900","828","720","540","360"},"original");
+                 choice("fps_limit","Limite de FPS",
+-                    new String[]{"30 FPS","60 FPS"},
+-                    new String[]{"30","60"},"60");
++                    new String[]{"30 FPS","40 FPS (tela 120 Hz)","60 FPS"},
++                    new String[]{"30","40","60"},"60");
+                 if(prefs.getBoolean("fps_unlock",false))
+                     note("Desbloqueio até 120 FPS ativo: VSync OFF nesta sessão; reinicie após alterar.");
+                 else
+@@ -229,15 +233,18 @@ final class PortMenu {
+                      +"Preserva a correção das deformações.");
+                 break;
+             case "fsr":
+-                heading("AMD FSR 1.0");
++                heading("AMPLIAÇÃO (FSR / SGSR)");
+                 note("Melhora a nitidez da imagem quando o jogo roda abaixo da resolução da tela.");
+-                toggle("fsr","Ativar AMD FSR 1.0",false);
++                toggle("fsr","Ativar ampliação da imagem",false);
++                choice("upscaler","Método de ampliação",
++                    new String[]{"AMD FSR 1.0","Snapdragon GSR"},
++                    new String[]{"fsr","sgsr"},"fsr");
+                 choice("fsr_sharpness","Nitidez do FSR",
+                     new String[]{"Suave","Média","Forte"},
+                     new String[]{"50","75","90"},"75");
+-                note("Como ativar: ligue a opção acima, escolha 720p, 540p ou 360p em Resolução interna e reinicie o jogo.");
++                note("Como ativar: ligue a opção acima, escolha uma resolução abaixo de 1080p em Resolução interna e reinicie o jogo.");
+                 note("Como desativar: desligue a opção acima e reinicie o jogo. A imagem volta à exibição original.");
+-                note("Em 1080p (Original) o FSR só aumenta a nitidez.");
++                note("Em 1080p (Original) só a nitidez RCAS é aplicada (também com Snapdragon GSR).");
+                 break;
+             case "patches":
+                 heading("PATCHES");
+@@ -257,7 +264,7 @@ final class PortMenu {
+                     SharedPreferences.Editor e=prefs.edit().putString("resolution","original");
+                     for(String key:PortSettings.EFFECTS)e.putBoolean(key,false);
+                     e.putBoolean("fps_unlock",false);
+-                    e.putBoolean("fsr",false).putString("fsr_sharpness","75");
++                    e.putBoolean("fsr",false).putString("fsr_sharpness","75").putString("upscaler","fsr");
+                     e.apply();actions.changed();render();
+                 });
+                 break;
+diff --git a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortSettings.java b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortSettings.java
+index 5a350ee..086e0dc 100644
+--- a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortSettings.java
++++ b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortSettings.java
+@@ -28,7 +28,7 @@ final class PortSettings {
+             "hud_gpu","hud_cpu",
+             "compute_wait_fast","relaxed_skinning_fp"}) edit.remove(key);
+         String limit=prefs(context).getString("fps_limit","60");
+-        if(!"30".equals(limit) && !"60".equals(limit))edit.putString("fps_limit","60");
++        if(!"30".equals(limit) && !"40".equals(limit) && !"60".equals(limit))edit.putString("fps_limit","60");
+         // Preserve an explicit old OFF preference while making Auto the default
+         // for users who had the original always-visible default enabled.
+         if(prefs(context).contains("touch_visible") &&
+@@ -70,8 +70,7 @@ final class PortSettings {
+         String resolution=p.getString("resolution","original");
+         // The proven unified path is mandatory: no legacy proxy/composite mode.
+         // Keep the original movie decoder, scale scene/HUD/aim as one domain.
+-        final String scaledPreset=resolution.equals("720")?"1":
+-            resolution.equals("540")?"3":resolution.equals("360")?"4":null;
++        final String actualSize=sceneSize(resolution);
+         env.put("TLOU_EXPECT_SCENE_SIZE","1920x1080");
+         env.put("GOW3_UPSCALER","off");
+         env.put("GOW3_OUTPUT_RES","1920x1080");
+@@ -79,9 +78,7 @@ final class PortSettings {
+         env.remove("GOW3_UPSCALE_PRESET");
+         env.remove("TLOU_SPATIAL_SCENE");
+         env.remove("TLOU_HOST_SCENE_MODE");
+-        if(scaledPreset!=null) {
+-            final String actualSize=resolution.equals("720")?"1280x720":
+-                resolution.equals("540")?"960x540":"640x360";
++        if(actualSize!=null) {
+             env.put("TLOU_UNIFIED_GUEST_UI","1");
+             env.put("TLOU_EXPECT_SCENE_SIZE",actualSize);
+             env.put("TLOU_EXPECT_HOST_SCENE",actualSize);
+@@ -95,6 +92,10 @@ final class PortSettings {
+         // AMD FSR 1.0 (spatial EASU + RCAS) in the presenter, opt-in. Below the
+         // screen size EASU upscales the game's image; at the same size only
+         // RCAS sharpens. Temporal upscalers stay off (see GameActivity).
++        // Upscaler for the same switch: FSR 1 (EASU+RCAS) or Snapdragon GSR 1 (one pass).
++        if(p.getBoolean("fsr",false)&&"sgsr".equals(p.getString("upscaler","fsr")))
++            env.put("GOW3_SPATIAL_UPSCALER","sgsr");
++        else env.remove("GOW3_SPATIAL_UPSCALER");
+         if(p.getBoolean("fsr",false)) {
+             env.put("GOW3_ANDROID_FSR","1");
+             env.put("GOW3_FSR1","1");
+@@ -241,6 +242,15 @@ final class PortSettings {
+         // choice remains untouched for regular capped launches.
+         env.put("GOW3_VSYNC",unlocked?"0":p.getBoolean("vsync",true)?"1":"0");
+         env.put("GOW3_FPS_LIMIT",fpsLimit(context));
++        // Render profile (Performance > Diagnostics): per-pass GPU timestamps and the CPU-side
++        // frame stats in runtime.log, to find what to optimize next.
++        if(p.getBoolean("render_profile",false)) {
++            env.put("GOW3_GPU_PROFILE","1");
++            env.put("GOW3_FRAME_STATS","1");
++        } else {
++            env.remove("GOW3_GPU_PROFILE");
++            env.remove("GOW3_FRAME_STATS");
++        }
+     }
+ 
+     static String experimentReport(Context context,Map<String,String> env) {
+@@ -264,7 +274,8 @@ final class PortSettings {
+                       env.containsKey("TLOU_SPATIAL_SCENE")?"proxy-spatial-compat":"native");
+         result.append("; spatial-fsr=")
+               .append(env.containsKey("GOW3_ANDROID_FSR")
+-                      ?"fsr1 rcas="+env.getOrDefault("GOW3_RCAS_STRENGTH","75"):"off");
++                      ?(env.containsKey("GOW3_SPATIAL_UPSCALER")?"sgsr1":"fsr1")
++                       +" rcas="+env.getOrDefault("GOW3_RCAS_STRENGTH","75"):"off");
+         result.append("; temporal-fsr=off");
+         result.append("; frames-in-flight=").append(env.getOrDefault("GOW3_FRAMES_IN_FLIGHT","0"));
+         result.append("; geometry-sync=full");
+@@ -283,6 +294,7 @@ final class PortSettings {
+         result.append("; gpu-thread-priority=").append(prefs(context).getBoolean("gpu_thread_priority",true)?"above":"normal");
+         result.append("; tso=").append(prefs(context).getBoolean("fex_no_tso",false)?"OFF":"on");
+         result.append("; pause=").append(prefs(context).getBoolean("pause_wfe",false)?"wfe":"yield");
++        result.append("; render-profile=").append(prefs(context).getBoolean("render_profile",false)?"on":"off");
+         result.append("; job-wake=").append(prefs(context).getBoolean("job_wake",true)?"fast":"off");
+         return result.toString();
+     }
+@@ -294,13 +306,26 @@ final class PortSettings {
+ 
+     static String fpsLimit(Context context) {
+         if(prefs(context).getBoolean("fps_unlock",false))return "120";
+-        return "30".equals(prefs(context).getString("fps_limit","60"))?"30":"60";
++        String limit=prefs(context).getString("fps_limit","60");
++        return "30".equals(limit)||"40".equals(limit)?limit:"60";
++    }
++    /** The game's image for a reduced resolution, null for Original (1080p). 900p and 828p
++     *  (in place of 810p, whose halves are not whole) exist only for 01.11. */
++    static String sceneSize(String resolution) {
++        switch(resolution) {
++            case "900": return "1600x900";
++            case "828": return "1472x828";
++            case "720": return "1280x720";
++            case "540": return "960x540";
++            case "360": return "640x360";
++            default: return null;
++        }
+     }
+     static String summary(Context context) {
+         SharedPreferences p=prefs(context);
+         String r=p.getString("resolution","original"), limit=fpsLimit(context);
+         String res=r.equals("original")?"Original":r+"p";
+-        if(p.getBoolean("fsr",false))res+=" + FSR";
++        if(p.getBoolean("fsr",false))res+="sgsr".equals(p.getString("upscaler","fsr"))?" + SGSR":" + FSR";
+         return res+"  ·  "+(limit+" FPS")+"  ·  "+
+             (p.getBoolean("fps_unlock",false)?"VSync OFF (desbloqueio)":
+              p.getBoolean("vsync",true)?"VSync ON":"VSync OFF");
+diff --git a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/RunLog.java b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/RunLog.java
+index 17aeb12..fd49a75 100644
+--- a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/RunLog.java
++++ b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/RunLog.java
+@@ -4,6 +4,7 @@ import android.app.ActivityManager;
+ import android.app.ApplicationExitInfo;
+ import android.content.Context;
+ import android.os.Build;
++import java.nio.file.Files;
+ import java.io.*;
+ import java.nio.charset.StandardCharsets;
+ import java.util.Date;
+@@ -39,6 +40,33 @@ final class RunLog {
+         return "INICIALIZAÇÃO\n"+tail(launch(c),10000)+"\n\nRUNTIME\n"+tail(runtime(c),10000)+
+             "\n\nINSTALAÇÃO / PREPARAÇÃO\n"+tail(new File(c.getFilesDir(),"installation.log"),5000);
+     }
++    /** Crashed runs, kept with their date (runtime.log keeps only this run and the one before). */
++    static File crashes(Context c) { return new File(c.getFilesDir(),"tlou/crashes"); }
++    static final int KEPT_CRASHES=6;
++    /** Copies this run's launch and runtime logs to tlou/crashes/crash-<date>-*.log, keeping the
++     *  newest KEPT_CRASHES runs. */
++    static synchronized void archiveCrash(Context c,String reason) {
++        File dir=crashes(c);
++        if(!dir.isDirectory()&&!dir.mkdirs())return;
++        String stamp=new java.text.SimpleDateFormat("yyyy-MM-dd_HH-mm-ss",java.util.Locale.US).format(new Date());
++        try {
++            copyTail(runtime(c),new File(dir,"crash-"+stamp+"-runtime.log"),null);
++            copyTail(launch(c),new File(dir,"crash-"+stamp+"-launch.log"),"Motivo: "+reason+"\n\n");
++        } catch(IOException e) { android.util.Log.e("TLOU","Cannot archive crash log",e); }
++        File[] files=dir.listFiles((d,name)->name.startsWith("crash-"));
++        if(files==null)return;
++        java.util.Arrays.sort(files,(a,b)->b.getName().compareTo(a.getName()));
++        for(int i=KEPT_CRASHES*2;i<files.length;i++)files[i].delete();
++        write(c,"Log da falha salvo: crash-"+stamp);
++    }
++    private static void copyTail(File from,File to,String header) throws IOException {
++        if(!from.isFile())return;
++        try(RandomAccessFile in=new RandomAccessFile(from,"r");FileOutputStream out=new FileOutputStream(to)) {
++            if(header!=null)out.write(header.getBytes(StandardCharsets.UTF_8));
++            in.seek(Math.max(0,in.length()-4L*1024*1024));
++            byte[] bytes=new byte[65536];int n;while((n=in.read(bytes))!=-1)out.write(bytes,0,n);
++        }
++    }
+     static void export(Context c,OutputStream output) throws IOException {
+         try(ZipOutputStream zip=new ZipOutputStream(output)) {
+             for(String path:new String[]{"launch.log","launch-previous.log","tlou/runtime.log","tlou/runtime-previous.log","installation.log","tlou-prepared/device-ready.json","tlou/perf-cs-22e6e19e.bin","tlou/perf-cs-61d67259.bin"}) {
+@@ -49,6 +77,15 @@ final class RunLog {
+                 }
+                 zip.closeEntry();
+             }
++            File[] crashed=crashes(c).listFiles((d,name)->name.startsWith("crash-"));
++            if(crashed!=null) {
++                java.util.Arrays.sort(crashed);
++                for(File file:crashed) {
++                    zip.putNextEntry(new ZipEntry("tlou/crashes/"+file.getName()));
++                    Files.copy(file.toPath(),zip);
++                    zip.closeEntry();
++                }
++            }
+             zip.putNextEntry(new ZipEntry("android-process-exits.txt"));
+             try {
+                 ActivityManager manager=(ActivityManager)c.getSystemService(Context.ACTIVITY_SERVICE);
+diff --git a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/TlouDialogs.java b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/TlouDialogs.java
+index a4d806b..8339617 100644
+--- a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/TlouDialogs.java
++++ b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/TlouDialogs.java
+@@ -32,7 +32,7 @@ final class TlouDialogs {
+         try {
+             return activity.getPackageManager().getPackageInfo(activity.getPackageName(),0).versionName;
+         } catch(Exception ignored) {
+-            return "0.1.1";
++            return "0.1.9";
+         }
+     }
+     static int dp(Context c,int value) {
+@@ -104,7 +104,7 @@ final class TlouDialogs {
+         TextView title=text(activity,"TLOU — logs",20,INK);
+         title.setTypeface(Typeface.create("sans-serif-condensed",Typeface.BOLD));
+         panel.addView(title);
+-        TextView subtitle=text(activity,"DAEDALUS / ANDROID  •  v"+version(activity),11,OLIVE);
++        TextView subtitle=text(activity,"Fork royllll1999-hub  •  v"+version(activity),11,OLIVE);
+         subtitle.setLetterSpacing(.08f);
+         subtitle.setPadding(0,dp(activity,6),0,dp(activity,12));
+         panel.addView(subtitle);
+diff --git a/android/tests/test_tlou_release_011.py b/android/tests/test_tlou_release_011.py
+index d627d1e..d5cc932 100644
+--- a/android/tests/test_tlou_release_011.py
++++ b/android/tests/test_tlou_release_011.py
+@@ -11,10 +11,13 @@ class Release011(unittest.TestCase):
+         build=(ANDROID/"build.gradle").read_text()
+         main=(JAVA/"MainActivity.java").read_text()
+         about=(JAVA/"AboutPanel.java").read_text()
+-        self.assertIn("versionName '0.1.1'",build)
+-        self.assertIn("versionCode 41",build)
++        # The fork's own releases (v0.1.9-odin3 onwards) show their number in the launcher.
++        self.assertIn("versionName '0.1.9'",build)
++        self.assertIn("versionCode 49",build)
+         self.assertIn('text("v"+TlouDialogs.version(this)',main)
+-        self.assertIn('String version="0.1.1"',about)
++        self.assertIn('String version="0.1.9"',about)
++        self.assertIn('"royllll1999-hub"',about)
++        self.assertNotIn('DAEDALUS  /  ANDROID',main)
+         self.assertIn('artFrame.addView(artVersion,artBadge)',main)
+         self.assertNotIn('text("v0.1",',main)
+ 
+diff --git a/android/tests/test_tlou_release_019.py b/android/tests/test_tlou_release_019.py
+new file mode 100644
+index 0000000..3241c08
+--- /dev/null
++++ b/android/tests/test_tlou_release_019.py
+@@ -0,0 +1,93 @@
++"""Release 0.1.9: 900p/828p (01.11), SGSR, 40 FPS at 120 Hz, crash logs, render profile."""
++from pathlib import Path
++import struct
++import sys
++import unittest
++
++ROOT = Path(__file__).resolve().parents[2]
++sys.path.insert(0, str(ROOT / "android"))
++import tlou_patches as patches  # noqa: E402
++
++JAVA = ROOT / "android-launcher/app/src/main/java/ro/cobrabm/fexdroid"
++GPU = ROOT / "gow3_pc/gpu"
++KNOWN = "3cfa475f88ca68485b6b9230e62b84e195cdbe19e6f7295c110b8dcf8f20884e"
++
++
++class Release019(unittest.TestCase):
++    def test_900p_and_828p_are_whole_111_profiles(self):
++        self.assertEqual(patches.LOW_RES_SCENE_111["900"], (1600, 900))
++        self.assertEqual(patches.LOW_RES_SCENE_111["828"], (1472, 828))
++        for name in ("900", "828"):
++            width, height = patches.LOW_RES_SCENE_111[name]
++            # Quarter and half sizes the patched tables hold must be whole.
++            self.assertEqual(width % 8, 0)
++            self.assertEqual(height % 4, 0)
++            self.assertEqual(height % 2, 0)
++            changes = patches.selected_options({"resolution": name}, "01.11", KNOWN)["resolution-" + name]
++            self.assertEqual({a for a, _, _ in changes}, set(patches.RESOLUTION_111_GUARDS))
++            by_addr = {a: bytes.fromhex(after) for a, _, after in changes}
++            self.assertEqual(struct.unpack("<4I", by_addr[0x116BF10]),
++                             (width, height, width // 8, height // 4))
++            self.assertEqual(by_addr[0xAD47E7],
++                             b"\xb9" + struct.pack("<I", width // 2) + b"\x41\xb8" + struct.pack("<I", height // 2))
++        # 810p would not divide: 810 / 4 = 202.5.
++        self.assertNotEqual(810 % 4, 0)
++
++    def test_111_only_resolutions_are_refused_on_100(self):
++        for name in ("900", "828"):
++            with self.assertRaisesRegex(ValueError, "01.11"):
++                patches.selected_options({"resolution": name}, "01.00")
++        self.assertNotIn("900", patches.LOW_RES_SCENE)
++        source = (ROOT / "android/tlou_patches.py").read_text()
++        self.assertIn("900p e 828p existem somente na versão 01.11; usando Original", source)
++
++    def test_launcher_offers_the_new_resolutions_and_scene_sizes(self):
++        settings = (JAVA / "PortSettings.java").read_text()
++        self.assertIn('case "900": return "1600x900";', settings)
++        self.assertIn('case "828": return "1472x828";', settings)
++        for name in ("MainActivity.java", "PortMenu.java"):
++            text = (JAVA / name).read_text()
++            self.assertIn('new String[]{"original","900","828","720","540","360"}', text)
++            self.assertIn('new String[]{"30","40","60"}', text)
++            self.assertIn('new String[]{"fsr","sgsr"}', text)
++
++    def test_sgsr_pass_is_built_and_selected(self):
++        cmake = (GPU / "CMakeLists.txt").read_text()
++        self.assertIn("add_host_shader(sgsr.comp sgsr_comp)", cmake)
++        shader = (GPU / "shadps4/video_core/host_shaders/sgsr.comp").read_text()
++        self.assertIn("SPDX-License-Identifier: BSD-3-Clause", shader)
++        self.assertIn("layout(local_size_x = 16, local_size_y = 16) in;", shader)
++        self.assertIn("rgba16f", shader)
++        fsr = (GPU / "shadps4/video_core/renderer_vulkan/host_passes/fsr_pass.cpp").read_text()
++        self.assertIn('#include "video_core/host_shaders/sgsr_comp.h"', fsr)
++        self.assertIn("sgsr ? sgsr_pipeline.get() : easu_pipeline.get()", fsr)
++        presenter = (GPU / "shadps4/video_core/renderer_vulkan/vk_presenter.cpp").read_text()
++        self.assertIn('std::getenv("GOW3_SPATIAL_UPSCALER")', presenter)
++        settings = (JAVA / "PortSettings.java").read_text()
++        self.assertIn('env.put("GOW3_SPATIAL_UPSCALER","sgsr");', settings)
++        # GOW3_UPSCALER stays the (off) temporal upscaler switch.
++        self.assertIn('env.put("GOW3_UPSCALER","off");', settings)
++
++    def test_40_fps_requests_120_hz(self):
++        settings = (JAVA / "PortSettings.java").read_text()
++        self.assertIn('return "30".equals(limit)||"40".equals(limit)?limit:"60";', settings)
++        game = (JAVA / "GameActivity.java").read_text()
++        self.assertIn("requestHighRefresh();", game)
++        self.assertIn("attrs.preferredDisplayModeId=best.getModeId();", game)
++
++    def test_crashed_runs_keep_dated_logs_in_the_export(self):
++        log = (JAVA / "RunLog.java").read_text()
++        self.assertIn('"yyyy-MM-dd_HH-mm-ss"', log)
++        self.assertIn('zip.putNextEntry(new ZipEntry("tlou/crashes/"+file.getName()));', log)
++        game = (JAVA / "GameActivity.java").read_text()
++        self.assertIn("RunLog.archiveCrash(this,message);", game)
++        self.assertIn('RunLog.archiveCrash(activity,"salvo pelo menu do jogo");', (JAVA / "PortMenu.java").read_text())
++
++    def test_render_profile_switch(self):
++        settings = (JAVA / "PortSettings.java").read_text()
++        self.assertIn('env.put("GOW3_GPU_PROFILE","1");', settings)
++        self.assertIn('env.put("GOW3_FRAME_STATS","1");', settings)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/android/tlou_patches.py b/android/tlou_patches.py
+index 6ab480c..b2825eb 100644
+--- a/android/tlou_patches.py
++++ b/android/tlou_patches.py
+@@ -369,6 +369,11 @@ PERFORMANCE_RESOLUTIONS = {
+ # This profile does NOT modify video content, movie decoder, codecs or source
+ # frame dimensions. The video path may still present a native-size frame.
+ LOW_RES_SCENE = {"720": (1280, 720), "540": (960, 540), "360": (640, 360)}
++# 01.11 only (its profile takes any size; the 01.00 table above is per resolution):
++# 1600x900 and 1472x828. 828p stands in for 810p, whose quarter height (202.5) and
++# half height (405) are not whole numbers; 1472x828 keeps 16:9 and even halves.
++LOW_RES_SCENE_111 = {"900": (1600, 900), "828": (1472, 828), **LOW_RES_SCENE}
++RESOLUTIONS_111_ONLY = frozenset(LOW_RES_SCENE_111) - frozenset(LOW_RES_SCENE)
+ # 01.11 verified from the user's original 24,220,371-byte CUSA00552 SELF.
+ # The previous 01.00 32-site table is NOT reused here. The newer executable
+ # stores dimensions in screeninfo.cfg defaults and a preset selector at
+@@ -397,7 +402,7 @@ RESOLUTION_111_GUARDS = {
+ 
+ def scene_aim_resolution_patches_111(resolution):
+     """Version-guarded 01.11 scene/HUD/post targets; keep video sources native."""
+-    width, height = LOW_RES_SCENE[resolution]
++    width, height = LOW_RES_SCENE_111[resolution]
+     u32 = lambda n: struct.pack("<I", n)
+     # Skip the old preset lookup entirely (its smallest preset is 1920x1080).
+     # mov eax,width; mov ecx,height; jmp 0xAB062A (original field stores and
+@@ -492,10 +497,12 @@ def selected_options(options, profile="01.00", self_sha=None):
+     if not isinstance(options, dict):
+         raise ValueError("Configuração de patches inválida")
+     resolution = options.get("resolution", "original")
+-    if not isinstance(resolution, str) or resolution not in {"original", "720", "540", "360"}:
++    if not isinstance(resolution, str) or resolution not in {"original", *LOW_RES_SCENE_111}:
+         raise ValueError("Resolução não suportada")
+     selected = {}
+     if resolution != "original":
++        if profile == "01.00" and resolution in RESOLUTIONS_111_ONLY:
++            raise ValueError("Resolução disponível somente na versão 01.11")
+         if profile == "01.00":
+             selected["resolution-" + resolution] = scene_aim_resolution_patches(resolution)
+         elif profile == "01.11" and self_sha in RESOLUTION_111_SELF_SHA256:
+@@ -554,6 +561,9 @@ def write_selected(source, prepared, options):
+             effective.get("resolution", "original") != "original"):
+         print("Aviso: resolução reduzida sem assinatura validada nesta variante do eboot 01.11; usando Original.", flush=True)
+         effective["resolution"] = "original"
++    if profile == "01.00" and effective.get("resolution", "original") in RESOLUTIONS_111_ONLY:
++        print("Aviso: 900p e 828p existem somente na versão 01.11; usando Original.", flush=True)
++        effective["resolution"] = "original"
+     requested = selected_options(effective, profile, digest)
+     spec = importlib.util.spec_from_file_location("tlou_patch_writer", source / "tools/probe_tlou.py")
+     module = importlib.util.module_from_spec(spec)
+diff --git a/gow3_pc/gpu/CMakeLists.txt b/gow3_pc/gpu/CMakeLists.txt
+index 91834a5..317eb35 100644
+--- a/gow3_pc/gpu/CMakeLists.txt
++++ b/gow3_pc/gpu/CMakeLists.txt
+@@ -141,6 +141,7 @@ add_host_shader(fault_buffer_process.comp fault_buffer_process_comp)
+ add_host_shader(fs_tri.vert fs_tri_vert)
+ add_host_shader(fsr.comp fsr_easu_comp SAMPLE_EASU=1)
+ add_host_shader(fsr.comp fsr_rcas_comp SAMPLE_RCAS=1)
++add_host_shader(sgsr.comp sgsr_comp)
+ add_host_shader(post_process.frag post_process_frag)
+ add_host_shader(camera_motion.comp camera_motion_comp)
+ add_host_shader(upscale_merge.comp upscale_merge_comp)
+diff --git a/gow3_pc/gpu/shadps4/video_core/host_shaders/sgsr.comp b/gow3_pc/gpu/shadps4/video_core/host_shaders/sgsr.comp
+new file mode 100644
+index 0000000..7ffe5df
+--- /dev/null
++++ b/gow3_pc/gpu/shadps4/video_core/host_shaders/sgsr.comp
+@@ -0,0 +1,155 @@
++// SPDX-FileCopyrightText: Copyright (c) 2025, Qualcomm Innovation Center, Inc. All rights reserved.
++// SPDX-License-Identifier: BSD-3-Clause
++//
++// Snapdragon Game Super Resolution 1 (SGSR), https://github.com/SnapdragonStudios/snapdragon-gsr
++// sgsr/v1/include/glsl/sgsr1_shader_mobile_edge_direction.frag: RGBA operation mode (green as
++// the luma proxy), edge direction on, edge threshold 8/255, edge sharpness 2. Ported to a
++// compute shader with FsrPass's bindings (fsr_pass.cpp): one pass upscales and sharpens, made
++// for Adreno GPUs. TLOU Android: chosen instead of FSR 1 in the launcher.
++//
++// Redistribution and use in source and binary forms, with or without modification, are
++// permitted provided that the following conditions are met:
++// 1. Redistributions of source code must retain the above copyright notice, this list of
++//    conditions and the following disclaimer.
++// 2. Redistributions in binary form must reproduce the above copyright notice, this list of
++//    conditions and the following disclaimer in the documentation and/or other materials
++//    provided with the distribution.
++// 3. Neither the name of the copyright holder nor the names of its contributors may be used to
++//    endorse or promote products derived from this software without specific prior written
++//    permission.
++// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
++// IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
++// AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
++// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
++// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
++// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
++// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
++// OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
++// POSSIBILITY OF SUCH DAMAGE.
++
++#version 450
++
++layout(push_constant) uniform const_buffer {
++    uvec4 Const0; // input image: 1/width, 1/height, width, height (float bits)
++    uvec4 Const1; // output width, height (uint); part of the input image read: width, height (float bits)
++    uvec4 Const2;
++    uvec4 Const3;
++    uvec4 Sample; // x = 1: square the result (HDR output, as fsr.comp)
++};
++
++layout(set = 0, binding = 0) uniform texture2D InputTexture;
++layout(set = 0, binding = 1, rgba16f) uniform writeonly image2D OutputTexture;
++layout(set = 0, binding = 2) uniform sampler InputSampler;
++
++layout(local_size_x = 16, local_size_y = 16) in;
++
++// Combined image samplers can't be local variables in GLSL.
++#define ps0 sampler2D(InputTexture, InputSampler)
++
++#define EdgeThreshold (8.0 / 255.0)
++#define EdgeSharpness 2.0
++
++float fastLanczos2(float x) {
++    float wA = x - 4.0;
++    float wB = x * wA - wA;
++    wA *= wA;
++    return wB * wA;
++}
++
++vec2 weightY(float dx, float dy, float c, vec3 data) {
++    float std = data.x;
++    vec2 dir = data.yz;
++    float edgeDis = ((dx * dir.y) + (dy * dir.x));
++    float x = (((dx * dx) + (dy * dy)) +
++               ((edgeDis * edgeDis) * ((clamp(((c * c) * std), 0.0, 1.0) * 0.7) + -1.0)));
++    float w = fastLanczos2(x);
++    return vec2(w, w * c);
++}
++
++vec2 edgeDirection(vec4 left, vec4 right) {
++    vec2 dir;
++    float RxLz = (right.x + (-left.z));
++    float RwLy = (right.w + (-left.y));
++    vec2 delta;
++    delta.x = (RxLz + RwLy);
++    delta.y = (RxLz + (-RwLy));
++    float lengthInv = inversesqrt((delta.x * delta.x + 3.075740e-05) + (delta.y * delta.y));
++    dir.x = (delta.x * lengthInv);
++    dir.y = (delta.y * lengthInv);
++    return dir;
++}
++
++void main() {
++    uvec2 out_size = Const1.xy;
++    uvec2 pos = gl_GlobalInvocationID.xy;
++    if (pos.x >= out_size.x || pos.y >= out_size.y) {
++        return;
++    }
++    vec4 ViewportInfo = uintBitsToFloat(Const0);
++    // Texture coordinate in the input image of this output pixel's centre.
++    vec2 read_size = uintBitsToFloat(Const1.zw);
++    vec2 uv = (vec2(pos) + 0.5) / vec2(out_size) * read_size * ViewportInfo.xy;
++
++    vec4 color;
++    color.xyz = textureLod(ps0, uv, 0.0).xyz;
++
++    vec2 imgCoord = ((uv * ViewportInfo.zw) + vec2(-0.5, 0.5));
++    vec2 imgCoordPixel = floor(imgCoord);
++    vec2 coord = (imgCoordPixel * ViewportInfo.xy);
++    vec2 pl = (imgCoord + (-imgCoordPixel));
++    vec4 left = textureGather(ps0, coord, 1);
++
++    float edgeVote = abs(left.z - left.y) + abs(color.y - left.y) + abs(color.y - left.z);
++    if (edgeVote > EdgeThreshold) {
++        coord.x += ViewportInfo.x;
++
++        vec4 right = textureGather(ps0, coord + vec2(ViewportInfo.x, 0.0), 1);
++        vec4 upDown;
++        upDown.xy = textureGather(ps0, coord + vec2(0.0, -ViewportInfo.y), 1).wz;
++        upDown.zw = textureGather(ps0, coord + vec2(0.0, ViewportInfo.y), 1).yx;
++
++        float mean = (left.y + left.z + right.x + right.w) * 0.25;
++        left = left - vec4(mean);
++        right = right - vec4(mean);
++        upDown = upDown - vec4(mean);
++        color.w = color.y - mean;
++
++        float sum = (((((abs(left.x) + abs(left.y)) + abs(left.z)) + abs(left.w)) +
++                      (((abs(right.x) + abs(right.y)) + abs(right.z)) + abs(right.w))) +
++                     (((abs(upDown.x) + abs(upDown.y)) + abs(upDown.z)) + abs(upDown.w)));
++        float sumMean = 1.014185e+01 / sum;
++        float std = (sumMean * sumMean);
++
++        vec3 data = vec3(std, edgeDirection(left, right));
++        vec2 aWY = weightY(pl.x, pl.y + 1.0, upDown.x, data);
++        aWY += weightY(pl.x - 1.0, pl.y + 1.0, upDown.y, data);
++        aWY += weightY(pl.x - 1.0, pl.y - 2.0, upDown.z, data);
++        aWY += weightY(pl.x, pl.y - 2.0, upDown.w, data);
++        aWY += weightY(pl.x + 1.0, pl.y - 1.0, left.x, data);
++        aWY += weightY(pl.x, pl.y - 1.0, left.y, data);
++        aWY += weightY(pl.x, pl.y, left.z, data);
++        aWY += weightY(pl.x + 1.0, pl.y, left.w, data);
++        aWY += weightY(pl.x - 1.0, pl.y - 1.0, right.x, data);
++        aWY += weightY(pl.x - 2.0, pl.y - 1.0, right.y, data);
++        aWY += weightY(pl.x - 2.0, pl.y, right.z, data);
++        aWY += weightY(pl.x - 1.0, pl.y, right.w, data);
++
++        float finalY = aWY.y / aWY.x;
++        float maxY = max(max(left.y, left.z), max(right.x, right.w));
++        float minY = min(min(left.y, left.z), min(right.x, right.w));
++        float deltaY = clamp(EdgeSharpness * finalY, minY, maxY) - color.w;
++
++        // Smooth high-contrast input.
++        deltaY = clamp(deltaY, -23.0 / 255.0, 23.0 / 255.0);
++
++        color.x = clamp((color.x + deltaY), 0.0, 1.0);
++        color.y = clamp((color.y + deltaY), 0.0, 1.0);
++        color.z = clamp((color.z + deltaY), 0.0, 1.0);
++    }
++
++    vec3 result = color.xyz;
++    if (Sample.x == 1u) {
++        result *= result;
++    }
++    imageStore(OutputTexture, ivec2(pos), vec4(result, 1.0));
++}
+diff --git a/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/host_passes/fsr_pass.cpp b/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/host_passes/fsr_pass.cpp
+index 8e0ae2f..b9af171 100644
+--- a/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/host_passes/fsr_pass.cpp
++++ b/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/host_passes/fsr_pass.cpp
+@@ -1,11 +1,14 @@
+ //  SPDX-FileCopyrightText: Copyright 2024-2026 shadPS4 Emulator Project
+ //  SPDX-License-Identifier: GPL-2.0-or-later
+ 
++#include <cstring>
++
+ #include "gow3_graphics.h"
+ #include "common/assert.h"
+ #include "core/emulator_settings.h"
+ #include "video_core/host_shaders/fsr_easu_comp.h"
+ #include "video_core/host_shaders/fsr_rcas_comp.h"
++#include "video_core/host_shaders/sgsr_comp.h"
+ #include "video_core/renderer_vulkan/host_passes/fsr_pass.h"
+ #include "video_core/renderer_vulkan/vk_platform.h"
+ #include "video_core/renderer_vulkan/vk_shader_util.h"
+@@ -118,8 +121,24 @@ void FsrPass::Create(vk::Device device, VmaAllocator allocator, u32 num_images)
+         Check<"fsp rcas compute pipelines">(device.createComputePipelineUnique({}, rcas_pinfo));
+     SetObjectName(device, rcas_pipeline.get(), "fsr rcas pipeline");
+ 
++    const auto& cs_sgsr_module = CompileSPV(SGSR_COMP, device);
++    ASSERT(cs_sgsr_module);
++    SetObjectName(device, cs_sgsr_module, "sgsr.comp");
++    const vk::ComputePipelineCreateInfo sgsr_pinfo{
++        .stage{
++            .stage = vk::ShaderStageFlagBits::eCompute,
++            .module = cs_sgsr_module,
++            .pName = "main",
++        },
++        .layout = pipeline_layout.get(),
++    };
++    sgsr_pipeline =
++        Check<"sgsr compute pipeline">(device.createComputePipelineUnique({}, sgsr_pinfo));
++    SetObjectName(device, sgsr_pipeline.get(), "sgsr pipeline");
++
+     device.destroyShaderModule(cs_easu_module);
+     device.destroyShaderModule(cs_rcas_module);
++    device.destroyShaderModule(cs_sgsr_module);
+ 
+     available_imgs.resize(num_images);
+     for (int i = 0; i < num_images; ++i) {
+@@ -200,7 +219,22 @@ vk::ImageView FsrPass::Render(vk::CommandBuffer cmdbuf, vk::ImageView input,
+                (AF1)width, (AF1)height);
+     consts.Sample[0] = hdr && !settings.use_rcas ? 1 : 0;
+ 
+-    if (settings.use_rcas) {
++    // gow3: SGSR replaces EASU+RCAS when upscaling, one pass straight into the output image.
++    const bool sgsr = settings.sgsr && input_size.width < width && input_size.height < height;
++    if (sgsr) {
++        consts = {};
++        const float in_w = float(input_image_size.width);
++        const float in_h = float(input_image_size.height);
++        const float viewport[4] = {1.0f / in_w, 1.0f / in_h, in_w, in_h};
++        std::memcpy(consts.Const0, viewport, sizeof(viewport));
++        consts.Const1[0] = width;
++        consts.Const1[1] = height;
++        const float read[2] = {float(input_size.width), float(input_size.height)};
++        std::memcpy(&consts.Const1[2], read, sizeof(read));
++        consts.Sample[0] = hdr ? 1 : 0;
++    }
++
++    if (settings.use_rcas && !sgsr) {
+ 
+         { // easu
+             std::array<vk::DescriptorImageInfo, 3> img_info{{
+@@ -369,7 +403,8 @@ vk::ImageView FsrPass::Render(vk::CommandBuffer cmdbuf, vk::ImageView input,
+             },
+         }};
+ 
+-        cmdbuf.bindPipeline(vk::PipelineBindPoint::eCompute, easu_pipeline.get());
++        cmdbuf.bindPipeline(vk::PipelineBindPoint::eCompute,
++                            sgsr ? sgsr_pipeline.get() : easu_pipeline.get());
+         cmdbuf.pushDescriptorSetKHR(vk::PipelineBindPoint::eCompute, pipeline_layout.get(), 0,
+                                     set_writes);
+         cmdbuf.pushConstants(pipeline_layout.get(), vk::ShaderStageFlagBits::eCompute, 0,
+diff --git a/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/host_passes/fsr_pass.h b/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/host_passes/fsr_pass.h
+index ed076e2..665d3af 100644
+--- a/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/host_passes/fsr_pass.h
++++ b/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/host_passes/fsr_pass.h
+@@ -15,6 +15,9 @@ public:
+         bool enable{true};
+         bool use_rcas{true};
+         float rcas_attenuation{0.25f};
++        /// gow3: upscale with Snapdragon GSR 1 (one pass, its own sharpening) instead of
++        /// FSR 1 EASU+RCAS. A same-size image still gets RCAS alone.
++        bool sgsr{false};
+     };
+ 
+     void Create(vk::Device device, VmaAllocator allocator, u32 num_images);
+@@ -55,6 +58,7 @@ private:
+     vk::UniquePipelineLayout pipeline_layout{};
+     vk::UniquePipeline easu_pipeline{};
+     vk::UniquePipeline rcas_pipeline{};
++    vk::UniquePipeline sgsr_pipeline{};
+ 
+     vk::Extent2D cur_size{};
+     u32 cur_image{};
+diff --git a/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/vk_presenter.cpp b/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/vk_presenter.cpp
+index ba06ab4..ef5d8a8 100644
+--- a/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/vk_presenter.cpp
++++ b/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/vk_presenter.cpp
+@@ -637,6 +637,12 @@ Frame* Presenter::PrepareFrame(const Libraries::VideoOut::BufferAttributeGroup&
+     fsr_settings.enable = fsr_available && graphics.fsr1;
+     fsr_settings.use_rcas = fsr_available && graphics.rcas;
+     fsr_settings.rcas_attenuation = Gow3Graphics::RcasAttenuation(graphics.rcas_strength);
++    // gow3: the launcher's upscaler choice (GOW3_SPATIAL_UPSCALER=sgsr) swaps EASU+RCAS for SGSR 1.
++    static const bool sgsr_upscaler = [] {
++        const char* env = std::getenv("GOW3_SPATIAL_UPSCALER");
++        return env && std::strcmp(env, "sgsr") == 0;
++    }();
++    fsr_settings.sgsr = sgsr_upscaler;
+     Gow3Settings::Get().image_width = int(image_size.width);
+     Gow3Settings::Get().image_height = int(image_size.height);
+     Gow3Settings::Get().window_width = int(frame->width);
+@@ -655,7 +661,8 @@ Frame* Presenter::PrepareFrame(const Libraries::VideoOut::BufferAttributeGroup&
+         if (mode != fsr_logged_mode) {
+             fsr_logged_mode = mode;
+             std::printf("FSR: %s %ux%u -> %ux%u\n",
+-                        mode == 2 ? "EASU+RCAS" : mode == 1 ? "RCAS only" : "off",
++                        mode == 2 ? (fsr_settings.sgsr ? "SGSR" : "EASU+RCAS")
++                                  : mode == 1 ? "RCAS only" : "off",
+                         image_size.width, image_size.height, frame->width, frame->height);
+         }
+     }
+diff --git a/tools/VERSION b/tools/VERSION
+index 17e51c3..1a03094 100644
+--- a/tools/VERSION
++++ b/tools/VERSION
+@@ -1 +1 @@
+-0.1.1
++0.1.9
