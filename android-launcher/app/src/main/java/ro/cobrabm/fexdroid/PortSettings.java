@@ -210,6 +210,9 @@ final class PortSettings {
             env.remove("GOW3_DIRECT_MEMORY_ACCESS");
             env.remove("GOW3_DMA_SYNC");
         }
+        // gow3_movie.cpp gow3_movie_scale_i420: one-pass NEON downscale of 1080p movies (v0.1.3).
+        // Off = the original two swscale passes, to tell a movie problem from anything else.
+        env.put("GOW3_MOVIE_AREA",p.getBoolean("movie_area",true)?"1":"0");
         // GPU command, draw recording and Vulkan recording threads at nice -4 (gow3_threads.h),
         // as the PC port's "above" priority: not queued behind the six busy job workers.
         if(p.getBoolean("gpu_thread_priority",true))env.put("GOW3_GPU_THREAD_PRIORITY","above");
@@ -271,6 +274,7 @@ final class PortSettings {
         result.append("; compute-exact-memo=").append(env.getOrDefault("GOW3_TLOU_COMPUTE_MEMO","0"));
         result.append("; compute-wait-defer=").append(env.getOrDefault("TLOU_COMPUTE_WAIT_DEFER","0"));
         result.append("; guest-job-worker-wake=patched-sleep");
+        result.append("; movie-area=").append(prefs(context).getBoolean("movie_area",true)?"on":"off");
         result.append("; hair-dma=").append(prefs(context).getBoolean("hair_dma",false)?"on":"off");
         result.append("; gpu-thread-priority=").append(prefs(context).getBoolean("gpu_thread_priority",true)?"above":"normal");
         result.append("; tso=").append(prefs(context).getBoolean("fex_no_tso",false)?"OFF":"on");

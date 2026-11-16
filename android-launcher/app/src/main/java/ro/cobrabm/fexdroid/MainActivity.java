@@ -362,6 +362,9 @@ public final class MainActivity extends Activity {
             option(cpu,"fex_no_tso","Modo rápido da CPU sem TSO (experimental)",
                 "Desliga a emulação da ordem de memória do x86 no FEX: o código do jogo roda mais rápido, mas o próprio FEX avisa que isso pode quebrar programas com vários threads (travamentos, objetos estranhos, quedas). Teste curto: se algo der errado, desligue. Reinicie o jogo para aplicar.",false);
             divider(cpu);
+            option(cpu,"movie_area","Vídeos: redução rápida em uma passada (NEON)",
+                "Os vídeos das cinemáticas (1080p) são reduzidos para 720p numa só passada, com menos trabalho da CPU. Desligado = o método original do port, em duas passadas. Se o jogo travar no início de uma cinemática, desligue para testar. Reinicie o jogo para aplicar.",true);
+            divider(cpu);
             option(cpu,"fast_render_cores","Priorizar núcleos rápidos (experimental)",
                 "Não força o clock. Limita as threads críticas aos núcleos mais rápidos; reinicie o jogo para aplicar. Pode aumentar a disputa entre threads.",false);
             divider(cpu);
