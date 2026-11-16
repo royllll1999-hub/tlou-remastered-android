@@ -32,7 +32,7 @@ final class TlouDialogs {
         try {
             return activity.getPackageManager().getPackageInfo(activity.getPackageName(),0).versionName;
         } catch(Exception ignored) {
-            return "0.1.1";
+            return "0.1.9";
         }
     }
     static int dp(Context c,int value) {
@@ -104,7 +104,7 @@ final class TlouDialogs {
         TextView title=text(activity,"TLOU — logs",20,INK);
         title.setTypeface(Typeface.create("sans-serif-condensed",Typeface.BOLD));
         panel.addView(title);
-        TextView subtitle=text(activity,"DAEDALUS / ANDROID  •  v"+version(activity),11,OLIVE);
+        TextView subtitle=text(activity,"Fork royllll1999-hub  •  v"+version(activity),11,OLIVE);
         subtitle.setLetterSpacing(.08f);
         subtitle.setPadding(0,dp(activity,6),0,dp(activity,12));
         panel.addView(subtitle);

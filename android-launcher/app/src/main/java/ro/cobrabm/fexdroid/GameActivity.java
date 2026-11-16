@@ -88,6 +88,29 @@ public final class GameActivity extends Activity {
         }
     }
 
+    /** 40 FPS mode: ask for the screen's 120 Hz mode, where a 40 FPS frame is exactly three
+     *  refreshes (at 60 Hz it would alternate one and two, which judders). */
+    private void requestHighRefresh() {
+        if(!"40".equals(PortSettings.fpsLimit(this)))return;
+        android.view.Display display=getWindowManager().getDefaultDisplay();
+        android.view.Display.Mode current=display.getMode(), best=null;
+        for(android.view.Display.Mode mode:display.getSupportedModes()) {
+            if(mode.getPhysicalWidth()!=current.getPhysicalWidth()||
+               mode.getPhysicalHeight()!=current.getPhysicalHeight())continue;
+            float hz=mode.getRefreshRate();
+            if(Math.abs(hz-120f)<1f){best=mode;break;}
+        }
+        if(best==null) {
+            RunLog.write(this,"40 FPS: a tela não oferece 120 Hz; ritmo de 60 Hz");
+            return;
+        }
+        WindowManager.LayoutParams attrs=getWindow().getAttributes();
+        attrs.preferredDisplayModeId=best.getModeId();
+        attrs.preferredRefreshRate=best.getRefreshRate();
+        getWindow().setAttributes(attrs);
+        RunLog.write(this,"40 FPS: modo de tela "+best.getModeId()+" a "+Math.round(best.getRefreshRate())+" Hz");
+    }
+
     private void initialize() throws Exception {
         File logDir=new File(getFilesDir(),"tlou");
         if(!logDir.isDirectory()&&!logDir.mkdirs())throw new java.io.IOException("Falha ao criar pasta dos logs");
@@ -96,6 +119,7 @@ public final class GameActivity extends Activity {
         try(FileOutputStream out=new FileOutputStream(logFile)){out.write("TLOU runtime: aguardando inicialização do processo\n".getBytes(StandardCharsets.UTF_8));}
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        requestHighRefresh();
         prepared=getIntent().getStringExtra("prepared_path");
         if (prepared==null) throw new IllegalStateException("Caminho preparado não informado");
         RunLog.write(this,"Pasta preparada: "+prepared);
@@ -200,10 +224,12 @@ public final class GameActivity extends Activity {
         });
     }
 
+    private final java.util.concurrent.atomic.AtomicBoolean crashArchived=new java.util.concurrent.atomic.AtomicBoolean();
     private void error(String message) {
         // Keep the technical reason in the local diagnostic archive. Never
         // display a stack trace, private storage path or the raw log in-game.
         RunLog.write(this,"ERRO: "+message);
+        if(crashArchived.compareAndSet(false,true))RunLog.archiveCrash(this,message);
         handler.post(()->{
             if(isFinishing()||isDestroyed()||closing.get())return;
             GameFailureMessage reason=GameFailureMessage.classify(message,tailLog());

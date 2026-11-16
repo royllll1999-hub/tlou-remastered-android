@@ -11,10 +11,13 @@ class Release011(unittest.TestCase):
         build=(ANDROID/"build.gradle").read_text()
         main=(JAVA/"MainActivity.java").read_text()
         about=(JAVA/"AboutPanel.java").read_text()
-        self.assertIn("versionName '0.1.1'",build)
-        self.assertIn("versionCode 41",build)
+        # The fork's own releases (v0.1.9-odin3 onwards) show their number in the launcher.
+        self.assertIn("versionName '0.1.9'",build)
+        self.assertIn("versionCode 49",build)
         self.assertIn('text("v"+TlouDialogs.version(this)',main)
-        self.assertIn('String version="0.1.1"',about)
+        self.assertIn('String version="0.1.9"',about)
+        self.assertIn('"royllll1999-hub"',about)
+        self.assertNotIn('DAEDALUS  /  ANDROID',main)
         self.assertIn('artFrame.addView(artVersion,artBadge)',main)
         self.assertNotIn('text("v0.1",',main)
 

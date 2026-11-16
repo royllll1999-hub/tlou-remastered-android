@@ -369,6 +369,11 @@ PERFORMANCE_RESOLUTIONS = {
 # This profile does NOT modify video content, movie decoder, codecs or source
 # frame dimensions. The video path may still present a native-size frame.
 LOW_RES_SCENE = {"720": (1280, 720), "540": (960, 540), "360": (640, 360)}
+# 01.11 only (its profile takes any size; the 01.00 table above is per resolution):
+# 1600x900 and 1472x828. 828p stands in for 810p, whose quarter height (202.5) and
+# half height (405) are not whole numbers; 1472x828 keeps 16:9 and even halves.
+LOW_RES_SCENE_111 = {"900": (1600, 900), "828": (1472, 828), **LOW_RES_SCENE}
+RESOLUTIONS_111_ONLY = frozenset(LOW_RES_SCENE_111) - frozenset(LOW_RES_SCENE)
 # 01.11 verified from the user's original 24,220,371-byte CUSA00552 SELF.
 # The previous 01.00 32-site table is NOT reused here. The newer executable
 # stores dimensions in screeninfo.cfg defaults and a preset selector at
@@ -397,7 +402,7 @@ RESOLUTION_111_GUARDS = {
 
 def scene_aim_resolution_patches_111(resolution):
     """Version-guarded 01.11 scene/HUD/post targets; keep video sources native."""
-    width, height = LOW_RES_SCENE[resolution]
+    width, height = LOW_RES_SCENE_111[resolution]
     u32 = lambda n: struct.pack("<I", n)
     # Skip the old preset lookup entirely (its smallest preset is 1920x1080).
     # mov eax,width; mov ecx,height; jmp 0xAB062A (original field stores and
@@ -492,10 +497,12 @@ def selected_options(options, profile="01.00", self_sha=None):
     if not isinstance(options, dict):
         raise ValueError("Configuração de patches inválida")
     resolution = options.get("resolution", "original")
-    if not isinstance(resolution, str) or resolution not in {"original", "720", "540", "360"}:
+    if not isinstance(resolution, str) or resolution not in {"original", *LOW_RES_SCENE_111}:
         raise ValueError("Resolução não suportada")
     selected = {}
     if resolution != "original":
+        if profile == "01.00" and resolution in RESOLUTIONS_111_ONLY:
+            raise ValueError("Resolução disponível somente na versão 01.11")
         if profile == "01.00":
             selected["resolution-" + resolution] = scene_aim_resolution_patches(resolution)
         elif profile == "01.11" and self_sha in RESOLUTION_111_SELF_SHA256:
@@ -553,6 +560,9 @@ def write_selected(source, prepared, options):
     if (profile == "01.11" and digest not in RESOLUTION_111_SELF_SHA256 and
             effective.get("resolution", "original") != "original"):
         print("Aviso: resolução reduzida sem assinatura validada nesta variante do eboot 01.11; usando Original.", flush=True)
+        effective["resolution"] = "original"
+    if profile == "01.00" and effective.get("resolution", "original") in RESOLUTIONS_111_ONLY:
+        print("Aviso: 900p e 828p existem somente na versão 01.11; usando Original.", flush=True)
         effective["resolution"] = "original"
     requested = selected_options(effective, profile, digest)
     spec = importlib.util.spec_from_file_location("tlou_patch_writer", source / "tools/probe_tlou.py")

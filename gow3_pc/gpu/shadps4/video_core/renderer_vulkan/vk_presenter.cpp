@@ -637,6 +637,12 @@ Frame* Presenter::PrepareFrame(const Libraries::VideoOut::BufferAttributeGroup& 
     fsr_settings.enable = fsr_available && graphics.fsr1;
     fsr_settings.use_rcas = fsr_available && graphics.rcas;
     fsr_settings.rcas_attenuation = Gow3Graphics::RcasAttenuation(graphics.rcas_strength);
+    // gow3: the launcher's upscaler choice (GOW3_SPATIAL_UPSCALER=sgsr) swaps EASU+RCAS for SGSR 1.
+    static const bool sgsr_upscaler = [] {
+        const char* env = std::getenv("GOW3_SPATIAL_UPSCALER");
+        return env && std::strcmp(env, "sgsr") == 0;
+    }();
+    fsr_settings.sgsr = sgsr_upscaler;
     Gow3Settings::Get().image_width = int(image_size.width);
     Gow3Settings::Get().image_height = int(image_size.height);
     Gow3Settings::Get().window_width = int(frame->width);
@@ -655,7 +661,8 @@ Frame* Presenter::PrepareFrame(const Libraries::VideoOut::BufferAttributeGroup& 
         if (mode != fsr_logged_mode) {
             fsr_logged_mode = mode;
             std::printf("FSR: %s %ux%u -> %ux%u\n",
-                        mode == 2 ? "EASU+RCAS" : mode == 1 ? "RCAS only" : "off",
+                        mode == 2 ? (fsr_settings.sgsr ? "SGSR" : "EASU+RCAS")
+                                  : mode == 1 ? "RCAS only" : "off",
                         image_size.width, image_size.height, frame->width, frame->height);
         }
     }

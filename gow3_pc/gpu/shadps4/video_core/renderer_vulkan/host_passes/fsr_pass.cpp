@@ -1,11 +1,14 @@
 //  SPDX-FileCopyrightText: Copyright 2024-2026 shadPS4 Emulator Project
 //  SPDX-License-Identifier: GPL-2.0-or-later
 
+#include <cstring>
+
 #include "gow3_graphics.h"
 #include "common/assert.h"
 #include "core/emulator_settings.h"
 #include "video_core/host_shaders/fsr_easu_comp.h"
 #include "video_core/host_shaders/fsr_rcas_comp.h"
+#include "video_core/host_shaders/sgsr_comp.h"
 #include "video_core/renderer_vulkan/host_passes/fsr_pass.h"
 #include "video_core/renderer_vulkan/vk_platform.h"
 #include "video_core/renderer_vulkan/vk_shader_util.h"
@@ -118,8 +121,24 @@ void FsrPass::Create(vk::Device device, VmaAllocator allocator, u32 num_images) 
         Check<"fsp rcas compute pipelines">(device.createComputePipelineUnique({}, rcas_pinfo));
     SetObjectName(device, rcas_pipeline.get(), "fsr rcas pipeline");
 
+    const auto& cs_sgsr_module = CompileSPV(SGSR_COMP, device);
+    ASSERT(cs_sgsr_module);
+    SetObjectName(device, cs_sgsr_module, "sgsr.comp");
+    const vk::ComputePipelineCreateInfo sgsr_pinfo{
+        .stage{
+            .stage = vk::ShaderStageFlagBits::eCompute,
+            .module = cs_sgsr_module,
+            .pName = "main",
+        },
+        .layout = pipeline_layout.get(),
+    };
+    sgsr_pipeline =
+        Check<"sgsr compute pipeline">(device.createComputePipelineUnique({}, sgsr_pinfo));
+    SetObjectName(device, sgsr_pipeline.get(), "sgsr pipeline");
+
     device.destroyShaderModule(cs_easu_module);
     device.destroyShaderModule(cs_rcas_module);
+    device.destroyShaderModule(cs_sgsr_module);
 
     available_imgs.resize(num_images);
     for (int i = 0; i < num_images; ++i) {
@@ -200,7 +219,22 @@ vk::ImageView FsrPass::Render(vk::CommandBuffer cmdbuf, vk::ImageView input,
                (AF1)width, (AF1)height);
     consts.Sample[0] = hdr && !settings.use_rcas ? 1 : 0;
 
-    if (settings.use_rcas) {
+    // gow3: SGSR replaces EASU+RCAS when upscaling, one pass straight into the output image.
+    const bool sgsr = settings.sgsr && input_size.width < width && input_size.height < height;
+    if (sgsr) {
+        consts = {};
+        const float in_w = float(input_image_size.width);
+        const float in_h = float(input_image_size.height);
+        const float viewport[4] = {1.0f / in_w, 1.0f / in_h, in_w, in_h};
+        std::memcpy(consts.Const0, viewport, sizeof(viewport));
+        consts.Const1[0] = width;
+        consts.Const1[1] = height;
+        const float read[2] = {float(input_size.width), float(input_size.height)};
+        std::memcpy(&consts.Const1[2], read, sizeof(read));
+        consts.Sample[0] = hdr ? 1 : 0;
+    }
+
+    if (settings.use_rcas && !sgsr) {
 
         { // easu
             std::array<vk::DescriptorImageInfo, 3> img_info{{
@@ -369,7 +403,8 @@ vk::ImageView FsrPass::Render(vk::CommandBuffer cmdbuf, vk::ImageView input,
             },
         }};
 
-        cmdbuf.bindPipeline(vk::PipelineBindPoint::eCompute, easu_pipeline.get());
+        cmdbuf.bindPipeline(vk::PipelineBindPoint::eCompute,
+                            sgsr ? sgsr_pipeline.get() : easu_pipeline.get());
         cmdbuf.pushDescriptorSetKHR(vk::PipelineBindPoint::eCompute, pipeline_layout.get(), 0,
                                     set_writes);
         cmdbuf.pushConstants(pipeline_layout.get(), vk::ShaderStageFlagBits::eCompute, 0,

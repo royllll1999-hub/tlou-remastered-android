@@ -15,6 +15,9 @@ public:
         bool enable{true};
         bool use_rcas{true};
         float rcas_attenuation{0.25f};
+        /// gow3: upscale with Snapdragon GSR 1 (one pass, its own sharpening) instead of
+        /// FSR 1 EASU+RCAS. A same-size image still gets RCAS alone.
+        bool sgsr{false};
     };
 
     void Create(vk::Device device, VmaAllocator allocator, u32 num_images);
@@ -55,6 +58,7 @@ private:
     vk::UniquePipelineLayout pipeline_layout{};
     vk::UniquePipeline easu_pipeline{};
     vk::UniquePipeline rcas_pipeline{};
+    vk::UniquePipeline sgsr_pipeline{};
 
     vk::Extent2D cur_size{};
     u32 cur_image{};

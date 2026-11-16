@@ -199,7 +199,7 @@ final class PortMenu {
                 row("Vídeo e tela",()->go("video"));
                 screenMode(); // separate one-tap fit and fill actions in the main in-game menu
                 row("Patches",()->go("patches"));
-                row("AMD FSR 1.0",()->go("fsr"));
+                row("Ampliação (FSR / SGSR)",()->go("fsr"));
                 row("Idioma e interface",()->go("settings"));
                 row("Controles e HUD",()->go("hud"));
                 row("Sensores de movimento",()->go("motion"));
@@ -208,6 +208,10 @@ final class PortMenu {
                     row("Saves",()->go("saves"));
                 }
                 if(inGame)row("Diagnóstico de sombras",()->go("shadows"));
+                if(inGame)row("Salvar log desta sessão",()->{
+                    RunLog.archiveCrash(activity,"salvo pelo menu do jogo");
+                    Toast.makeText(activity,tr("Log salvo; ele entra na exportação de logs."),Toast.LENGTH_LONG).show();
+                });
                 row("Sobre",()->go("about"));
                 action("Voltar ao launcher",actions::exitGame);
                 action("Sair do aplicativo",actions::quitApp);
@@ -215,11 +219,11 @@ final class PortMenu {
             case "video":
                 heading("VÍDEO E TELA");
                 choice("resolution","Resolução interna",
-                    new String[]{"Original (1080p)","1280 × 720","960 × 540","640 × 360"},
-                    new String[]{"original","720","540","360"},"original");
+                    new String[]{"Original (1080p)","1600 × 900 (1.11)","1472 × 828 (1.11)","1280 × 720","960 × 540","640 × 360"},
+                    new String[]{"original","900","828","720","540","360"},"original");
                 choice("fps_limit","Limite de FPS",
-                    new String[]{"30 FPS","60 FPS"},
-                    new String[]{"30","60"},"60");
+                    new String[]{"30 FPS","40 FPS (tela 120 Hz)","60 FPS"},
+                    new String[]{"30","40","60"},"60");
                 if(prefs.getBoolean("fps_unlock",false))
                     note("Desbloqueio até 120 FPS ativo: VSync OFF nesta sessão; reinicie após alterar.");
                 else
@@ -229,15 +233,18 @@ final class PortMenu {
                      +"Preserva a correção das deformações.");
                 break;
             case "fsr":
-                heading("AMD FSR 1.0");
+                heading("AMPLIAÇÃO (FSR / SGSR)");
                 note("Melhora a nitidez da imagem quando o jogo roda abaixo da resolução da tela.");
-                toggle("fsr","Ativar AMD FSR 1.0",false);
+                toggle("fsr","Ativar ampliação da imagem",false);
+                choice("upscaler","Método de ampliação",
+                    new String[]{"AMD FSR 1.0","Snapdragon GSR"},
+                    new String[]{"fsr","sgsr"},"fsr");
                 choice("fsr_sharpness","Nitidez do FSR",
                     new String[]{"Suave","Média","Forte"},
                     new String[]{"50","75","90"},"75");
-                note("Como ativar: ligue a opção acima, escolha 720p, 540p ou 360p em Resolução interna e reinicie o jogo.");
+                note("Como ativar: ligue a opção acima, escolha uma resolução abaixo de 1080p em Resolução interna e reinicie o jogo.");
                 note("Como desativar: desligue a opção acima e reinicie o jogo. A imagem volta à exibição original.");
-                note("Em 1080p (Original) o FSR só aumenta a nitidez.");
+                note("Em 1080p (Original) só a nitidez RCAS é aplicada (também com Snapdragon GSR).");
                 break;
             case "patches":
                 heading("PATCHES");
@@ -257,7 +264,7 @@ final class PortMenu {
                     SharedPreferences.Editor e=prefs.edit().putString("resolution","original");
                     for(String key:PortSettings.EFFECTS)e.putBoolean(key,false);
                     e.putBoolean("fps_unlock",false);
-                    e.putBoolean("fsr",false).putString("fsr_sharpness","75");
+                    e.putBoolean("fsr",false).putString("fsr_sharpness","75").putString("upscaler","fsr");
                     e.apply();actions.changed();render();
                 });
                 break;

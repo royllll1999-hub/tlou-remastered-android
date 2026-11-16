@@ -46,11 +46,12 @@ final class AboutPanel {
     private LinearLayout build(Runnable logs,Runnable export){
         LinearLayout root=column();
         TextView title=text("THE LAST OF US REMASTERED",22,TEXT);title.setTypeface(Typeface.create("sans-serif-condensed",Typeface.BOLD));root.addView(title);
-        String version="0.1.1";try{version=activity.getPackageManager().getPackageInfo(activity.getPackageName(),0).versionName;}catch(Exception ignored){}
+        String version="0.1.9";try{version=activity.getPackageManager().getPackageInfo(activity.getPackageName(),0).versionName;}catch(Exception ignored){}
         TextView v=text(tr("Versão")+" "+version,13,ACCENT);v.setPadding(0,dp(6),0,dp(8));root.addView(v);
         root.addView(text("Port para Android com runtime Bionic.",13,MUTED));
         LinearLayout contact=card(root,"DESENVOLVIMENTO");
-        row(contact,"Fork e modificações","erickmendes22 · Daedalus Emulator",null);
+        row(contact,"Este fork (AYN Odin 3)","royllll1999-hub",url("https://github.com/royllll1999-hub/tlou-remastered-android"));
+        row(contact,"Port original","erickmendes22 · Daedalus Emulator",null);
         row(contact,"YouTube","@daedalusemulator",url("https://www.youtube.com/@daedalusemulator"));
         LinearLayout projects=card(root,"PROJETOS");
         row(projects,"Projeto Android","erickmendes22/tlou-remastered-android",url("https://github.com/erickmendes22/tlou-remastered-android"));

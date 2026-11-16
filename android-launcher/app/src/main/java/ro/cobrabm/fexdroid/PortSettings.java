@@ -28,7 +28,7 @@ final class PortSettings {
             "hud_gpu","hud_cpu",
             "compute_wait_fast","relaxed_skinning_fp"}) edit.remove(key);
         String limit=prefs(context).getString("fps_limit","60");
-        if(!"30".equals(limit) && !"60".equals(limit))edit.putString("fps_limit","60");
+        if(!"30".equals(limit) && !"40".equals(limit) && !"60".equals(limit))edit.putString("fps_limit","60");
         // Preserve an explicit old OFF preference while making Auto the default
         // for users who had the original always-visible default enabled.
         if(prefs(context).contains("touch_visible") &&
@@ -70,8 +70,7 @@ final class PortSettings {
         String resolution=p.getString("resolution","original");
         // The proven unified path is mandatory: no legacy proxy/composite mode.
         // Keep the original movie decoder, scale scene/HUD/aim as one domain.
-        final String scaledPreset=resolution.equals("720")?"1":
-            resolution.equals("540")?"3":resolution.equals("360")?"4":null;
+        final String actualSize=sceneSize(resolution);
         env.put("TLOU_EXPECT_SCENE_SIZE","1920x1080");
         env.put("GOW3_UPSCALER","off");
         env.put("GOW3_OUTPUT_RES","1920x1080");
@@ -79,9 +78,7 @@ final class PortSettings {
         env.remove("GOW3_UPSCALE_PRESET");
         env.remove("TLOU_SPATIAL_SCENE");
         env.remove("TLOU_HOST_SCENE_MODE");
-        if(scaledPreset!=null) {
-            final String actualSize=resolution.equals("720")?"1280x720":
-                resolution.equals("540")?"960x540":"640x360";
+        if(actualSize!=null) {
             env.put("TLOU_UNIFIED_GUEST_UI","1");
             env.put("TLOU_EXPECT_SCENE_SIZE",actualSize);
             env.put("TLOU_EXPECT_HOST_SCENE",actualSize);
@@ -95,6 +92,10 @@ final class PortSettings {
         // AMD FSR 1.0 (spatial EASU + RCAS) in the presenter, opt-in. Below the
         // screen size EASU upscales the game's image; at the same size only
         // RCAS sharpens. Temporal upscalers stay off (see GameActivity).
+        // Upscaler for the same switch: FSR 1 (EASU+RCAS) or Snapdragon GSR 1 (one pass).
+        if(p.getBoolean("fsr",false)&&"sgsr".equals(p.getString("upscaler","fsr")))
+            env.put("GOW3_SPATIAL_UPSCALER","sgsr");
+        else env.remove("GOW3_SPATIAL_UPSCALER");
         if(p.getBoolean("fsr",false)) {
             env.put("GOW3_ANDROID_FSR","1");
             env.put("GOW3_FSR1","1");
@@ -241,6 +242,15 @@ final class PortSettings {
         // choice remains untouched for regular capped launches.
         env.put("GOW3_VSYNC",unlocked?"0":p.getBoolean("vsync",true)?"1":"0");
         env.put("GOW3_FPS_LIMIT",fpsLimit(context));
+        // Render profile (Performance > Diagnostics): per-pass GPU timestamps and the CPU-side
+        // frame stats in runtime.log, to find what to optimize next.
+        if(p.getBoolean("render_profile",false)) {
+            env.put("GOW3_GPU_PROFILE","1");
+            env.put("GOW3_FRAME_STATS","1");
+        } else {
+            env.remove("GOW3_GPU_PROFILE");
+            env.remove("GOW3_FRAME_STATS");
+        }
     }
 
     static String experimentReport(Context context,Map<String,String> env) {
@@ -264,7 +274,8 @@ final class PortSettings {
                       env.containsKey("TLOU_SPATIAL_SCENE")?"proxy-spatial-compat":"native");
         result.append("; spatial-fsr=")
               .append(env.containsKey("GOW3_ANDROID_FSR")
-                      ?"fsr1 rcas="+env.getOrDefault("GOW3_RCAS_STRENGTH","75"):"off");
+                      ?(env.containsKey("GOW3_SPATIAL_UPSCALER")?"sgsr1":"fsr1")
+                       +" rcas="+env.getOrDefault("GOW3_RCAS_STRENGTH","75"):"off");
         result.append("; temporal-fsr=off");
         result.append("; frames-in-flight=").append(env.getOrDefault("GOW3_FRAMES_IN_FLIGHT","0"));
         result.append("; geometry-sync=full");
@@ -283,6 +294,7 @@ final class PortSettings {
         result.append("; gpu-thread-priority=").append(prefs(context).getBoolean("gpu_thread_priority",true)?"above":"normal");
         result.append("; tso=").append(prefs(context).getBoolean("fex_no_tso",false)?"OFF":"on");
         result.append("; pause=").append(prefs(context).getBoolean("pause_wfe",false)?"wfe":"yield");
+        result.append("; render-profile=").append(prefs(context).getBoolean("render_profile",false)?"on":"off");
         result.append("; job-wake=").append(prefs(context).getBoolean("job_wake",true)?"fast":"off");
         return result.toString();
     }
@@ -294,13 +306,26 @@ final class PortSettings {
 
     static String fpsLimit(Context context) {
         if(prefs(context).getBoolean("fps_unlock",false))return "120";
-        return "30".equals(prefs(context).getString("fps_limit","60"))?"30":"60";
+        String limit=prefs(context).getString("fps_limit","60");
+        return "30".equals(limit)||"40".equals(limit)?limit:"60";
+    }
+    /** The game's image for a reduced resolution, null for Original (1080p). 900p and 828p
+     *  (in place of 810p, whose halves are not whole) exist only for 01.11. */
+    static String sceneSize(String resolution) {
+        switch(resolution) {
+            case "900": return "1600x900";
+            case "828": return "1472x828";
+            case "720": return "1280x720";
+            case "540": return "960x540";
+            case "360": return "640x360";
+            default: return null;
+        }
     }
     static String summary(Context context) {
         SharedPreferences p=prefs(context);
         String r=p.getString("resolution","original"), limit=fpsLimit(context);
         String res=r.equals("original")?"Original":r+"p";
-        if(p.getBoolean("fsr",false))res+=" + FSR";
+        if(p.getBoolean("fsr",false))res+="sgsr".equals(p.getString("upscaler","fsr"))?" + SGSR":" + FSR";
         return res+"  ·  "+(limit+" FPS")+"  ·  "+
             (p.getBoolean("fps_unlock",false)?"VSync OFF (desbloqueio)":
              p.getBoolean("vsync",true)?"VSync ON":"VSync OFF");

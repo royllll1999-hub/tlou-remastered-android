@@ -218,10 +218,11 @@ public final class MainActivity extends Activity {
         LinearLayout root=column();root.setPadding(dp(18),dp(18),dp(18),dp(22));
         scroll.addView(root);
         LinearLayout header=new LinearLayout(this);header.setGravity(Gravity.CENTER_VERTICAL);
-        TextView brand=text("DAEDALUS  /  ANDROID",12,ACCENT);brand.setLetterSpacing(.14f);
+        // This build's fork (the original port's credits stay in Sobre).
+        TextView brand=text("Fork de royllll1999-hub · AYN Odin 3",12,ACCENT);brand.setLetterSpacing(.06f);
         header.addView(brand,new LinearLayout.LayoutParams(0,-2,1));
         TextView version=text("v"+TlouDialogs.version(this),13,ACCENT);
-        version.setGravity(Gravity.RIGHT);header.addView(version,new LinearLayout.LayoutParams(dp(60),-2));
+        version.setGravity(Gravity.RIGHT);header.addView(version,new LinearLayout.LayoutParams(dp(72),-2));
         root.addView(header);
         if(currentTab.equals("home")) {
             // The hero is bundled with the APK: shown immediately and offline,
@@ -284,31 +285,36 @@ public final class MainActivity extends Activity {
         } else if(currentTab.equals("graphics")) {
             LinearLayout image=card(root,"RESOLUÇÃO E IMAGEM");
             choiceRow(image,"resolution","Resolução interna",
-                "Resolução em que o jogo é desenhado. Menor = mais FPS e menos calor; 720p é o melhor equilíbrio no AYN Odin 3. Reinicie o jogo para aplicar.",
-                new String[]{"Original (1080p)","1280 × 720","960 × 540","640 × 360"},
-                new String[]{"original","720","540","360"},"original");
+                "Resolução em que o jogo é desenhado. Menor = mais FPS e menos calor; 720p é o melhor equilíbrio no AYN Odin 3. 900p e 828p (no lugar de 810p, que não divide por igual) só na versão 1.11 do jogo. Reinicie o jogo para aplicar.",
+                new String[]{"Original (1080p)","1600 × 900 (1.11)","1472 × 828 (1.11)","1280 × 720","960 × 540","640 × 360"},
+                new String[]{"original","900","828","720","540","360"},"original");
             divider(image);
             screenChoice(image);
             hint(image,"Ajustar mantém a proporção 16:9 com faixas pretas; Preencher estica a imagem para a tela inteira.");
             divider(image);
             option(image,"hair_dma","Iluminação correta de cabelo e barba (experimental)",
                 "Corrige cabelo e barba dourados em cenas escuras: os shaders deles leem as sombras do sol direto da memória do jogo, como no port para PC. Pode custar alguns FPS. Na primeira vez os shaders são preparados de novo (alguns travamentos curtos nos primeiros minutos). Reinicie o jogo para aplicar.",false);
-            LinearLayout fsr=card(root,"AMD FSR 1.0");
-            option(fsr,"fsr","Ativar AMD FSR 1.0",
+            LinearLayout fsr=card(root,"AMPLIAÇÃO (FSR / SGSR)");
+            option(fsr,"fsr","Ativar ampliação da imagem",
                 "Melhora a nitidez da imagem quando o jogo roda abaixo da resolução da tela.",false);
+            divider(fsr);
+            choiceRow(fsr,"upscaler","Método de ampliação",
+                "AMD FSR 1.0: duas passadas (ampliação + nitidez RCAS ajustável). Snapdragon GSR: uma passada feita para GPUs Adreno, com nitidez própria; costuma custar menos GPU. Reinicie o jogo para aplicar.",
+                new String[]{"AMD FSR 1.0","Snapdragon GSR"},
+                new String[]{"fsr","sgsr"},"fsr");
             divider(fsr);
             choiceRow(fsr,"fsr_sharpness","Nitidez do FSR",
                 "Força do filtro de nitidez (RCAS). Suave deixa a imagem mais macia; Forte, mais definida.",
                 new String[]{"Suave","Média","Forte"},
                 new String[]{"50","75","90"},"75");
-            hint(fsr,"Como ativar: ligue a opção acima, escolha 720p, 540p ou 360p em Resolução interna e reinicie o jogo.");
+            hint(fsr,"Como ativar: ligue a opção acima, escolha uma resolução abaixo de 1080p em Resolução interna e reinicie o jogo.");
             hint(fsr,"Como desativar: desligue a opção acima e reinicie o jogo. A imagem volta à exibição original.");
-            hint(fsr,"Em 1080p (Original) o FSR só aumenta a nitidez.");
+            hint(fsr,"Em 1080p (Original) só a nitidez RCAS é aplicada (também com Snapdragon GSR).");
             LinearLayout pacing=card(root,"FPS E SINCRONIZAÇÃO");
             choiceRow(pacing,"fps_limit","Limite de FPS",
-                "Teto de quadros por segundo. 60 é o padrão; 30 reduz bastante o aquecimento e o consumo de bateria.",
-                new String[]{"30 FPS","60 FPS"},
-                new String[]{"30","60"},"60");
+                "Teto de quadros por segundo. 60 é o padrão; 30 reduz bastante o aquecimento e o consumo de bateria. 40 coloca a tela em 120 Hz para que cada quadro dure exatamente 3 atualizações (fluido, sem trepidação); se a tela não tiver 120 Hz, fica irregular.",
+                new String[]{"30 FPS","40 FPS (tela 120 Hz)","60 FPS"},
+                new String[]{"30","40","60"},"60");
             divider(pacing);
             option(pacing,"vsync","VSync",
                 "Sincroniza os quadros com a tela para evitar imagem cortada (tearing). Recomendado ligado.",true);
@@ -344,7 +350,7 @@ public final class MainActivity extends Activity {
                 SharedPreferences.Editor edit=prefs.edit().putString("resolution","original");
                 for(String key:PortSettings.EFFECTS)edit.putBoolean(key,false);
                 edit.putBoolean("fps_unlock",false);
-                edit.putBoolean("fsr",false).putString("fsr_sharpness","75");
+                edit.putBoolean("fsr",false).putString("fsr_sharpness","75").putString("upscaler","fsr");
                 edit.apply();buildHome();
             });
         } else if(currentTab.equals("performance")) {
@@ -381,6 +387,9 @@ public final class MainActivity extends Activity {
             LinearLayout diagnostics=card(root,"DIAGNÓSTICO");
             option(diagnostics,"shader_scan_scalar","Diagnóstico CPU: usar busca original (A/B)",
                 "Desligado = NEON; ligado = original. Reinicie o jogo entre os testes e exporte os logs.",false);
+            divider(diagnostics);
+            option(diagnostics,"render_profile","Perfil de renderização (para otimização)",
+                "Grava no log quanto tempo de GPU cada etapa do quadro leva e onde a CPU espera. Jogue 2–3 minutos na cena que pesa, saia e exporte os logs. Custa alguns FPS: desligue depois. Reinicie o jogo para aplicar.",false);
             hint(diagnostics,"Modo Unificado padrão: jogo, interface e mira na mesma resolução. Vídeos mantêm a decodificação original.");
             hint(diagnostics,"Sincronização da geometria: Completo (único modo). "
                 +"Correção de deformações mantida sem opções que não melhoraram o FPS.");
