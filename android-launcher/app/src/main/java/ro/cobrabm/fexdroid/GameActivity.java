@@ -306,6 +306,10 @@ public final class GameActivity extends Activity {
             File shadowTrigger=new File(state,"shadow.trigger");
             if(shadowTrigger.exists())shadowTrigger.delete();
             env.put("GOW3_DMA_TRIGGER",shadowTrigger.getAbsolutePath());
+            // Hair/beard lighting fix (PortSettings "hair_dma"): its translated shaders differ, so
+            // they get their own shader/pipeline cache instead of reusing the non-DMA ones.
+            if(PortSettings.prefs(this).getBoolean("hair_dma",false))
+                env.put("GOW3_GPU_CACHE_DIR",new File(state,"cache-dma").getAbsolutePath());
             env.put("GOW3_AUDIO_FIFO",new File(state,"audio.fifo").getAbsolutePath());
             env.put("GOW3_PRESENT_SOCKET",new File(state,"present.sock").getAbsolutePath());
             env.put("GOW3_SCREEN_W",String.valueOf(getResources().getDisplayMetrics().widthPixels));

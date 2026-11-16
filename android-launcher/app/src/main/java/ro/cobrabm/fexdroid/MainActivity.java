@@ -290,6 +290,9 @@ public final class MainActivity extends Activity {
             divider(image);
             screenChoice(image);
             hint(image,"Ajustar mantém a proporção 16:9 com faixas pretas; Preencher estica a imagem para a tela inteira.");
+            divider(image);
+            option(image,"hair_dma","Iluminação correta de cabelo e barba (experimental)",
+                "Corrige cabelo e barba dourados em cenas escuras: os shaders deles leem as sombras do sol direto da memória do jogo, como no port para PC. Pode custar alguns FPS. Na primeira vez os shaders são preparados de novo (alguns travamentos curtos nos primeiros minutos). Reinicie o jogo para aplicar.",false);
             LinearLayout fsr=card(root,"AMD FSR 1.0");
             option(fsr,"fsr","Ativar AMD FSR 1.0",
                 "Melhora a nitidez da imagem quando o jogo roda abaixo da resolução da tela.",false);

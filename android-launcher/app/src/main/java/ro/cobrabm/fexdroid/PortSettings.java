@@ -198,6 +198,18 @@ final class PortSettings {
         // code; FEX itself warns it can break multithreaded programs. Only set when chosen.
         if(p.getBoolean("fex_no_tso",false))env.put("FEX_TSOENABLED","0");
         else env.remove("FEX_TSOENABLED");
+        // Shaders that read guest memory through raw 64-bit addresses (MUBUF ADDR64): Naughty Dog's
+        // hair, beard and transparent shaders load their sun-shadow cascade matrices that way.
+        // Without direct memory access those loads read the flat constant buffer instead, the
+        // shadow lookups land in lit texels and hair glows golden in the dark. The PC port runs
+        // with it on and syncs 256 KiB windows around the addresses (tools/probe_tlou.py).
+        if(p.getBoolean("hair_dma",false)) {
+            env.put("GOW3_DIRECT_MEMORY_ACCESS","1");
+            env.put("GOW3_DMA_SYNC","pointers 256");
+        } else {
+            env.remove("GOW3_DIRECT_MEMORY_ACCESS");
+            env.remove("GOW3_DMA_SYNC");
+        }
         // GPU command, draw recording and Vulkan recording threads at nice -4 (gow3_threads.h),
         // as the PC port's "above" priority: not queued behind the six busy job workers.
         if(p.getBoolean("gpu_thread_priority",true))env.put("GOW3_GPU_THREAD_PRIORITY","above");
@@ -259,6 +271,7 @@ final class PortSettings {
         result.append("; compute-exact-memo=").append(env.getOrDefault("GOW3_TLOU_COMPUTE_MEMO","0"));
         result.append("; compute-wait-defer=").append(env.getOrDefault("TLOU_COMPUTE_WAIT_DEFER","0"));
         result.append("; guest-job-worker-wake=patched-sleep");
+        result.append("; hair-dma=").append(prefs(context).getBoolean("hair_dma",false)?"on":"off");
         result.append("; gpu-thread-priority=").append(prefs(context).getBoolean("gpu_thread_priority",true)?"above":"normal");
         result.append("; tso=").append(prefs(context).getBoolean("fex_no_tso",false)?"OFF":"on");
         result.append("; pause=").append(prefs(context).getBoolean("pause_wfe",false)?"wfe":"yield");
