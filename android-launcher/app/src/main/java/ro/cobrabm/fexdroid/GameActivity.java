@@ -302,6 +302,10 @@ public final class GameActivity extends Activity {
             env.put("GOW3_ANDROID_PORT","1");
             env.put("GOW3_ANDROID_INPUT","1");
             env.put("GOW3_PAD_FILE",new File(state,"controller.state").getAbsolutePath());
+            // In-game menu > shadow diagnostics writes here; the GPU reads it every 0.5 s.
+            File shadowTrigger=new File(state,"shadow.trigger");
+            if(shadowTrigger.exists())shadowTrigger.delete();
+            env.put("GOW3_DMA_TRIGGER",shadowTrigger.getAbsolutePath());
             env.put("GOW3_AUDIO_FIFO",new File(state,"audio.fifo").getAbsolutePath());
             env.put("GOW3_PRESENT_SOCKET",new File(state,"present.sock").getAbsolutePath());
             env.put("GOW3_SCREEN_W",String.valueOf(getResources().getDisplayMetrics().widthPixels));

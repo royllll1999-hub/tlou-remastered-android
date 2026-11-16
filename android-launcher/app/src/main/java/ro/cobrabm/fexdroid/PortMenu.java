@@ -93,6 +93,21 @@ final class PortMenu {
         LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,dp(48));
         lp.bottomMargin=dp(7);content.addView(b,lp);b.setOnClickListener(v->callback.run());
     }
+    private static String shadowChoice;
+    /** Writes one command for the GPU (GOW3_DMA_TRIGGER, GameActivity); it applies in-game. */
+    private void shadowRow(String label,String command) {
+        row(label,()->{
+            java.io.File trigger=new java.io.File(activity.getFilesDir(),"tlou/shadow.trigger");
+            try(java.io.FileOutputStream out=new java.io.FileOutputStream(trigger)) {
+                out.write((command+"\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                shadowChoice=label;
+                Toast.makeText(activity,tr(label),Toast.LENGTH_SHORT).show();
+            } catch(java.io.IOException error) {
+                Toast.makeText(activity,error.getMessage(),Toast.LENGTH_LONG).show();
+            }
+            render();
+        });
+    }
     private void action(String label,Runnable callback) {
         row(label,()->{dialog.dismiss();callback.run();});
     }
@@ -192,6 +207,7 @@ final class PortMenu {
                     row("Jogo e drivers",()->go("library"));
                     row("Saves",()->go("saves"));
                 }
+                if(inGame)row("Diagnóstico de sombras",()->go("shadows"));
                 row("Sobre",()->go("about"));
                 action("Voltar ao launcher",actions::exitGame);
                 action("Sair do aplicativo",actions::quitApp);
@@ -312,6 +328,29 @@ final class PortMenu {
                 note("Feche o jogo antes de importar ou exportar saves.");
                 action("Exportar saves ZIP",actions::exportSaves);
                 action("Importar saves ZIP",actions::importSaves);
+                break;
+            case "shadows":
+                // Live switches of the GPU's shadow handling (vk_rasterizer.cpp SyncDmaMemory, read
+                // from GOW3_DMA_TRIGGER within half a second): to find why hair and beards turn
+                // golden in dark scenes. Nothing is saved; a restart returns to normal.
+                heading("DIAGNÓSTICO DE SOMBRAS");
+                note("Para encontrar por que cabelo e barba ficam dourados em cenas escuras. Pare num lugar escuro com o rosto do Joel visível, toque numa opção, feche o menu e veja se o cabelo muda. Nada fica salvo: ao reiniciar o jogo tudo volta ao normal.");
+                note("Comparação de profundidade das sombras:");
+                shadowRow("Normal","cmp normal");
+                shadowRow("Nunca (tudo na sombra)","cmp never");
+                shadowRow("Sempre (tudo iluminado)","cmp always");
+                shadowRow("Borda preta","cmp border-black");
+                shadowRow("Borda branca","cmp border-white");
+                shadowRow("Borda: repetir a beira","cmp edge");
+                note("Limpeza do mapa de sombras:");
+                shadowRow("Limpeza normal","clear normal");
+                shadowRow("Limpeza para longe (1.0)","clear far");
+                note("Profundidade 16 bits e desvio:");
+                shadowRow("Limpeza 16 bits normal","dbclear normal");
+                shadowRow("Limpeza 16 bits = 1.0","dbclear one");
+                shadowRow("Desvio de profundidade normal","bias normal");
+                shadowRow("Desvio de profundidade desligado","bias off");
+                if(shadowChoice!=null)note(tr("Última escolha")+": "+tr(shadowChoice));
                 break;
             case "about":
                 content.addView(AboutPanel.create(activity,actions::logs,null));
