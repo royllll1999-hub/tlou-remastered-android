@@ -1,0 +1,686 @@
+# Subject: v0.1.10: FEX disk code cache (opt-in), parked host-copy waits (opt-in), stream buffer memory choice
+diff --git a/android-launcher/app/build.gradle b/android-launcher/app/build.gradle
+index 85dab4c..de61256 100644
+--- a/android-launcher/app/build.gradle
++++ b/android-launcher/app/build.gradle
+@@ -10,8 +10,8 @@ android {
+         // Android 10/11 allow execution of extracted native payload in app-private files
+         // for legacy target SDK. Keep separate from SDK version for compilation.
+         targetSdk 28
+-        versionCode 49
+-        versionName '0.1.9'
++        versionCode 50
++        versionName '0.1.10'
+     }
+     buildTypes {
+         release { minifyEnabled false }
+diff --git a/android-launcher/app/src/main/assets/ui-translations.tsv b/android-launcher/app/src/main/assets/ui-translations.tsv
+index 7a450f1..d8ae02d 100644
+--- a/android-launcher/app/src/main/assets/ui-translations.tsv
++++ b/android-launcher/app/src/main/assets/ui-translations.tsv
+@@ -307,3 +307,14 @@ Perfil de renderização (para otimização)	Render profile (for optimization)	P
+ Grava no log quanto tempo de GPU cada etapa do quadro leva e onde a CPU espera. Jogue 2–3 minutos na cena que pesa, saia e exporte os logs. Custa alguns FPS: desligue depois. Reinicie o jogo para aplicar.	Logs how much GPU time each step of the frame takes and where the CPU waits. Play 2–3 minutes in the heavy scene, quit and export the logs. Costs a few FPS: turn it off afterwards. Restart the game to apply.	Registra cuánto tiempo de GPU tarda cada etapa del fotograma y dónde espera la CPU. Juega 2–3 minutos en la escena pesada, sal y exporta los registros. Cuesta algunos FPS: desactívalo después. Reinicia el juego para aplicar.	Enregistre le temps GPU de chaque étape de l'image et où le CPU attend. Jouez 2–3 minutes dans la scène lourde, quittez et exportez les journaux. Coûte quelques FPS : désactivez ensuite. Redémarrez le jeu pour appliquer.	Protokolliert, wie viel GPU-Zeit jeder Schritt des Bildes braucht und wo die CPU wartet. 2–3 Minuten in der schweren Szene spielen, beenden und Logs exportieren. Kostet einige FPS: danach ausschalten. Spiel zum Übernehmen neu starten.	Registra quanto tempo di GPU richiede ogni fase del fotogramma e dove la CPU attende. Gioca 2–3 minuti nella scena pesante, esci ed esporta i log. Costa qualche FPS: disattivalo dopo. Riavvia il gioco per applicare.	Karenin her adımının ne kadar GPU süresi aldığını ve CPU'nun nerede beklediğini kaydeder. Ağır sahnede 2–3 dakika oynayın, çıkın ve kayıtları dışa aktarın. Birkaç FPS'ye mal olur: sonra kapatın. Uygulamak için oyunu yeniden başlatın.	Zapisuje, ile czasu GPU zajmuje każdy etap klatki i gdzie CPU czeka. Zagraj 2–3 minuty w ciężkiej scenie, wyjdź i wyeksportuj logi. Kosztuje kilka FPS: potem wyłącz. Uruchom grę ponownie, aby zastosować.	Пишет в лог, сколько времени GPU занимает каждый этап кадра и где ждёт CPU. Поиграйте 2–3 минуты в тяжёлой сцене, выйдите и экспортируйте логи. Стоит несколько FPS: потом выключите. Перезапустите игру, чтобы применить.	लॉग में लिखता है कि फ़्रेम के हर चरण में कितना GPU समय लगता है और CPU कहाँ रुकता है। भारी दृश्य में 2–3 मिनट खेलें, बाहर निकलें और लॉग एक्सपोर्ट करें। कुछ FPS लगते हैं: बाद में बंद करें। लागू करने के लिए गेम फिर से शुरू करें।
+ Salvar log desta sessão	Save this session's log	Guardar el registro de esta sesión	Enregistrer le journal de cette session	Log dieser Sitzung speichern	Salva il log di questa sessione	Bu oturumun kaydını kaydet	Zapisz log tej sesji	Сохранить лог этой сессии	इस सत्र का लॉग सहेजें
+ Log salvo; ele entra na exportação de logs.	Log saved; it is included when you export the logs.	Registro guardado; se incluye al exportar los registros.	Journal enregistré ; il est inclus dans l'export des journaux.	Log gespeichert; er ist im Log-Export enthalten.	Log salvato; viene incluso nell'esportazione dei log.	Kayıt kaydedildi; kayıtları dışa aktarırken eklenir.	Log zapisany; trafi do eksportu logów.	Лог сохранён; он попадёт в экспорт логов.	लॉग सहेजा गया; यह लॉग एक्सपोर्ट में शामिल होगा।
++Espera por cópias sem girar (experimental)	Wait for copies without spinning (experimental)	Esperar copias sin girar (experimental)	Attente des copies sans boucle active (expérimental)	Auf Kopien warten ohne Spinnen (experimentell)	Attesa delle copie senza spin (sperimentale)	Kopyaları dönmeden bekle (deneysel)	Czekanie na kopie bez kręcenia (eksperymentalne)	Ожидание копий без холостого цикла (эксперимент)	कॉपी का इंतज़ार बिना स्पिन (प्रायोगिक)
++Quando o thread de comandos da GPU espera as cópias de memória do jogo, ele dorme em vez de girar no núcleo (no port de Bloodborne para Android, o mesmo FPS com bem menos CPU). Menos calor; compare o FPS ligado e desligado. Reinicie o jogo para aplicar.	When the GPU command thread waits for the game's memory copies, it sleeps instead of spinning on the core (in the Bloodborne Android port: same FPS with much less CPU). Less heat; compare FPS on and off. Restart the game to apply.	Cuando el hilo de comandos de la GPU espera las copias de memoria del juego, duerme en lugar de girar en el núcleo (en el port de Bloodborne para Android: los mismos FPS con mucha menos CPU). Menos calor; compara los FPS activado y desactivado. Reinicia el juego para aplicar.	Quand le thread de commandes GPU attend les copies mémoire du jeu, il dort au lieu de tourner sur le cœur (dans le portage Android de Bloodborne : mêmes FPS avec bien moins de CPU). Moins de chaleur ; comparez les FPS activé et désactivé. Redémarrez le jeu pour appliquer.	Wartet der GPU-Befehlsthread auf die Speicherkopien des Spiels, schläft er statt auf dem Kern zu kreisen (im Bloodborne-Android-Port: gleiche FPS mit viel weniger CPU). Weniger Wärme; FPS an und aus vergleichen. Spiel zum Übernehmen neu starten.	Quando il thread dei comandi GPU attende le copie di memoria del gioco, dorme invece di girare sul core (nel port Android di Bloodborne: stessi FPS con molta meno CPU). Meno calore; confronta gli FPS attivo e disattivo. Riavvia il gioco per applicare.	GPU komut iş parçacığı oyunun bellek kopyalarını beklerken çekirdekte dönmek yerine uyur (Bloodborne Android portunda: aynı FPS, çok daha az CPU). Daha az ısı; FPS'yi açık ve kapalı karşılaştırın. Uygulamak için oyunu yeniden başlatın.	Gdy wątek poleceń GPU czeka na kopie pamięci gry, śpi zamiast kręcić się na rdzeniu (w porcie Bloodborne na Androida: te same FPS przy znacznie mniejszym CPU). Mniej ciepła; porównaj FPS włączone i wyłączone. Uruchom grę ponownie, aby zastosować.	Когда поток команд GPU ждёт копирования памяти игры, он спит, а не крутится на ядре (в порте Bloodborne для Android: тот же FPS при заметно меньшей нагрузке CPU). Меньше нагрев; сравните FPS со включённой и выключенной опцией. Перезапустите игру, чтобы применить.	जब GPU कमांड थ्रेड गेम की मेमोरी कॉपी का इंतज़ार करता है, तो कोर पर घूमने के बजाय सोता है (Bloodborne Android पोर्ट में: वही FPS, बहुत कम CPU)। कम गर्मी; FPS चालू और बंद पर तुलना करें। लागू करने के लिए गेम फिर से शुरू करें।
++Memória dos dados de desenho	Draw data memory	Memoria de datos de dibujo	Mémoire des données de dessin	Speicher der Zeichendaten	Memoria dei dati di disegno	Çizim verisi belleği	Pamięć danych rysowania	Память данных отрисовки	ड्रॉ डेटा मेमोरी
++Onde ficam os pequenos dados que cada desenho copia para a GPU. Memória com cache é o padrão; memória da GPU era a escolha original do shadPS4. No Adreno a memória é compartilhada: só o teste mostra qual é mais rápida. Reinicie o jogo para aplicar.	Where the small data each draw copies for the GPU lives. Cached memory is the default; GPU memory was shadPS4's original choice. On Adreno memory is shared: only a test shows which is faster. Restart the game to apply.	Dónde están los pequeños datos que cada dibujo copia para la GPU. La memoria con caché es la predeterminada; la memoria de la GPU era la opción original de shadPS4. En Adreno la memoria es compartida: solo una prueba muestra cuál es más rápida. Reinicia el juego para aplicar.	Où se trouvent les petites données que chaque dessin copie pour le GPU. La mémoire avec cache est le défaut ; la mémoire GPU était le choix d'origine de shadPS4. Sur Adreno, la mémoire est partagée : seul un test montre laquelle est plus rapide. Redémarrez le jeu pour appliquer.	Wo die kleinen Daten liegen, die jeder Zeichenaufruf für die GPU kopiert. Speicher mit Cache ist Standard; GPU-Speicher war die ursprüngliche Wahl von shadPS4. Bei Adreno ist der Speicher geteilt: nur ein Test zeigt, was schneller ist. Spiel zum Übernehmen neu starten.	Dove stanno i piccoli dati che ogni disegno copia per la GPU. La memoria con cache è il predefinito; la memoria GPU era la scelta originale di shadPS4. Su Adreno la memoria è condivisa: solo un test mostra quale è più veloce. Riavvia il gioco per applicare.	Her çizimin GPU için kopyaladığı küçük verilerin yeri. Önbellekli bellek varsayılandır; GPU belleği shadPS4'ün orijinal seçimiydi. Adreno'da bellek paylaşımlıdır: hangisinin daha hızlı olduğunu yalnızca test gösterir. Uygulamak için oyunu yeniden başlatın.	Gdzie leżą małe dane, które każde rysowanie kopiuje dla GPU. Pamięć z cache to domyślnie; pamięć GPU była oryginalnym wyborem shadPS4. W Adreno pamięć jest współdzielona: tylko test pokaże, która jest szybsza. Uruchom grę ponownie, aby zastosować.	Где лежат мелкие данные, которые каждая отрисовка копирует для GPU. Память с кэшем — по умолчанию; память GPU — исходный выбор shadPS4. У Adreno память общая: что быстрее, покажет только тест. Перезапустите игру, чтобы применить.	हर ड्रॉ GPU के लिए जो छोटा डेटा कॉपी करता है, वह कहाँ रहता है। कैश वाली मेमोरी डिफ़ॉल्ट है; GPU मेमोरी shadPS4 की मूल पसंद थी। Adreno में मेमोरी साझा है: कौन तेज़ है, यह केवल टेस्ट बताएगा। लागू करने के लिए गेम फिर से शुरू करें।
++RAM com cache (padrão)	Cached RAM (default)	RAM con caché (predeterminado)	RAM avec cache (défaut)	RAM mit Cache (Standard)	RAM con cache (predefinito)	Önbellekli RAM (varsayılan)	RAM z cache (domyślnie)	ОЗУ с кэшем (по умолчанию)	कैश वाली RAM (डिफ़ॉल्ट)
++Memória da GPU	GPU memory	Memoria de la GPU	Mémoire GPU	GPU-Speicher	Memoria GPU	GPU belleği	Pamięć GPU	Память GPU	GPU मेमोरी
++RAM sem cache	Uncached RAM	RAM sin caché	RAM sans cache	RAM ohne Cache	RAM senza cache	Önbelleksiz RAM	RAM bez cache	ОЗУ без кэша	बिना कैश RAM
++Cache do código da CPU no disco (experimental)	CPU code cache on disk (experimental)	Caché del código de la CPU en disco (experimental)	Cache du code CPU sur disque (expérimental)	CPU-Code-Cache auf dem Speicher (experimentell)	Cache del codice CPU su disco (sperimentale)	Diskte CPU kod önbelleği (deneysel)	Pamięć podręczna kodu CPU na dysku (eksperymentalne)	Кэш кода CPU на диске (эксперимент)	डिस्क पर CPU कोड कैश (प्रायोगिक)
++O FEX guarda o código do jogo já traduzido e o reutiliza na próxima vez: menos travadinhas ao entrar em lugares por onde você já passou e carregamentos mais rápidos. Não aumenta o FPS médio. A primeira passagem por um lugar fica um pouco mais lenta (o código é gravado). Usa até 512 MB. Se o jogo travar ou mostrar erros, limpe o cache ou desligue. Reinicie o jogo para aplicar.	FEX saves the game code it has already translated and reuses it next time: fewer hitches in places you have already been and faster loading. It does not raise average FPS. The first pass through a place is a little slower (the code is written). Uses up to 512 MB. If the game crashes or shows errors, clear the cache or turn it off. Restart the game to apply.	FEX guarda el código del juego ya traducido y lo reutiliza la próxima vez: menos tirones en lugares por los que ya pasaste y cargas más rápidas. No sube los FPS medios. La primera pasada por un lugar es algo más lenta (se graba el código). Usa hasta 512 MB. Si el juego se cuelga o muestra errores, borra la caché o desactívalo. Reinicia el juego para aplicar.	FEX conserve le code du jeu déjà traduit et le réutilise la fois suivante : moins d'à-coups dans les lieux déjà visités et chargements plus rapides. N'augmente pas les FPS moyens. Le premier passage dans un lieu est un peu plus lent (le code est écrit). Utilise jusqu'à 512 Mo. Si le jeu plante ou affiche des erreurs, videz le cache ou désactivez. Redémarrez le jeu pour appliquer.	FEX speichert bereits übersetzten Spielcode und nutzt ihn beim nächsten Mal wieder: weniger Ruckler an bereits besuchten Orten und schnelleres Laden. Erhöht die durchschnittlichen FPS nicht. Der erste Durchgang durch einen Ort ist etwas langsamer (der Code wird geschrieben). Nutzt bis zu 512 MB. Stürzt das Spiel ab oder zeigt Fehler, Cache leeren oder ausschalten. Spiel zum Übernehmen neu starten.	FEX salva il codice di gioco già tradotto e lo riusa la volta successiva: meno scatti nei luoghi già visitati e caricamenti più rapidi. Non aumenta gli FPS medi. Il primo passaggio in un luogo è un po' più lento (il codice viene scritto). Usa fino a 512 MB. Se il gioco si blocca o mostra errori, svuota la cache o disattivalo. Riavvia il gioco per applicare.	FEX, çevrilmiş oyun kodunu saklar ve bir dahaki sefere yeniden kullanır: daha önce geçtiğiniz yerlerde daha az takılma ve daha hızlı yükleme. Ortalama FPS'yi artırmaz. Bir yerden ilk geçiş biraz daha yavaştır (kod yazılır). En fazla 512 MB kullanır. Oyun çökerse veya hata gösterirse önbelleği temizleyin ya da kapatın. Uygulamak için oyunu yeniden başlatın.	FEX zapisuje już przetłumaczony kod gry i używa go ponownie następnym razem: mniej przycięć w miejscach, w których już byłeś, i szybsze wczytywanie. Nie podnosi średnich FPS. Pierwsze przejście przez miejsce jest nieco wolniejsze (kod jest zapisywany). Używa do 512 MB. Jeśli gra się zawiesza lub pokazuje błędy, wyczyść pamięć podręczną lub wyłącz. Uruchom grę ponownie, aby zastosować.	FEX сохраняет уже переведённый код игры и использует его в следующий раз: меньше подёргиваний в местах, где вы уже были, и быстрее загрузка. Средний FPS не растёт. Первый проход по месту чуть медленнее (код записывается). Занимает до 512 МБ. Если игра вылетает или показывает ошибки, очистите кэш или выключите. Перезапустите игру, чтобы применить.	FEX पहले से अनुवादित गेम कोड सहेजता है और अगली बार दोबारा इस्तेमाल करता है: जहाँ आप जा चुके हैं वहाँ कम झटके और तेज़ लोडिंग। औसत FPS नहीं बढ़ता। किसी जगह से पहली बार गुज़रना थोड़ा धीमा होता है (कोड लिखा जाता है)। 512 MB तक लेता है। गेम क्रैश हो या गड़बड़ी दिखे तो कैश साफ़ करें या बंद करें। लागू करने के लिए गेम फिर से शुरू करें।
++Limpar cache do código da CPU	Clear CPU code cache	Borrar caché del código de la CPU	Vider le cache du code CPU	CPU-Code-Cache leeren	Svuota cache del codice CPU	CPU kod önbelleğini temizle	Wyczyść pamięć podręczną kodu CPU	Очистить кэш кода CPU	CPU कोड कैश साफ़ करें
++Cache do código da CPU apagado	CPU code cache cleared	Caché del código de la CPU borrada	Cache du code CPU vidé	CPU-Code-Cache geleert	Cache del codice CPU svuotata	CPU kod önbelleği temizlendi	Pamięć podręczna kodu CPU wyczyszczona	Кэш кода CPU очищен	CPU कोड कैश साफ़ हो गया
+diff --git a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/AboutPanel.java b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/AboutPanel.java
+index 189a763..9997334 100644
+--- a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/AboutPanel.java
++++ b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/AboutPanel.java
+@@ -46,7 +46,7 @@ final class AboutPanel {
+     private LinearLayout build(Runnable logs,Runnable export){
+         LinearLayout root=column();
+         TextView title=text("THE LAST OF US REMASTERED",22,TEXT);title.setTypeface(Typeface.create("sans-serif-condensed",Typeface.BOLD));root.addView(title);
+-        String version="0.1.9";try{version=activity.getPackageManager().getPackageInfo(activity.getPackageName(),0).versionName;}catch(Exception ignored){}
++        String version="0.1.10";try{version=activity.getPackageManager().getPackageInfo(activity.getPackageName(),0).versionName;}catch(Exception ignored){}
+         TextView v=text(tr("Versão")+" "+version,13,ACCENT);v.setPadding(0,dp(6),0,dp(8));root.addView(v);
+         root.addView(text("Port para Android com runtime Bionic.",13,MUTED));
+         LinearLayout contact=card(root,"DESENVOLVIMENTO");
+diff --git a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/GameActivity.java b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/GameActivity.java
+index 2316700..7b7d951 100644
+--- a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/GameActivity.java
++++ b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/GameActivity.java
+@@ -343,6 +343,9 @@ public final class GameActivity extends Activity {
+             env.put("GOW3_SCREEN_H",String.valueOf(getResources().getDisplayMetrics().heightPixels));
+             env.put("GOW3_DISPLAY_HZ",String.valueOf(Math.round(getWindowManager().getDefaultDisplay().getRefreshRate())));
+             env.put("GOW3_GPU_USER_DIR",state.getAbsolutePath());
++            // FEX disk code cache (Performance > CPU, off by default): one folder, cleared from
++            // the launcher; FEX keeps a database per FEX build and configuration inside it.
++            env.put("GOW3_FEX_DISK_CACHE_DIR",new File(state,"fex-cache").getAbsolutePath());
+             env.put("TLOU_FRAME_SUMMARY","1");
+             env.put("GOW3_VSYNC","1");
+             // Desktop temporal injections target updated game shaders. Keep the
+diff --git a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/MainActivity.java b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/MainActivity.java
+index 82f0859..0775bd7 100644
+--- a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/MainActivity.java
++++ b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/MainActivity.java
+@@ -376,6 +376,18 @@ public final class MainActivity extends Activity {
+             divider(cpu);
+             option(cpu,"adpf","ADPF — ajuste dinâmico de desempenho",
+                 "Informa ao Android quanto tempo cada quadro leva, para o sistema ajustar a CPU por conta própria (Android 13+). Não desativa os limites térmicos.",false);
++            divider(cpu);
++            option(cpu,"park_copy_waits","Espera por cópias sem girar (experimental)",
++                "Quando o thread de comandos da GPU espera as cópias de memória do jogo, ele dorme em vez de girar no núcleo (no port de Bloodborne para Android, o mesmo FPS com bem menos CPU). Menos calor; compare o FPS ligado e desligado. Reinicie o jogo para aplicar.",false);
++            divider(cpu);
++            choiceRow(cpu,"stream_memory","Memória dos dados de desenho",
++                "Onde ficam os pequenos dados que cada desenho copia para a GPU. Memória com cache é o padrão; memória da GPU era a escolha original do shadPS4. No Adreno a memória é compartilhada: só o teste mostra qual é mais rápida. Reinicie o jogo para aplicar.",
++                new String[]{"RAM com cache (padrão)","Memória da GPU","RAM sem cache"},
++                new String[]{"cached","device","host"},"cached");
++            divider(cpu);
++            option(cpu,"fex_disk_cache","Cache do código da CPU no disco (experimental)",
++                "O FEX guarda o código do jogo já traduzido e o reutiliza na próxima vez: menos travadinhas ao entrar em lugares por onde você já passou e carregamentos mais rápidos. Não aumenta o FPS médio. A primeira passagem por um lugar fica um pouco mais lenta (o código é gravado). Usa até 512 MB. Se o jogo travar ou mostrar erros, limpe o cache ou desligue. Reinicie o jogo para aplicar.",false);
++            add(cpu,"Limpar cache do código da CPU",false,this::clearFexCache);
+             LinearLayout drivers=card(root,"GPU E DRIVER VULKAN");
+             driverInfo=text("",12,MUTED);drivers.addView(driverInfo);
+             add(drivers,"Selecionar driver Vulkan",false,this::selectDriver);
+@@ -453,6 +465,20 @@ public final class MainActivity extends Activity {
+         permission.setOnClickListener(v->withAccess(this::refresh));root.addView(permission);
+         setContentView(scroll);refresh();
+     }
++    /** Deletes FEX's disk code cache (tlou/fex-cache); the next run rebuilds it. */
++    private void clearFexCache() {
++        File dir=new File(getFilesDir(),"tlou/fex-cache");
++        long[] freed={0};
++        deleteCacheTree(dir,freed);
++        android.widget.Toast.makeText(this,TlouLanguage.t(this,"Cache do código da CPU apagado")+
++            " ("+(freed[0]/(1024*1024))+" MB)",android.widget.Toast.LENGTH_LONG).show();
++    }
++    private static void deleteCacheTree(File file,long[] freed) {
++        File[] children=file.listFiles();
++        if(children!=null)for(File child:children)deleteCacheTree(child,freed);
++        long size=file.isFile()?file.length():0;
++        if(file.delete())freed[0]+=size;
++    }
+     /** Updates belong to the selected game's CUSA, never to the Android APK. */
+     private File baseForUpdate() throws Exception {
+         String configured=prefs.getString("game_path","");
+diff --git a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortSettings.java b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortSettings.java
+index 086e0dc..7daaef7 100644
+--- a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortSettings.java
++++ b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/PortSettings.java
+@@ -199,6 +199,13 @@ final class PortSettings {
+         // code; FEX itself warns it can break multithreaded programs. Only set when chosen.
+         if(p.getBoolean("fex_no_tso",false))env.put("FEX_TSOENABLED","0");
+         else env.remove("FEX_TSOENABLED");
++        // FEX disk code cache (experimental, off by default): GameActivity sets its folder.
++        env.put("GOW3_FEX_DISK_CACHE",p.getBoolean("fex_disk_cache",false)?"1":"0");
++        // Command thread sleeps on a futex while the recorder runs guest copies (experimental).
++        env.put("GOW3_PARK_COPY_WAITS",p.getBoolean("park_copy_waits",false)?"1":"0");
++        // Stream buffer placement (A/B on Adreno): cached (default), device or host.
++        String stream=p.getString("stream_memory","cached");
++        env.put("GOW3_STREAM_MEMORY","device".equals(stream)||"host".equals(stream)?stream:"cached");
+         // Shaders that read guest memory through raw 64-bit addresses (MUBUF ADDR64): Naughty Dog's
+         // hair, beard and transparent shaders load their sun-shadow cascade matrices that way.
+         // Without direct memory access those loads read the flat constant buffer instead, the
+@@ -294,6 +301,9 @@ final class PortSettings {
+         result.append("; gpu-thread-priority=").append(prefs(context).getBoolean("gpu_thread_priority",true)?"above":"normal");
+         result.append("; tso=").append(prefs(context).getBoolean("fex_no_tso",false)?"OFF":"on");
+         result.append("; pause=").append(prefs(context).getBoolean("pause_wfe",false)?"wfe":"yield");
++        result.append("; fex-disk-cache=").append(prefs(context).getBoolean("fex_disk_cache",false)?"on":"off");
++        result.append("; park-copy-waits=").append(prefs(context).getBoolean("park_copy_waits",false)?"on":"off");
++        result.append("; stream-memory=").append(prefs(context).getString("stream_memory","cached"));
+         result.append("; render-profile=").append(prefs(context).getBoolean("render_profile",false)?"on":"off");
+         result.append("; job-wake=").append(prefs(context).getBoolean("job_wake",true)?"fast":"off");
+         return result.toString();
+diff --git a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/TlouDialogs.java b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/TlouDialogs.java
+index 8339617..87ffe54 100644
+--- a/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/TlouDialogs.java
++++ b/android-launcher/app/src/main/java/ro/cobrabm/fexdroid/TlouDialogs.java
+@@ -32,7 +32,7 @@ final class TlouDialogs {
+         try {
+             return activity.getPackageManager().getPackageInfo(activity.getPackageName(),0).versionName;
+         } catch(Exception ignored) {
+-            return "0.1.9";
++            return "0.1.10";
+         }
+     }
+     static int dp(Context c,int value) {
+diff --git a/android/bionic/test_runtime_contracts.sh b/android/bionic/test_runtime_contracts.sh
+index 54c7bbc..fdffa9f 100644
+--- a/android/bionic/test_runtime_contracts.sh
++++ b/android/bionic/test_runtime_contracts.sh
+@@ -453,7 +453,7 @@ cc -std=c11 -O2 -Wall -Wextra -Werror -pthread \
+ # guest VMA fixture. Require byte parity and a host CPU reduction for small
+ # two-VMA backing uploads; routine-level speedup is not an FPS guarantee.
+ "$test_dir/memory-walk" --two-span-gate
+-for test in ring_binding_cursor tlou_host_copy_batch; do
++for test in ring_binding_cursor tlou_host_copy_batch tlou_seq_park; do
+   g++ -std=c++20 -O2 -Wall -Wextra -Werror -pthread -I gow3_pc/gpu/shim -I gow3_pc/gpu/shadps4 \
+     "gow3_pc/tests/test_${test}.cpp" -o "$test_dir/$test"
+   "$test_dir/$test" --correctness-only
+diff --git a/android/tests/test_tlou_release_011.py b/android/tests/test_tlou_release_011.py
+index d5cc932..1acf506 100644
+--- a/android/tests/test_tlou_release_011.py
++++ b/android/tests/test_tlou_release_011.py
+@@ -12,10 +12,10 @@ class Release011(unittest.TestCase):
+         main=(JAVA/"MainActivity.java").read_text()
+         about=(JAVA/"AboutPanel.java").read_text()
+         # The fork's own releases (v0.1.9-odin3 onwards) show their number in the launcher.
+-        self.assertIn("versionName '0.1.9'",build)
+-        self.assertIn("versionCode 49",build)
++        self.assertIn("versionName '0.1.10'",build)
++        self.assertIn("versionCode 50",build)
+         self.assertIn('text("v"+TlouDialogs.version(this)',main)
+-        self.assertIn('String version="0.1.9"',about)
++        self.assertIn('String version="0.1.10"',about)
+         self.assertIn('"royllll1999-hub"',about)
+         self.assertNotIn('DAEDALUS  /  ANDROID',main)
+         self.assertIn('artFrame.addView(artVersion,artBadge)',main)
+diff --git a/android/tests/test_tlou_release_0110.py b/android/tests/test_tlou_release_0110.py
+new file mode 100644
+index 0000000..df8c47c
+--- /dev/null
++++ b/android/tests/test_tlou_release_0110.py
+@@ -0,0 +1,48 @@
++"""Release 0.1.10: FEX disk code cache, parked copy waits, stream buffer memory choice."""
++from pathlib import Path
++import unittest
++
++ROOT = Path(__file__).resolve().parents[2]
++JAVA = ROOT / "android-launcher/app/src/main/java/ro/cobrabm/fexdroid"
++GPU = ROOT / "gow3_pc/gpu/shadps4/video_core"
++
++
++class Release0110(unittest.TestCase):
++    def test_fex_disk_cache_is_opt_in_with_its_own_threads(self):
++        fex = (ROOT / "gow3_pc/cpu/guest_cpu_fex.cpp").read_text()
++        self.assertIn('std::getenv("GOW3_FEX_DISK_CACHE")', fex)
++        self.assertIn("FEXCore::Threads::Thread::SetInternalPointers", fex)
++        self.assertIn("FEXCore::Config::CONFIG_DISKCACHEPATH", fex)
++        self.assertIn('FEXCore::Config::Set(FEXCore::Config::CONFIG_DISKCACHE, "0");', fex)
++        self.assertNotIn("disk_cache=unchanged", fex)
++        settings = (JAVA / "PortSettings.java").read_text()
++        self.assertIn('p.getBoolean("fex_disk_cache",false)', settings)
++        game = (JAVA / "GameActivity.java").read_text()
++        self.assertIn('env.put("GOW3_FEX_DISK_CACHE_DIR",new File(state,"fex-cache")', game)
++        main = (JAVA / "MainActivity.java").read_text()
++        self.assertIn('new File(getFilesDir(),"tlou/fex-cache")', main)
++
++    def test_copy_waits_park_on_a_bounded_futex(self):
++        park = (GPU / "renderer_vulkan/tlou_seq_park.h").read_text()
++        self.assertIn("timespec timeout{0, 1'000'000};", park)
++        self.assertIn('std::getenv("GOW3_PARK_COPY_WAITS")', park)
++        scheduler_h = (GPU / "renderer_vulkan/vk_scheduler.h").read_text()
++        self.assertIn("host_copy_park.Notify();", scheduler_h)
++        self.assertEqual(scheduler_h.count("&host_copy_park)"), 2)
++        batch = (GPU / "renderer_vulkan/tlou_host_copy_batch.h").read_text()
++        self.assertIn("park->Notify();", batch)
++        scheduler = (GPU / "renderer_vulkan/vk_scheduler.cpp").read_text()
++        self.assertIn("Detail::ParkUntilSequence(host_copies_done, host_copies_issued", scheduler)
++        self.assertIn('p.getBoolean("park_copy_waits",false)', (JAVA / "PortSettings.java").read_text())
++
++    def test_stream_memory_choice(self):
++        settings = (JAVA / "PortSettings.java").read_text()
++        self.assertIn('env.put("GOW3_STREAM_MEMORY",', settings)
++        buffer = (GPU / "buffer_cache/buffer.cpp").read_text()
++        self.assertIn("GPU: stream buffer memory %s (GOW3_STREAM_MEMORY)", buffer)
++        main = (JAVA / "MainActivity.java").read_text()
++        self.assertIn('new String[]{"cached","device","host"},"cached"', main)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/gow3_pc/cpu/guest_cpu_fex.cpp b/gow3_pc/cpu/guest_cpu_fex.cpp
+index 74bec50..a2b00c9 100644
+--- a/gow3_pc/cpu/guest_cpu_fex.cpp
++++ b/gow3_pc/cpu/guest_cpu_fex.cpp
+@@ -21,6 +21,7 @@
+ #include <FEXCore/Utils/LogManager.h>
+ #include <FEXCore/Utils/LongJump.h>
+ #include <FEXCore/Utils/SignalScopeGuards.h>
++#include <FEXCore/Utils/Threads.h>
+ #include <FEXCore/Utils/TypeDefines.h>
+ 
+ #include <array>
+@@ -31,10 +32,14 @@
+ #include <cstring>
+ #include <mutex>
+ #include <shared_mutex>
++#include <string>
+ #include <unordered_map>
+ #include <utility>
+ #include <vector>
++#include <pthread.h>
+ #include <sys/mman.h>
++#include <sys/resource.h>
++#include <sys/stat.h>
+ #include <sys/uio.h>
+ #include <ucontext.h>
+ #include <unistd.h>
+@@ -309,6 +314,90 @@ uint64_t ReadGuest(uintptr_t address) {
+     iovec local {&value, sizeof(value)}, remote {reinterpret_cast<void*>(address), sizeof(value)};
+     return process_vm_readv(getpid(), &local, 1, &remote, 1, 0) == sizeof(value) ? value : 0;
+ }
++
++// TLOU Android: FEX's disk code cache (GOW3_FEX_DISK_CACHE=1, launcher switch, off by default)
++// writes compiled blocks from a FEX worker thread. This embedded FEXCore has no frontend that
++// sets up FEX's thread creation, so provide plain pthreads for FEX's internal threads.
++class FexInternalThread final : public FEXCore::Threads::Thread {
++public:
++    FexInternalThread(FEXCore::Threads::ThreadFunc func, void* arg, FEXCore::Threads::Flags flags,
++                      const char* name)
++        : func_(func), arg_(arg), low_priority_(flags.LowPriority) {
++        if (name) {
++            std::snprintf(name_, sizeof(name_), "%s", name);
++        }
++        started_ = pthread_create(&thread_, nullptr, &FexInternalThread::Start, this) == 0;
++        joinable_ = started_;
++    }
++    ~FexInternalThread() override {
++        if (joinable_) {
++            pthread_detach(thread_);
++        }
++    }
++    bool joinable() override {
++        return joinable_;
++    }
++    bool join(void** ret) override {
++        if (!joinable_) {
++            return false;
++        }
++        joinable_ = false;
++        return pthread_join(thread_, ret) == 0;
++    }
++    bool detach() override {
++        if (!joinable_) {
++            return false;
++        }
++        joinable_ = false;
++        return pthread_detach(thread_) == 0;
++    }
++    bool IsSelf() override {
++        return started_ && pthread_equal(thread_, pthread_self());
++    }
++
++private:
++    static void* Start(void* self_ptr) {
++        auto* self = static_cast<FexInternalThread*>(self_ptr);
++        if (self->name_[0]) {
++            char short_name[16];
++            std::snprintf(short_name, sizeof(short_name), "%s", self->name_);
++            pthread_setname_np(pthread_self(), short_name);
++        }
++        if (self->low_priority_) {
++            setpriority(PRIO_PROCESS, 0, 10);
++        }
++        return self->func_(self->arg_);
++    }
++    FEXCore::Threads::ThreadFunc func_;
++    void* arg_;
++    bool low_priority_;
++    bool started_ = false;
++    bool joinable_ = false;
++    pthread_t thread_{};
++    char name_[64] = {};
++};
++
++fextl::unique_ptr<FEXCore::Threads::Thread> CreateFexInternalThread(FEXCore::Threads::ThreadFunc func, void* arg,
++                                                                    FEXCore::Threads::Flags flags,
++                                                                    const char* name) {
++    auto thread = fextl::make_unique<FexInternalThread>(func, arg, flags, name);
++    if (!thread->joinable()) {
++        Fatal("cannot start a FEX worker thread");
++    }
++    return thread;
++}
++
++void CleanupFexThreadsAfterFork() {}
++
++/// Disk code cache directory from the launcher, or nullptr when the cache is off.
++const char* FexDiskCacheDir() {
++    const char* on = std::getenv("GOW3_FEX_DISK_CACHE");
++    const char* dir = std::getenv("GOW3_FEX_DISK_CACHE_DIR");
++    if (!on || on[0] != '1' || on[1] != 0 || !dir || !dir[0]) {
++        return nullptr;
++    }
++    return dir;
++}
+ } // namespace
+ 
+ extern "C" {
+@@ -340,8 +429,29 @@ void guest_cpu_init(void* (*map)(size_t size, int prot)) {
+                          dynamic_l1 ? "1" : "0");
+     // TSO stays on unless the launcher's experimental switch sets FEX_TSOENABLED=0 (read by
+     // the environment layer of LoadConfig above); the log says which one ran.
+-    std::printf("TLOU FEX cache: dynamic_l1=%d disk_cache=unchanged tso=%s\n",
+-                int(dynamic_l1), FEXCore::Config::Get_TSOENABLED()() ? "on" : "OFF (experimental)");
++    // Disk code cache: compiled blocks are kept between runs, keyed by a hash of the guest code
++    // (our loader maps the game anonymously), so patched or hooked code never matches a stale
++    // block. FEX keeps one database per host and per FEX configuration (TSO on and off differ).
++    const char* disk_cache_dir = FexDiskCacheDir();
++    if (disk_cache_dir) {
++        FEXCore::Threads::Thread::SetInternalPointers({
++            .CreateThread = CreateFexInternalThread,
++            .CleanupAfterFork = CleanupFexThreadsAfterFork,
++        });
++        std::string path = disk_cache_dir;
++        if (path.back() != '/') {
++            path += '/';
++        }
++        mkdir(path.c_str(), 0700);
++        FEXCore::Config::Set(FEXCore::Config::CONFIG_DISKCACHE, "1");
++        FEXCore::Config::Set(FEXCore::Config::CONFIG_DISKCACHEPATH, path.c_str());
++        FEXCore::Config::Set(FEXCore::Config::CONFIG_DISKCACHEMAXFILESIZE, "536870912");
++    } else {
++        FEXCore::Config::Set(FEXCore::Config::CONFIG_DISKCACHE, "0");
++    }
++    std::printf("TLOU FEX cache: dynamic_l1=%d disk_cache=%s tso=%s\n", int(dynamic_l1),
++                disk_cache_dir ? "on (512 MiB)" : "off",
++                FEXCore::Config::Get_TSOENABLED()() ? "on" : "OFF (experimental)");
+     const auto features = FEX::FetchHostFeatures();
+     wide_xmm = features.SupportsAVX && features.SupportsSVE256;
+     ctx = FEXCore::Context::Context::CreateNewContext(features).release();
+diff --git a/gow3_pc/gpu/shadps4/video_core/buffer_cache/buffer.cpp b/gow3_pc/gpu/shadps4/video_core/buffer_cache/buffer.cpp
+index 29ed942..26b3f82 100644
+--- a/gow3_pc/gpu/shadps4/video_core/buffer_cache/buffer.cpp
++++ b/gow3_pc/gpu/shadps4/video_core/buffer_cache/buffer.cpp
+@@ -47,10 +47,14 @@ static StreamPlacement StreamMemory() {
+     static const StreamPlacement placement = [] {
+         const char* env = std::getenv("GOW3_STREAM_MEMORY");
+         const std::string_view value = env ? env : "cached";
+-        if (value == "device") {
+-            return StreamPlacement::Device;
+-        }
+-        return value == "host" ? StreamPlacement::Host : StreamPlacement::Cached;
++        const StreamPlacement chosen = value == "device" ? StreamPlacement::Device
++                                       : value == "host" ? StreamPlacement::Host
++                                                         : StreamPlacement::Cached;
++        std::printf("GPU: stream buffer memory %s (GOW3_STREAM_MEMORY)\n",
++                    chosen == StreamPlacement::Device ? "device"
++                    : chosen == StreamPlacement::Host ? "host"
++                                                      : "cached");
++        return chosen;
+     }();
+     return placement;
+ }
+diff --git a/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/tlou_host_copy_batch.h b/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/tlou_host_copy_batch.h
+index 5b43083..025c37b 100644
+--- a/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/tlou_host_copy_batch.h
++++ b/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/tlou_host_copy_batch.h
+@@ -6,6 +6,7 @@
+ #include <cstdint>
+ #include <new>
+ #include "gow3_copy.h"
++#include "tlou_seq_park.h"
+ 
+ // Does NOT allocate a fixed 16-slot array per batch. Instead it owns a
+ // pointer to contiguous Gow3Copy::Item records in the CURRENT unpublished
+@@ -19,8 +20,8 @@ namespace Vulkan::Detail {
+ class HostCopyBatch {
+ public:
+     HostCopyBatch(std::atomic<std::uint64_t>& done, Gow3Copy::Item* first,
+-                  std::uint64_t sequence) noexcept
+-        : copies{reinterpret_cast<std::uintptr_t>(first)}, completed{&done},
++                  std::uint64_t sequence, SeqParkSignal* park = nullptr) noexcept
++        : copies{reinterpret_cast<std::uintptr_t>(first)}, completed{&done}, park{park},
+           last_sequence{sequence}, used{1} {}
+ 
+     [[nodiscard]] bool Append(Gow3Copy::Item* next, std::uint64_t sequence) noexcept {
+@@ -40,6 +41,9 @@ public:
+             item.run(item);
+         }
+         completed->store(last_sequence, std::memory_order_release);
++        if (park) {
++            park->Notify();
++        }
+     }
+ 
+     [[nodiscard]] std::size_t Size() const noexcept { return used; }
+@@ -48,6 +52,7 @@ public:
+ private:
+     std::uintptr_t copies;
+     std::atomic<std::uint64_t>* completed;
++    SeqParkSignal* park;
+     std::uint64_t last_sequence;
+     std::size_t used;
+ };
+diff --git a/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/tlou_seq_park.h b/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/tlou_seq_park.h
+new file mode 100644
+index 0000000..6223d07
+--- /dev/null
++++ b/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/tlou_seq_park.h
+@@ -0,0 +1,78 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++#pragma once
++
++// TLOU Android (GOW3_PARK_COPY_WAITS=1, launcher switch): WaitHostCopies slept nowhere: it
++// yield-spun until the recording thread had run the guest memory copies, a core busy for
++// the whole wait. Bloodborne-Android measured short spin + futex sleep at the same FPS with
++// far less CPU (docs/SESSION_2026-10-18_UNIFIED_MEMORY_POWER.md). Here the waiter yields a
++// few times, then sleeps on a futex; every store of the completed sequence wakes it when a
++// waiter is registered (one relaxed load otherwise). Each sleep is bounded (1 ms), so a
++// missed wake costs at most that, never a hang.
++
++#include <atomic>
++#include <cstdint>
++#include <cstdlib>
++#include <thread>
++#ifdef __linux__
++#include <linux/futex.h>
++#include <sys/syscall.h>
++#include <time.h>
++#include <unistd.h>
++#endif
++
++namespace Vulkan::Detail {
++
++inline bool ParkCopyWaitsEnabled() {
++    static const bool enabled = [] {
++        const char* env = std::getenv("GOW3_PARK_COPY_WAITS");
++        return env && env[0] == '1' && env[1] == '\0';
++    }();
++    return enabled;
++}
++
++/// Futex word bumped on every completion store while waiters exist.
++struct SeqParkSignal {
++    std::atomic<std::uint32_t> word{0};
++    std::atomic<std::uint32_t> waiters{0};
++
++    void Notify() {
++        if (waiters.load(std::memory_order_seq_cst) == 0) {
++            return;
++        }
++        word.fetch_add(1, std::memory_order_seq_cst);
++#ifdef __linux__
++        syscall(SYS_futex, reinterpret_cast<std::uint32_t*>(&word), FUTEX_WAKE_PRIVATE, INT32_MAX,
++                nullptr, nullptr, 0);
++#endif
++    }
++};
++
++/// Waits until `completed` reaches `target`; `kick` runs before every sleep.
++template <class Kick>
++void ParkUntilSequence(const std::atomic<std::uint64_t>& completed, std::uint64_t target,
++                       SeqParkSignal& signal, Kick&& kick) {
++    for (unsigned spins = 0; spins < 32; ++spins) {
++        if (completed.load(std::memory_order_acquire) >= target) {
++            return;
++        }
++        std::this_thread::yield();
++    }
++    signal.waiters.fetch_add(1, std::memory_order_seq_cst);
++    while (true) {
++        const std::uint32_t seen = signal.word.load(std::memory_order_seq_cst);
++        if (completed.load(std::memory_order_acquire) >= target) {
++            break;
++        }
++        kick();
++#ifdef __linux__
++        timespec timeout{0, 1'000'000};
++        syscall(SYS_futex, reinterpret_cast<std::uint32_t*>(&signal.word), FUTEX_WAIT_PRIVATE,
++                seen, &timeout, nullptr, 0);
++#else
++        std::this_thread::yield();
++#endif
++    }
++    signal.waiters.fetch_sub(1, std::memory_order_seq_cst);
++}
++
++} // namespace Vulkan::Detail
+diff --git a/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/vk_scheduler.cpp b/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/vk_scheduler.cpp
+index bfcab06..7a406ff 100644
+--- a/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/vk_scheduler.cpp
++++ b/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/vk_scheduler.cpp
+@@ -323,8 +323,13 @@ void Scheduler::WaitHostCopies() {
+         Gow3Stats::host_copy_waits.fetch_add(1, std::memory_order_relaxed);
+         const auto start = std::chrono::steady_clock::now();
+         KickRecording(true);
+-        while (host_copies_done.load(std::memory_order_acquire) < host_copies_issued) {
+-            std::this_thread::yield();
++        if (Detail::ParkCopyWaitsEnabled()) {
++            Detail::ParkUntilSequence(host_copies_done, host_copies_issued, host_copy_park,
++                                      [] {});
++        } else {
++            while (host_copies_done.load(std::memory_order_acquire) < host_copies_issued) {
++                std::this_thread::yield();
++            }
+         }
+         if (OrderWaitStatsEnabled()) {
+             NoteOrderWait(1, start);
+diff --git a/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/vk_scheduler.h b/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/vk_scheduler.h
+index f836aff..d0a21f6 100644
+--- a/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/vk_scheduler.h
++++ b/gow3_pc/gpu/shadps4/video_core/renderer_vulkan/vk_scheduler.h
+@@ -623,7 +623,8 @@ public:
+     // Command headers and items are placed directly in RecordChunk::storage:
+     // 1 item costs only sizeof(Item), not a reserved 16-item array.
+     [[nodiscard]] bool PushHostCopy(const Gow3Copy::Item& item, u64 sequence,
+-                                    std::atomic<u64>& completed) {
++                                    std::atomic<u64>& completed,
++                                    Detail::SeqParkSignal* park = nullptr) {
+         static_assert(std::is_trivially_destructible_v<Gow3Copy::Item>);
+         if (last_host_batch) {
+             const size_t at = (used + alignof(Gow3Copy::Item) - 1) &
+@@ -646,7 +647,7 @@ public:
+             return false;
+         }
+         auto* first_item = new (storage + item_offset) Gow3Copy::Item(item);
+-        auto* command = new (storage + offset) Command(completed, first_item, sequence);
++        auto* command = new (storage + offset) Command(completed, first_item, sequence, park);
+         if (last) {
+             last->next = command;
+         } else {
+@@ -719,8 +720,8 @@ private:
+ 
+     struct HostCopyBatchCommand final : CommandBase {
+         explicit HostCopyBatchCommand(std::atomic<u64>& done, Gow3Copy::Item* first,
+-                                      u64 sequence)
+-            : batch{done, first, sequence} {}
++                                      u64 sequence, Detail::SeqParkSignal* park)
++            : batch{done, first, sequence, park} {}
+         void Execute(vk::CommandBuffer) override { batch.Execute(); }
+         Detail::HostCopyBatch batch;
+     };
+@@ -909,10 +910,10 @@ public:
+         ASSERT(IsRecordingDeferred());
+         ++record_serial;
+         const u64 sequence = ++host_copies_issued;
+-        if (!record_chunk->PushHostCopy(item, sequence, host_copies_done)) {
++        if (!record_chunk->PushHostCopy(item, sequence, host_copies_done, &host_copy_park)) {
+             full_chunks.push_back(std::move(record_chunk));
+             record_chunk = AcquireChunk();
+-            const bool pushed = record_chunk->PushHostCopy(item, sequence, host_copies_done);
++            const bool pushed = record_chunk->PushHostCopy(item, sequence, host_copies_done, &host_copy_park);
+             ASSERT(pushed);
+         }
+     }
+@@ -925,6 +926,7 @@ public:
+                 seq = ++host_copies_issued](vk::CommandBuffer) {
+             copy();
+             host_copies_done.store(seq, std::memory_order_release);
++            host_copy_park.Notify();
+         });
+     }
+ 
+@@ -1069,6 +1071,8 @@ private:
+     bool checkpoint_callers = false; ///< GOW3_GPU_CHECKPOINTS=2: marks CommandBuffer() callers
+     u64 host_copies_issued = 0;
+     std::atomic<u64> host_copies_done{0};
++    /// TLOU Android: wakes WaitHostCopies sleeping on host_copies_done (GOW3_PARK_COPY_WAITS).
++    Detail::SeqParkSignal host_copy_park;
+     std::atomic<u64> guest_write_epoch{0};
+     std::atomic<u64> deferred_signals_issued{0}; ///< by the thread recording (A or B)
+     std::shared_ptr<std::atomic<u64>> deferred_signals_done =
+diff --git a/gow3_pc/tests/test_tlou_seq_park.cpp b/gow3_pc/tests/test_tlou_seq_park.cpp
+new file mode 100644
+index 0000000..eb7c887
+--- /dev/null
++++ b/gow3_pc/tests/test_tlou_seq_park.cpp
+@@ -0,0 +1,59 @@
++// TLOU Android: WaitHostCopies' futex park (GOW3_PARK_COPY_WAITS) wakes on completion and
++// never hangs when a completion store skips the wake (bounded 1 ms sleeps).
++#include "video_core/renderer_vulkan/tlou_seq_park.h"
++
++#include <chrono>
++#include <cstdio>
++#include <cstdlib>
++#include <thread>
++
++using Vulkan::Detail::ParkUntilSequence;
++using Vulkan::Detail::SeqParkSignal;
++
++static void Check(bool ok, const char* what) {
++    if (!ok) {
++        std::fprintf(stderr, "FAIL: %s\n", what);
++        std::exit(1);
++    }
++}
++
++int main() {
++    // Already complete: returns at once.
++    {
++        std::atomic<std::uint64_t> done{5};
++        SeqParkSignal park;
++        ParkUntilSequence(done, 5, park, [] {});
++        Check(park.waiters.load() == 0, "no waiter left registered");
++    }
++    // Woken by Notify after a store.
++    for (int round = 0; round < 200; ++round) {
++        std::atomic<std::uint64_t> done{0};
++        SeqParkSignal park;
++        std::thread producer([&] {
++            for (std::uint64_t seq = 1; seq <= 50; ++seq) {
++                done.store(seq, std::memory_order_release);
++                park.Notify();
++            }
++        });
++        ParkUntilSequence(done, 50, park, [] {});
++        producer.join();
++        Check(done.load() == 50, "waited for the target sequence");
++        Check(park.waiters.load() == 0, "waiter count restored");
++    }
++    // A store without a wake still finishes (bounded sleep).
++    {
++        std::atomic<std::uint64_t> done{0};
++        SeqParkSignal park;
++        const auto start = std::chrono::steady_clock::now();
++        std::thread producer([&] {
++            std::this_thread::sleep_for(std::chrono::milliseconds(3));
++            done.store(1, std::memory_order_release);
++        });
++        ParkUntilSequence(done, 1, park, [] {});
++        producer.join();
++        const auto waited = std::chrono::steady_clock::now() - start;
++        Check(waited < std::chrono::milliseconds(200), "missed wake bounded");
++    }
++    std::puts("TLOU seq park: wake, sequence order and missed-wake bound PASS");
++    return 0;
++}
+diff --git a/tools/VERSION b/tools/VERSION
+index 1a03094..9767cc9 100644
+--- a/tools/VERSION
++++ b/tools/VERSION
+@@ -1 +1 @@
+-0.1.9
++0.1.10
