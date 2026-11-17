@@ -32,7 +32,7 @@ final class TlouDialogs {
         try {
             return activity.getPackageManager().getPackageInfo(activity.getPackageName(),0).versionName;
         } catch(Exception ignored) {
-            return "0.1.9";
+            return "0.1.10";
         }
     }
     static int dp(Context c,int value) {

@@ -47,10 +47,14 @@ static StreamPlacement StreamMemory() {
     static const StreamPlacement placement = [] {
         const char* env = std::getenv("GOW3_STREAM_MEMORY");
         const std::string_view value = env ? env : "cached";
-        if (value == "device") {
-            return StreamPlacement::Device;
-        }
-        return value == "host" ? StreamPlacement::Host : StreamPlacement::Cached;
+        const StreamPlacement chosen = value == "device" ? StreamPlacement::Device
+                                       : value == "host" ? StreamPlacement::Host
+                                                         : StreamPlacement::Cached;
+        std::printf("GPU: stream buffer memory %s (GOW3_STREAM_MEMORY)\n",
+                    chosen == StreamPlacement::Device ? "device"
+                    : chosen == StreamPlacement::Host ? "host"
+                                                      : "cached");
+        return chosen;
     }();
     return placement;
 }

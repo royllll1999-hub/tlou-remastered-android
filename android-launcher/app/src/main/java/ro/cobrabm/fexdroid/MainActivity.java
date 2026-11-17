@@ -376,6 +376,18 @@ public final class MainActivity extends Activity {
             divider(cpu);
             option(cpu,"adpf","ADPF — ajuste dinâmico de desempenho",
                 "Informa ao Android quanto tempo cada quadro leva, para o sistema ajustar a CPU por conta própria (Android 13+). Não desativa os limites térmicos.",false);
+            divider(cpu);
+            option(cpu,"park_copy_waits","Espera por cópias sem girar (experimental)",
+                "Quando o thread de comandos da GPU espera as cópias de memória do jogo, ele dorme em vez de girar no núcleo (no port de Bloodborne para Android, o mesmo FPS com bem menos CPU). Menos calor; compare o FPS ligado e desligado. Reinicie o jogo para aplicar.",false);
+            divider(cpu);
+            choiceRow(cpu,"stream_memory","Memória dos dados de desenho",
+                "Onde ficam os pequenos dados que cada desenho copia para a GPU. Memória com cache é o padrão; memória da GPU era a escolha original do shadPS4. No Adreno a memória é compartilhada: só o teste mostra qual é mais rápida. Reinicie o jogo para aplicar.",
+                new String[]{"RAM com cache (padrão)","Memória da GPU","RAM sem cache"},
+                new String[]{"cached","device","host"},"cached");
+            divider(cpu);
+            option(cpu,"fex_disk_cache","Cache do código da CPU no disco (experimental)",
+                "O FEX guarda o código do jogo já traduzido e o reutiliza na próxima vez: menos travadinhas ao entrar em lugares por onde você já passou e carregamentos mais rápidos. Não aumenta o FPS médio. A primeira passagem por um lugar fica um pouco mais lenta (o código é gravado). Usa até 512 MB. Se o jogo travar ou mostrar erros, limpe o cache ou desligue. Reinicie o jogo para aplicar.",false);
+            add(cpu,"Limpar cache do código da CPU",false,this::clearFexCache);
             LinearLayout drivers=card(root,"GPU E DRIVER VULKAN");
             driverInfo=text("",12,MUTED);drivers.addView(driverInfo);
             add(drivers,"Selecionar driver Vulkan",false,this::selectDriver);
@@ -452,6 +464,20 @@ public final class MainActivity extends Activity {
         permission.setPadding(0,dp(10),0,dp(10));
         permission.setOnClickListener(v->withAccess(this::refresh));root.addView(permission);
         setContentView(scroll);refresh();
+    }
+    /** Deletes FEX's disk code cache (tlou/fex-cache); the next run rebuilds it. */
+    private void clearFexCache() {
+        File dir=new File(getFilesDir(),"tlou/fex-cache");
+        long[] freed={0};
+        deleteCacheTree(dir,freed);
+        android.widget.Toast.makeText(this,TlouLanguage.t(this,"Cache do código da CPU apagado")+
+            " ("+(freed[0]/(1024*1024))+" MB)",android.widget.Toast.LENGTH_LONG).show();
+    }
+    private static void deleteCacheTree(File file,long[] freed) {
+        File[] children=file.listFiles();
+        if(children!=null)for(File child:children)deleteCacheTree(child,freed);
+        long size=file.isFile()?file.length():0;
+        if(file.delete())freed[0]+=size;
     }
     /** Updates belong to the selected game's CUSA, never to the Android APK. */
     private File baseForUpdate() throws Exception {

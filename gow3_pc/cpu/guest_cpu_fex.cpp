@@ -21,6 +21,7 @@
 #include <FEXCore/Utils/LogManager.h>
 #include <FEXCore/Utils/LongJump.h>
 #include <FEXCore/Utils/SignalScopeGuards.h>
+#include <FEXCore/Utils/Threads.h>
 #include <FEXCore/Utils/TypeDefines.h>
 
 #include <array>
@@ -31,10 +32,14 @@
 #include <cstring>
 #include <mutex>
 #include <shared_mutex>
+#include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include <pthread.h>
 #include <sys/mman.h>
+#include <sys/resource.h>
+#include <sys/stat.h>
 #include <sys/uio.h>
 #include <ucontext.h>
 #include <unistd.h>
@@ -309,6 +314,90 @@ uint64_t ReadGuest(uintptr_t address) {
     iovec local {&value, sizeof(value)}, remote {reinterpret_cast<void*>(address), sizeof(value)};
     return process_vm_readv(getpid(), &local, 1, &remote, 1, 0) == sizeof(value) ? value : 0;
 }
+
+// TLOU Android: FEX's disk code cache (GOW3_FEX_DISK_CACHE=1, launcher switch, off by default)
+// writes compiled blocks from a FEX worker thread. This embedded FEXCore has no frontend that
+// sets up FEX's thread creation, so provide plain pthreads for FEX's internal threads.
+class FexInternalThread final : public FEXCore::Threads::Thread {
+public:
+    FexInternalThread(FEXCore::Threads::ThreadFunc func, void* arg, FEXCore::Threads::Flags flags,
+                      const char* name)
+        : func_(func), arg_(arg), low_priority_(flags.LowPriority) {
+        if (name) {
+            std::snprintf(name_, sizeof(name_), "%s", name);
+        }
+        started_ = pthread_create(&thread_, nullptr, &FexInternalThread::Start, this) == 0;
+        joinable_ = started_;
+    }
+    ~FexInternalThread() override {
+        if (joinable_) {
+            pthread_detach(thread_);
+        }
+    }
+    bool joinable() override {
+        return joinable_;
+    }
+    bool join(void** ret) override {
+        if (!joinable_) {
+            return false;
+        }
+        joinable_ = false;
+        return pthread_join(thread_, ret) == 0;
+    }
+    bool detach() override {
+        if (!joinable_) {
+            return false;
+        }
+        joinable_ = false;
+        return pthread_detach(thread_) == 0;
+    }
+    bool IsSelf() override {
+        return started_ && pthread_equal(thread_, pthread_self());
+    }
+
+private:
+    static void* Start(void* self_ptr) {
+        auto* self = static_cast<FexInternalThread*>(self_ptr);
+        if (self->name_[0]) {
+            char short_name[16];
+            std::snprintf(short_name, sizeof(short_name), "%s", self->name_);
+            pthread_setname_np(pthread_self(), short_name);
+        }
+        if (self->low_priority_) {
+            setpriority(PRIO_PROCESS, 0, 10);
+        }
+        return self->func_(self->arg_);
+    }
+    FEXCore::Threads::ThreadFunc func_;
+    void* arg_;
+    bool low_priority_;
+    bool started_ = false;
+    bool joinable_ = false;
+    pthread_t thread_{};
+    char name_[64] = {};
+};
+
+fextl::unique_ptr<FEXCore::Threads::Thread> CreateFexInternalThread(FEXCore::Threads::ThreadFunc func, void* arg,
+                                                                    FEXCore::Threads::Flags flags,
+                                                                    const char* name) {
+    auto thread = fextl::make_unique<FexInternalThread>(func, arg, flags, name);
+    if (!thread->joinable()) {
+        Fatal("cannot start a FEX worker thread");
+    }
+    return thread;
+}
+
+void CleanupFexThreadsAfterFork() {}
+
+/// Disk code cache directory from the launcher, or nullptr when the cache is off.
+const char* FexDiskCacheDir() {
+    const char* on = std::getenv("GOW3_FEX_DISK_CACHE");
+    const char* dir = std::getenv("GOW3_FEX_DISK_CACHE_DIR");
+    if (!on || on[0] != '1' || on[1] != 0 || !dir || !dir[0]) {
+        return nullptr;
+    }
+    return dir;
+}
 } // namespace
 
 extern "C" {
@@ -340,8 +429,29 @@ void guest_cpu_init(void* (*map)(size_t size, int prot)) {
                          dynamic_l1 ? "1" : "0");
     // TSO stays on unless the launcher's experimental switch sets FEX_TSOENABLED=0 (read by
     // the environment layer of LoadConfig above); the log says which one ran.
-    std::printf("TLOU FEX cache: dynamic_l1=%d disk_cache=unchanged tso=%s\n",
-                int(dynamic_l1), FEXCore::Config::Get_TSOENABLED()() ? "on" : "OFF (experimental)");
+    // Disk code cache: compiled blocks are kept between runs, keyed by a hash of the guest code
+    // (our loader maps the game anonymously), so patched or hooked code never matches a stale
+    // block. FEX keeps one database per host and per FEX configuration (TSO on and off differ).
+    const char* disk_cache_dir = FexDiskCacheDir();
+    if (disk_cache_dir) {
+        FEXCore::Threads::Thread::SetInternalPointers({
+            .CreateThread = CreateFexInternalThread,
+            .CleanupAfterFork = CleanupFexThreadsAfterFork,
+        });
+        std::string path = disk_cache_dir;
+        if (path.back() != '/') {
+            path += '/';
+        }
+        mkdir(path.c_str(), 0700);
+        FEXCore::Config::Set(FEXCore::Config::CONFIG_DISKCACHE, "1");
+        FEXCore::Config::Set(FEXCore::Config::CONFIG_DISKCACHEPATH, path.c_str());
+        FEXCore::Config::Set(FEXCore::Config::CONFIG_DISKCACHEMAXFILESIZE, "536870912");
+    } else {
+        FEXCore::Config::Set(FEXCore::Config::CONFIG_DISKCACHE, "0");
+    }
+    std::printf("TLOU FEX cache: dynamic_l1=%d disk_cache=%s tso=%s\n", int(dynamic_l1),
+                disk_cache_dir ? "on (512 MiB)" : "off",
+                FEXCore::Config::Get_TSOENABLED()() ? "on" : "OFF (experimental)");
     const auto features = FEX::FetchHostFeatures();
     wide_xmm = features.SupportsAVX && features.SupportsSVE256;
     ctx = FEXCore::Context::Context::CreateNewContext(features).release();

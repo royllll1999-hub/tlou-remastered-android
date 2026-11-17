@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <new>
 #include "gow3_copy.h"
+#include "tlou_seq_park.h"
 
 // Does NOT allocate a fixed 16-slot array per batch. Instead it owns a
 // pointer to contiguous Gow3Copy::Item records in the CURRENT unpublished
@@ -19,8 +20,8 @@ namespace Vulkan::Detail {
 class HostCopyBatch {
 public:
     HostCopyBatch(std::atomic<std::uint64_t>& done, Gow3Copy::Item* first,
-                  std::uint64_t sequence) noexcept
-        : copies{reinterpret_cast<std::uintptr_t>(first)}, completed{&done},
+                  std::uint64_t sequence, SeqParkSignal* park = nullptr) noexcept
+        : copies{reinterpret_cast<std::uintptr_t>(first)}, completed{&done}, park{park},
           last_sequence{sequence}, used{1} {}
 
     [[nodiscard]] bool Append(Gow3Copy::Item* next, std::uint64_t sequence) noexcept {
@@ -40,6 +41,9 @@ public:
             item.run(item);
         }
         completed->store(last_sequence, std::memory_order_release);
+        if (park) {
+            park->Notify();
+        }
     }
 
     [[nodiscard]] std::size_t Size() const noexcept { return used; }
@@ -48,6 +52,7 @@ public:
 private:
     std::uintptr_t copies;
     std::atomic<std::uint64_t>* completed;
+    SeqParkSignal* park;
     std::uint64_t last_sequence;
     std::size_t used;
 };

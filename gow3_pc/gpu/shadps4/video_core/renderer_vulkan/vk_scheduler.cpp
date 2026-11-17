@@ -323,8 +323,13 @@ void Scheduler::WaitHostCopies() {
         Gow3Stats::host_copy_waits.fetch_add(1, std::memory_order_relaxed);
         const auto start = std::chrono::steady_clock::now();
         KickRecording(true);
-        while (host_copies_done.load(std::memory_order_acquire) < host_copies_issued) {
-            std::this_thread::yield();
+        if (Detail::ParkCopyWaitsEnabled()) {
+            Detail::ParkUntilSequence(host_copies_done, host_copies_issued, host_copy_park,
+                                      [] {});
+        } else {
+            while (host_copies_done.load(std::memory_order_acquire) < host_copies_issued) {
+                std::this_thread::yield();
+            }
         }
         if (OrderWaitStatsEnabled()) {
             NoteOrderWait(1, start);

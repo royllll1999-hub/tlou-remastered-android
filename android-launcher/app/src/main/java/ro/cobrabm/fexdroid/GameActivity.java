@@ -343,6 +343,9 @@ public final class GameActivity extends Activity {
             env.put("GOW3_SCREEN_H",String.valueOf(getResources().getDisplayMetrics().heightPixels));
             env.put("GOW3_DISPLAY_HZ",String.valueOf(Math.round(getWindowManager().getDefaultDisplay().getRefreshRate())));
             env.put("GOW3_GPU_USER_DIR",state.getAbsolutePath());
+            // FEX disk code cache (Performance > CPU, off by default): one folder, cleared from
+            // the launcher; FEX keeps a database per FEX build and configuration inside it.
+            env.put("GOW3_FEX_DISK_CACHE_DIR",new File(state,"fex-cache").getAbsolutePath());
             env.put("TLOU_FRAME_SUMMARY","1");
             env.put("GOW3_VSYNC","1");
             // Desktop temporal injections target updated game shaders. Keep the

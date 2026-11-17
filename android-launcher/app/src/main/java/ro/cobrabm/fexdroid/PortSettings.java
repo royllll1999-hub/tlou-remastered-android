@@ -199,6 +199,13 @@ final class PortSettings {
         // code; FEX itself warns it can break multithreaded programs. Only set when chosen.
         if(p.getBoolean("fex_no_tso",false))env.put("FEX_TSOENABLED","0");
         else env.remove("FEX_TSOENABLED");
+        // FEX disk code cache (experimental, off by default): GameActivity sets its folder.
+        env.put("GOW3_FEX_DISK_CACHE",p.getBoolean("fex_disk_cache",false)?"1":"0");
+        // Command thread sleeps on a futex while the recorder runs guest copies (experimental).
+        env.put("GOW3_PARK_COPY_WAITS",p.getBoolean("park_copy_waits",false)?"1":"0");
+        // Stream buffer placement (A/B on Adreno): cached (default), device or host.
+        String stream=p.getString("stream_memory","cached");
+        env.put("GOW3_STREAM_MEMORY","device".equals(stream)||"host".equals(stream)?stream:"cached");
         // Shaders that read guest memory through raw 64-bit addresses (MUBUF ADDR64): Naughty Dog's
         // hair, beard and transparent shaders load their sun-shadow cascade matrices that way.
         // Without direct memory access those loads read the flat constant buffer instead, the
@@ -294,6 +301,9 @@ final class PortSettings {
         result.append("; gpu-thread-priority=").append(prefs(context).getBoolean("gpu_thread_priority",true)?"above":"normal");
         result.append("; tso=").append(prefs(context).getBoolean("fex_no_tso",false)?"OFF":"on");
         result.append("; pause=").append(prefs(context).getBoolean("pause_wfe",false)?"wfe":"yield");
+        result.append("; fex-disk-cache=").append(prefs(context).getBoolean("fex_disk_cache",false)?"on":"off");
+        result.append("; park-copy-waits=").append(prefs(context).getBoolean("park_copy_waits",false)?"on":"off");
+        result.append("; stream-memory=").append(prefs(context).getString("stream_memory","cached"));
         result.append("; render-profile=").append(prefs(context).getBoolean("render_profile",false)?"on":"off");
         result.append("; job-wake=").append(prefs(context).getBoolean("job_wake",true)?"fast":"off");
         return result.toString();
