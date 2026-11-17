@@ -1,0 +1,39 @@
+name: Fetch attachments
+# Downloads public files (for example logs attached to GitHub issues) into the `attachments`
+# branch, under attachments/<run id>/, so they can be read as plain repository files.
+on:
+  workflow_dispatch:
+    inputs:
+      urls:
+        description: 'Space-separated https URLs to download'
+        required: true
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download and commit
+        env:
+          URLS: ${{ github.event.inputs.urls }}
+          REPO: ${{ github.repository }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git init -q work && cd work
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote add origin "https://x-access-token:${TOKEN}@github.com/${REPO}.git"
+          if git fetch -q --depth 1 origin attachments; then git checkout -q FETCH_HEAD -b attachments; else git checkout -q --orphan attachments; fi
+          dir="attachments/${GITHUB_RUN_ID}"
+          mkdir -p "$dir"
+          for url in $URLS; do
+            case "$url" in https://*) ;; *) echo "skip $url"; continue;; esac
+            name=$(basename "${url%%\?*}")
+            curl -fsSL --max-filesize 52428800 -o "$dir/$name" "$url"
+            ls -la "$dir/$name"
+          done
+          git add attachments
+          git commit -q -m "Fetch attachments (run ${GITHUB_RUN_ID})"
+          git push -q origin HEAD:attachments
+          echo "Saved to branch attachments: $dir"
