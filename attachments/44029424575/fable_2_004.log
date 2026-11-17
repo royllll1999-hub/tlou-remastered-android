@@ -1,0 +1,259 @@
+[2026-10-29 16:56:24.557] [info] [sys] [t10543] [native-build] configuration=Release linked_sdk=source-built
+[2026-10-29 16:56:24.557] [info] [sys] [t10543] [fable2-config] loaded /storage/emulated/0/Android/data/org.fable2.recomp/files/fable2_config.toml (config_version=1)
+[2026-10-29 16:56:24.620] [info] [sys] [t10543] [fable2-config] seeded cvar user_language from fable2_config.toml
+[2026-10-29 16:56:24.620] [info] [sys] [t10543] [build-profile] detected GOTY USA/Europe
+[2026-10-29 16:56:24.620] [info] [sys] [t10543] [fable2-config] seeded cvar keyboard_gamepad_map from fable2_config.toml
+[2026-10-29 16:56:24.620] [info] [sys] [t10543] [fable2-config] seeded cvar mouse_look from fable2_config.toml
+[2026-10-29 16:56:24.620] [info] [sys] [t10543] [fable2-config] seeded cvar mouse_look_scale from fable2_config.toml
+[2026-10-29 16:56:24.622] [info] [core] [t10543] Vulkan instance API version 1.3.0. Enabled layers and extensions:
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * VK_KHR_surface
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * VK_KHR_android_surface
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * VK_EXT_debug_utils
+[2026-10-29 16:56:24.622] [warning] [core] [t10543] Available Vulkan physical devices (use the 'vulkan_device' configuration variable to force a specific device):
+[2026-10-29 16:56:24.622] [warning] [core] [t10543] * 0: Adreno (TM) 830
+[2026-10-29 16:56:24.622] [info] [core] [t10543] Vulkan device 'Adreno (TM) 830': API 1.3.284, vendor 0x5143, device 0x44050000, driver version 0x80320048
+[2026-10-29 16:56:24.622] [info] [core] [t10543] Enabled Vulkan device extensions:
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * VK_EXT_shader_stencil_export
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * VK_EXT_custom_border_color
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * VK_EXT_robustness2
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * VK_KHR_swapchain
+[2026-10-29 16:56:24.622] [info] [core] [t10543] Vulkan device properties and enabled features:
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * driverID: QualcommProprietary
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * driverName: Qualcomm Technologies Inc. Adreno Vulkan Driver
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * driverInfo: Driver Build: 3967b80d3b, Ica4ce9bea6, 1770914544
+Date: 02/12/26
+Compiler Version: E031.47.18.49
+Driver Branch: 
+
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * conformanceVersion: 1.3.8.0
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * maxImageDimension2D: 16384
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * maxImageDimension3D: 2048
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * maxImageDimensionCube: 16384
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * maxImageArrayLayers: 2048
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * maxStorageBufferRange: 2147483647
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * maxSamplerAllocationCount: 65536
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * maxPerStageDescriptorSamplers: 16777216
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * maxPerStageDescriptorStorageBuffers: 16777216
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * maxPerStageDescriptorSampledImages: 16777216
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * maxPerStageResources: 50331648
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * maxVertexOutputComponents: 128
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * maxTessellationEvaluationOutputComponents: 128
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * maxGeometryInputComponents: 128
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * maxGeometryOutputComponents: 128
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * maxFragmentInputComponents: 112
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * maxFragmentCombinedOutputResources: 33554440
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * maxSamplerAnisotropy: 16
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * maxViewportDimensions[0]: 16384
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * maxViewportDimensions[1]: 16384
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * minUniformBufferOffsetAlignment: 256
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * minStorageBufferOffsetAlignment: 64
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * maxFramebufferWidth: 16384
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * maxFramebufferHeight: 16384
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * framebufferColorSampleCounts: { 1 | 2 | 4 }
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * framebufferDepthSampleCounts: { 1 | 2 | 4 }
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * framebufferStencilSampleCounts: { 1 | 2 | 4 }
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * framebufferNoAttachmentsSampleCounts: { 1 | 2 | 4 }
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * sampledImageColorSampleCounts: { 1 | 2 | 4 }
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * sampledImageIntegerSampleCounts: { 1 | 2 | 4 }
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * sampledImageDepthSampleCounts: { 1 | 2 | 4 }
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * sampledImageStencilSampleCounts: { 1 | 2 | 4 }
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * standardSampleLocations: 1
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * optimalBufferCopyOffsetAlignment: 64
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * optimalBufferCopyRowPitchAlignment: 64
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * nonCoherentAtomSize: 1
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * robustBufferAccess
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * fullDrawIndexUint32
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * independentBlend
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * geometryShader
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * tessellationShader
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * sampleRateShading
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * depthClamp
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * fillModeNonSolid
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * samplerAnisotropy
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * occlusionQueryPrecise
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * vertexPipelineStoresAndAtomics
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * fragmentStoresAndAtomics
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * shaderClipDistance
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * shaderCullDistance
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * sparseBinding
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * sparseResidencyBuffer
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * samplerMirrorClampToEdge
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * uniformBufferStandardLayout
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * scalarBlockLayout
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * shaderDemoteToHelperInvocation
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * dynamicRendering
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * constantAlphaColorBlendFactors
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * imageViewFormatReinterpretation
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * imageViewFormatSwizzle
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * pointPolygons
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * separateStencilMaskRef
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * shaderSampleRateInterpolationFunctions
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * shaderSignedZeroInfNanPreserveFloat32: 1
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * shaderDenormFlushToZeroFloat32: 1
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * shaderRoundingModeRTEFloat32: 1
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * customBorderColors
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * customBorderColorWithoutFormat
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * maxCustomBorderColorSamplers: 4000
+[2026-10-29 16:56:24.622] [info] [core] [t10543] * nullDescriptor
+[2026-10-29 16:56:24.625] [info] [gpu] [t10543] TEMPDIAG: surface formats (5):
+[2026-10-29 16:56:24.625] [info] [gpu] [t10543] TEMPDIAG:   format=37 colorSpace=0
+[2026-10-29 16:56:24.625] [info] [gpu] [t10543] TEMPDIAG:   format=43 colorSpace=0
+[2026-10-29 16:56:24.625] [info] [gpu] [t10543] TEMPDIAG:   format=4 colorSpace=0
+[2026-10-29 16:56:24.625] [info] [gpu] [t10543] TEMPDIAG:   format=97 colorSpace=0
+[2026-10-29 16:56:24.625] [info] [gpu] [t10543] TEMPDIAG:   format=64 colorSpace=0
+[2026-10-29 16:56:24.625] [info] [gpu] [t10543] TEMPDIAG: present modes (4):
+[2026-10-29 16:56:24.625] [info] [gpu] [t10543] TEMPDIAG:   presentMode=1
+[2026-10-29 16:56:24.625] [info] [gpu] [t10543] TEMPDIAG:   presentMode=2
+[2026-10-29 16:56:24.625] [info] [gpu] [t10543] TEMPDIAG:   presentMode=1000111000
+[2026-10-29 16:56:24.625] [info] [gpu] [t10543] TEMPDIAG:   presentMode=1000111001
+[2026-10-29 16:56:24.625] [info] [gpu] [t10543] TEMPDIAG: cvars immediate=1 mailbox=1 fifo_relaxed=1
+[2026-10-29 16:56:24.625] [info] [core] [t10543] VulkanPresenter: Created 1920x1080 swapchain with format 37, color space 0, presentation mode 1
+[2026-10-29 16:56:24.625] [info] [sys] [t10543] Guest memory arena mapped: virtual base 0x0000000100000000, physical base 0x0000000200000000
+[2026-10-29 16:56:24.663] [info] [gpu] [t10555] GPUTIME calibration: device_period_ns=52.08333206176758 valid_bits=48 queue_family=0
+[2026-10-29 16:56:24.663] [info] [gpu] [t10555] GPU memory limits: storage_buffer_bytes=2147483647 texel_buffer_elements=134217728
+[2026-10-29 16:56:24.663] [info] [gpu] [t10555] GPU type-0 bulk register writes: true
+[2026-10-29 16:56:24.672] [info] [core] [t10543] Function table initialized for module: code=82170000-832C2A3C, image=82000000-83620000
+[2026-10-29 16:56:24.673] [info] [gpu] [t10555] Guest memory texel reads: true
+[2026-10-29 16:56:24.681] [warning] [core] [t10543] SDL GameControllerDB: file 'gamecontrollerdb.txt' does not exist.
+[2026-10-29 16:56:24.681] [info] [core] [t10543] SDL input driver initialized successfully
+[2026-10-29 16:56:24.682] [info] [sys] [t10543] [xex-verify] /storage/emulated/0/Android/data/org.fable2.recomp/files/default.xex
+[2026-10-29 16:56:24.682] [info] [sys] [t10543] [xex-verify] accepted SHA-256: GOTY USA/Europe: 88c4ef2e18e65409444d1b068eff921d1f7e180a5ae64edc64ba6b0872372662; German GOTY: 3f36e7870a06e04b3702760e93c61b1c7fded321b94021da6bfa120b424e6eb4; GOTY France: 0e1ea96ded3407874cbbb3a9587d79f1340a57a9d1ba2feebcfdbc9ed1e4b6e5; GOTY Italy: 27a7ad9d66df4131a7fc352829d9df4df40206350ec63c7ee1b53bd71b203da0; GOTY Russia: aaf100ce83994d178c6585ab502babfd6b3c9d0739017e96e6e5d61bcbbca943; GOTY Spain: 6422e22327b576f6d188206ab00112eedc780f3d130a45ca6ac42f7e4b99da6c
+[2026-10-29 16:56:24.682] [info] [sys] [t10543] [xex-verify] actual SHA-256: 88c4ef2e18e65409444d1b068eff921d1f7e180a5ae64edc64ba6b0872372662 (verified on a previous start; size/mtime unchanged, hash pass skipped)
+[2026-10-29 16:56:24.731] [info] [sys] [t10543] [patches] applying 'High Tick Rate' by Guy (1 op) - Doubles the LF tick to 30 Hz. Vastly improves in-game UI framerate. Improves input delay.
+[2026-10-29 16:56:24.731] [info] [sys] [t10543] [patches]   High Tick Rate be8 0x83319511: 0x2e -> 0x3e (data: takes effect at runtime)
+[2026-10-29 16:56:24.731] [info] [sys] [t10543] [patches] applying 'Higher HF Tick Rate' by Ultra (1 op) - Doubles the HF tick to 60 Hz, keeping the 2:1 HF:LF ratio with High Tick Rate.
+[2026-10-29 16:56:24.731] [info] [sys] [t10543] [patches]   Higher HF Tick Rate be8 0x83319519: 0x2e -> 0x4e (data: takes effect at runtime)
+[2026-10-29 16:56:24.731] [info] [sys] [t10543] [patches] done: 2 op(s) applied, 0 skipped
+[2026-10-29 16:56:24.731] [info] [sys] [t10543] [fable2-config] seeded readback_resolve_force_addresses from fable2_config.toml (hero_dog_texture_readback=false)
+[2026-10-29 16:56:24.731] [warning] [sys] [t10543] [fable2-config] dog fur depth bias cvars missing (SDK without depth_bias_shader?)
+[2026-10-29 16:56:24.731] [info] [sys] [t10543] [fable2-config] seeded rt_transfer_skip_mask=4 (depth format aliasing)
+[2026-10-29 16:56:24.731] [info] [sys] [t10543] [fable2-config] seeded rt_clear_quad_vs_hashes=1E6883FCCDE1F688
+[2026-10-29 16:56:24.731] [info] [sys] [t10543] [fable2-config] seeded readback_memexport=false (performance)
+[2026-10-29 16:56:24.731] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=99 (UINT32_MAX=inactive) props=0x0 aspect=0x0
+[2026-10-29 16:56:24.733] [info] [core] [t10543] Initializing shader storage for title 4D5307F1...
+[2026-10-29 16:56:25.054] [info] [gpu] [t10555] VulkanTextureCache: Format k_Cr_Y1_Cb_Y0_REP (unsigned) is supported via a fallback format (using the Vulkan format 37 instead of the preferred 1000156000)
+[2026-10-29 16:56:25.054] [info] [gpu] [t10555] VulkanTextureCache: Format k_Y1_Cr_Y0_Cb_REP (unsigned) is supported via a fallback format (using the Vulkan format 37 instead of the preferred 1000156001)
+[2026-10-29 16:56:25.564] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=99 (UINT32_MAX=inactive) props=0x0 aspect=0x0
+[2026-10-29 16:56:25.569] [warning] [fs] [t10571] Attempted to open read-only file/dir for write: D:\lhdebug.log
+[2026-10-29 16:56:25.569] [warning] [krnl] [t10571] [NtCreateFile] FAILED: path='D:\lhdebug.log' -> 0xc0000022
+[2026-10-29 16:56:25.685] [info] [apu] [t10571] audio endpoint 'System audio playback device': 6 ch, 48000 Hz, format 0x8120; submitting 2 ch
+[2026-10-29 16:56:25.695] [warning] [fs] [t10571] VFS: 'update:\' -> [no device]
+[2026-10-29 16:56:25.695] [error] [fs] [t10571] ResolvePath(update:\) failed - device not found
+[2026-10-29 16:56:25.695] [warning] [krnl] [t10571] [NtCreateFile] FAILED: path='update:\build_version.txt' -> 0xc000000f
+[2026-10-29 16:56:25.695] [warning] [krnl] [t10571] [NtCreateFile] FAILED: path='game:\build_version.txt' -> 0xc000000f
+[2026-10-29 16:56:25.715] [warning] [fs] [t10571] VFS: 'update:\' -> [no device]
+[2026-10-29 16:56:25.715] [error] [fs] [t10571] ResolvePath(update:\) failed - device not found
+[2026-10-29 16:56:25.715] [warning] [krnl] [t10571] [NtCreateFile] FAILED: path='update:\' -> 0xc000000f
+[2026-10-29 16:56:25.722] [info] [gpu] [t10571] SetInterruptCallback(82B9B8D8, 44142480)
+[2026-10-29 16:56:25.757] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=1 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:25.757] [info] [gpu] [t10543] TEMPDIAG: paint flow guest_active=true guest=1280x720 is_8bpc=false swapchain=1920x1080 effect_count=1 effects=[
+[2026-10-29 16:56:25.757] [info] [gpu] [t10543] TEMPDIAG: paint flow effect[0] = 0 out=1920x1080
+[2026-10-29 16:56:25.757] [info] [gpu] [t10543] TEMPDIAG: paint flow ]
+[2026-10-29 16:56:25.760] [info] [gpu] [t10543] TEMPDIAG: paint consts rect=[-1.000,-1.000,2.000,2.000] bilinear_offset=[0,0] bilinear_inv=[0.000521,0.000926] viewport=1920x1080 guest_image=0xb40000703b47ff50
+[2026-10-29 16:56:25.781] [info] [sys] [t10571] [address-scan] size 0x540000, step 0x10000: skipped 3856 taken candidate(s), 0x40000000 -> 0x4F100000
+[2026-10-29 16:56:25.857] [info] [gpu] [t10555] Creating graphics pipeline state with VS 1E6883FCCDE1F688
+[2026-10-29 16:56:25.868] [info] [gpu] [t10555] TEMPDIAG: pipeline 0xB40000718B43FC80 key=0x0000028E used=0x3 discard=0 placeholder=1 vs=1E6883FCCDE1F688 ps=0000000000000000
+[2026-10-29 16:56:25.868] [info] [gpu] [t10561] Creating graphics pipeline state with VS 1E6883FCCDE1F688, PS A4A965C189287B99
+[2026-10-29 16:56:25.874] [info] [gpu] [t10555] Creating graphics pipeline state with VS B6C9863F710683EC
+[2026-10-29 16:56:25.879] [info] [gpu] [t10555] TEMPDIAG: pipeline 0xB40000718B43F050 key=0x00000000 used=0x0 discard=0 placeholder=0 vs=B6C9863F710683EC ps=0000000000000000
+[2026-10-29 16:56:25.879] [info] [gpu] [t10555] TESS factor range 2..16
+[2026-10-29 16:56:25.879] [warning] [krnl] [t10595] [NtCreateFile] FAILED: path='game:\data\language\hu-hu\lang.ini' -> 0xc000000f
+[2026-10-29 16:56:25.879] [warning] [krnl] [t10595] [NtCreateFile] FAILED: path='game:\data\language\pl-pl\lang.ini' -> 0xc000000f
+[2026-10-29 16:56:25.879] [warning] [krnl] [t10595] [NtCreateFile] FAILED: path='game:\data\language\sk-sk\lang.ini' -> 0xc000000f
+[2026-10-29 16:56:25.879] [warning] [krnl] [t10595] [NtCreateFile] FAILED: path='game:\data\language\zh-cht\lang.ini' -> 0xc000000f
+[2026-10-29 16:56:25.879] [warning] [krnl] [t10595] [NtCreateFile] FAILED: path='game:\data\language\ko-kr\lang.ini' -> 0xc000000f
+[2026-10-29 16:56:25.879] [warning] [krnl] [t10595] [NtCreateFile] FAILED: path='game:\data\language\en-uk\lang.ini' -> 0xc000000f
+[2026-10-29 16:56:25.879] [warning] [krnl] [t10595] [NtCreateFile] FAILED: path='game:\data\language\cs-cz\lang.ini' -> 0xc000000f
+[2026-10-29 16:56:25.885] [warning] [gpu] [t10555] Skipping Vulkan frame presentation due to async placeholder draw usage in this frame
+[2026-10-29 16:56:25.886] [info] [gpu] [t10561] TEMPDIAG: pipeline 0xB40000718B3FBFD0 key=0x0000028E used=0x3 discard=0 placeholder=0 vs=1E6883FCCDE1F688 ps=A4A965C189287B99
+[2026-10-29 16:56:25.886] [info] [gpu] [t10561] TEMPDIAG: placeholder hot-swap complete vs=1E6883FCCDE1F688 ps=A4A965C189287B99
+[2026-10-29 16:56:25.886] [info] [gpu] [t10561] TEMPDIAG: async creation result=true vs=1E6883FCCDE1F688 ps=A4A965C189287B99
+[2026-10-29 16:56:25.899] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=2 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:25.933] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=0 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:25.939] [info] [core] [t10571] SDL OnControllerDeviceAdded: "Odin Controller", JoystickType(1), GameControllerType(1), VendorID(0x2020), ProductID(0x0111)
+[2026-10-29 16:56:25.939] [info] [core] [t10571] SDL OnControllerDeviceAdded: connection order 0, device 1.
+[2026-10-29 16:56:25.966] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=1 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:25.999] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=2 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:26.033] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=0 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:26.067] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=1 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:26.101] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=2 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:26.208] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=0 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:26.241] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=1 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:26.275] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=2 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:26.308] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=0 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:26.343] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=1 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:26.376] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=2 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:26.410] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=0 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:26.444] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=1 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:26.477] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=2 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:26.511] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=0 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:26.546] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=1 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:26.578] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=2 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:26.612] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=0 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:26.645] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=1 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:26.679] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=2 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:26.713] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=0 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:26.746] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=1 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:26.780] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=2 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:26.814] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=0 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:26.848] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=1 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:26.881] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=2 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:26.915] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=0 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:26.948] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=1 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:26.982] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=2 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:27.020] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=0 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:27.049] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=1 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:27.083] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=2 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:27.117] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=0 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:27.151] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=1 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:27.184] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=2 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:27.218] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=0 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:27.252] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=1 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:27.286] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=2 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:27.319] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=0 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:27.353] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=1 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:27.387] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=2 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:27.420] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=0 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:27.454] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=1 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:27.487] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=2 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:27.521] [info] [gpu] [t10543] TEMPDIAG: paint consume mailbox=0 (UINT32_MAX=inactive) props=1280x720 aspect=1280x720
+[2026-10-29 16:56:28.567] [info] [gpu] [t10555] TEMPDIAG: transfer pipeline 0xB40000718B43FC80 rp_key=0x01000208 shader_key=0x00012220
+[2026-10-29 16:56:28.567] [info] [gpu] [t10555] Creating graphics pipeline state with VS BD2477FEDE6BEAB1
+[2026-10-29 16:56:28.573] [info] [gpu] [t10555] TEMPDIAG: pipeline 0xB40000718B42F060 key=0x00000208 used=0x2 discard=0 placeholder=1 vs=BD2477FEDE6BEAB1 ps=0000000000000000
+[2026-10-29 16:56:28.573] [info] [gpu] [t10563] Creating graphics pipeline state with VS BD2477FEDE6BEAB1, PS 130DCA19B2727F68
+[2026-10-29 16:56:28.573] [info] [gpu] [t10555] WAIT_REG_MEM long-waits: 262 in 2686 ms (~97.5/s, total sleep 67 ms/s, vsync=1)
+[2026-10-29 16:56:28.589] [info] [gpu] [t10555] Creating graphics pipeline state with VS B6C9863F710683EC
+[2026-10-29 16:56:28.590] [info] [gpu] [t10563] TEMPDIAG: pipeline 0xB40000718B452100 key=0x00000208 used=0x2 discard=0 placeholder=0 vs=BD2477FEDE6BEAB1 ps=130DCA19B2727F68
+[2026-10-29 16:56:28.590] [info] [gpu] [t10563] TEMPDIAG: placeholder hot-swap complete vs=BD2477FEDE6BEAB1 ps=130DCA19B2727F68
+[2026-10-29 16:56:28.590] [info] [gpu] [t10563] TEMPDIAG: async creation result=true vs=BD2477FEDE6BEAB1 ps=130DCA19B2727F68
+[2026-10-29 16:56:28.594] [info] [gpu] [t10555] TEMPDIAG: pipeline 0xB40000718B4314F0 key=0x00000208 used=0x2 discard=0 placeholder=0 vs=B6C9863F710683EC ps=0000000000000000
+[2026-10-29 16:56:29.573] [info] [gpu] [t10555] WAIT_REG_MEM long-waits: 2800 in 1000 ms (~2800.0/s, total sleep 717 ms/s, vsync=1)
+[2026-10-29 16:56:30.573] [info] [gpu] [t10555] WAIT_REG_MEM long-waits: 2691 in 1000 ms (~2691.0/s, total sleep 688 ms/s, vsync=1)
+[2026-10-29 16:56:31.573] [info] [gpu] [t10555] WAIT_REG_MEM long-waits: 2601 in 1000 ms (~2601.0/s, total sleep 665 ms/s, vsync=1)
+[2026-10-29 16:56:32.574] [info] [gpu] [t10555] WAIT_REG_MEM long-waits: 2461 in 1000 ms (~2461.0/s, total sleep 628 ms/s, vsync=1)
+[2026-10-29 16:56:33.574] [info] [gpu] [t10555] WAIT_REG_MEM long-waits: 2357 in 1000 ms (~2357.0/s, total sleep 602 ms/s, vsync=1)
+[2026-10-29 16:56:34.574] [info] [gpu] [t10555] WAIT_REG_MEM long-waits: 2236 in 1000 ms (~2236.0/s, total sleep 571 ms/s, vsync=1)
+[2026-10-29 16:56:35.574] [info] [gpu] [t10555] WAIT_REG_MEM long-waits: 2125 in 1000 ms (~2125.0/s, total sleep 543 ms/s, vsync=1)
+[2026-10-29 16:56:36.574] [info] [gpu] [t10555] WAIT_REG_MEM long-waits: 1999 in 1000 ms (~1999.0/s, total sleep 511 ms/s, vsync=1)
+[2026-10-29 16:56:37.574] [info] [gpu] [t10555] WAIT_REG_MEM long-waits: 1875 in 1000 ms (~1875.0/s, total sleep 480 ms/s, vsync=1)
+[2026-10-29 16:56:38.581] [info] [gpu] [t10555] WAIT_REG_MEM long-waits: 1793 in 1007 ms (~1780.5/s, total sleep 460 ms/s, vsync=1)
+[2026-10-29 16:56:39.591] [info] [gpu] [t10555] WAIT_REG_MEM long-waits: 1681 in 1009 ms (~1666.0/s, total sleep 432 ms/s, vsync=1)
+[2026-10-29 16:56:40.600] [info] [gpu] [t10555] WAIT_REG_MEM long-waits: 1575 in 1009 ms (~1561.0/s, total sleep 404 ms/s, vsync=1)
+[2026-10-29 16:56:41.609] [info] [gpu] [t10555] WAIT_REG_MEM long-waits: 1457 in 1009 ms (~1444.0/s, total sleep 374 ms/s, vsync=1)
+[2026-10-29 16:56:42.619] [info] [gpu] [t10555] WAIT_REG_MEM long-waits: 1344 in 1009 ms (~1332.0/s, total sleep 345 ms/s, vsync=1)
+[2026-10-29 16:56:43.628] [info] [gpu] [t10555] WAIT_REG_MEM long-waits: 1226 in 1009 ms (~1215.1/s, total sleep 314 ms/s, vsync=1)
+[2026-10-29 16:56:44.637] [info] [gpu] [t10555] WAIT_REG_MEM long-waits: 1119 in 1009 ms (~1109.0/s, total sleep 287 ms/s, vsync=1)
+[2026-10-29 16:56:45.647] [info] [gpu] [t10555] WAIT_REG_MEM long-waits: 1006 in 1009 ms (~997.0/s, total sleep 258 ms/s, vsync=1)
+[2026-10-29 16:56:46.656] [info] [gpu] [t10555] WAIT_REG_MEM long-waits: 881 in 1009 ms (~873.1/s, total sleep 226 ms/s, vsync=1)
+[2026-10-29 16:56:47.665] [info] [gpu] [t10555] WAIT_REG_MEM long-waits: 763 in 1009 ms (~756.2/s, total sleep 195 ms/s, vsync=1)
+[2026-10-29 16:56:48.674] [info] [gpu] [t10555] WAIT_REG_MEM long-waits: 647 in 1009 ms (~641.2/s, total sleep 165 ms/s, vsync=1)
+[2026-10-29 16:56:49.684] [info] [gpu] [t10555] WAIT_REG_MEM long-waits: 536 in 1009 ms (~531.2/s, total sleep 137 ms/s, vsync=1)
+[2026-10-29 16:56:50.693] [info] [gpu] [t10555] WAIT_REG_MEM long-waits: 448 in 1009 ms (~444.0/s, total sleep 114 ms/s, vsync=1)
+[2026-10-29 16:56:51.702] [info] [gpu] [t10555] WAIT_REG_MEM long-waits: 320 in 1009 ms (~317.1/s, total sleep 81 ms/s, vsync=1)
+[2026-10-29 16:56:52.712] [info] [gpu] [t10555] WAIT_REG_MEM long-waits: 210 in 1009 ms (~208.1/s, total sleep 53 ms/s, vsync=1)
+[2026-10-29 16:56:53.755] [info] [gpu] [t10555] WAIT_REG_MEM long-waits: 95 in 1043 ms (~91.1/s, total sleep 24 ms/s, vsync=1)
+[2026-10-29 16:56:58.408] [info] [core] [t10543] Window closing, shutting down...
+[2026-10-29 16:56:58.408] [warning] [sys] [t10543] QueueUserCallback: signal delivery failed (-1)
+[2026-10-29 16:56:58.408] [warning] [sys] [t10543] QueueUserCallback: signal delivery failed (-1)
+[2026-10-29 16:56:58.408] [info] [core] [t10570] Execution complete
+[2026-10-29 16:56:58.608] [info] [core] [t10543] Title terminated; hard-exiting process.
