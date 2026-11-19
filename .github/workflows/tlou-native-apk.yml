@@ -96,16 +96,15 @@ jobs:
           environment-file: ci/environment.yml
           cache-environment: true
           init-shell: bash
-      - name: Restore Bionic dependency/FEX source and native compiler cache
+      - name: Restore Bionic native dependencies and compiler cache
         uses: actions/cache@v4
         with:
           path: |
             .local-deps/android/bionic-prefix
             .local-deps/android/bionic-src
             .local-deps/android/bionic-build
-            .local-deps/FEX
             ~/.cache/ccache
-          key: tlou-bionic-arm64-v2-${{ runner.os }}-${{ hashFiles('android/bionic/build_deps.sh', 'android/bionic/build_fex.sh') }}
+          key: tlou-bionic-arm64-aot-v3-${{ runner.os }}-${{ hashFiles('android/bionic/build_deps.sh', 'android/bionic/build_aot_cpu.sh') }}
           save-always: true
       # Ccache is incremental across source-fix commits, unlike the pinned dependency archive.
       - name: Restore incremental ARM64 native object cache
@@ -130,9 +129,9 @@ jobs:
       - name: Build real Bionic target dependencies
         shell: bash -el {0}
         run: bash android/bionic/build_deps.sh
-      - name: Build actual TLOU FEX ARM64 native translator
+      - name: Compile production TLOU ARM64 AOT CPU
         shell: bash -el {0}
-        run: bash android/bionic/build_fex.sh
+        run: bash android/bionic/build_aot_cpu.sh
       - name: Configure TLOU-specific native Vulkan GPU
         shell: bash -el {0}
         run: bash android/bionic/build_gpu.sh --configure-only
@@ -178,15 +177,15 @@ jobs:
         run: bash android/bionic/package_apk.sh
       - name: Verify APK payload and native dependency closure
         if: ${{ !contains(github.event.head_commit.message, '[native-only]') }}
-        run: python3 android/bionic/check_tools_apk.py out/release/TheLastOfUsRemastered-Android-v0.1.1-arm64.apk
+        run: python3 android/bionic/check_tools_apk.py out/release/TheLastOfUsRemastered-Android-v0.2.0-arm64.apk
       - name: Publish installable TLOU APK
         if: ${{ !contains(github.event.head_commit.message, '[native-only]') }}
         uses: actions/upload-artifact@v4
         with:
-          name: TheLastOfUsRemastered-Android-v0.1.1-arm64
+          name: TheLastOfUsRemastered-Android-v0.2.0-arm64
           path: |
-            out/release/TheLastOfUsRemastered-Android-v0.1.1-arm64.apk
-            out/release/TheLastOfUsRemastered-Android-v0.1.1-arm64.apk.sha256
+            out/release/TheLastOfUsRemastered-Android-v0.2.0-arm64.apk
+            out/release/TheLastOfUsRemastered-Android-v0.2.0-arm64.apk.sha256
           if-no-files-found: error
       - name: Publish built native binaries
         uses: actions/upload-artifact@v4

@@ -10,11 +10,19 @@ on:
       tag:
         description: 'Release tag'
         required: true
-        default: 'v0.1.1-odin3'
+        default: 'v0.2.0-odin3-test'
       notes:
         description: 'Release notes file in the repository'
         required: true
-        default: 'tools/release-notes/v0.1.1-odin3.md'
+        default: 'tools/release-notes/v0.2.0-odin3-test.md'
+      artifact:
+        description: 'APK artifact name of that build'
+        required: true
+        default: 'TheLastOfUsRemastered-Android-v0.2.0-arm64'
+      prerelease:
+        description: 'Mark as a pre-release (test build)'
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -28,7 +36,7 @@ jobs:
       - name: Download the APK of that build
         uses: actions/download-artifact@v4
         with:
-          name: TheLastOfUsRemastered-Android-v0.1.1-arm64
+          name: ${{ inputs.artifact }}
           run-id: ${{ inputs.run_id }}
           github-token: ${{ github.token }}
           path: out
@@ -37,13 +45,17 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ inputs.tag }}
           NOTES: ${{ inputs.notes }}
+          ARTIFACT: ${{ inputs.artifact }}
+          PRERELEASE: ${{ inputs.prerelease }}
         run: |
           set -euo pipefail
           ls -la out
           apk="out/TLOU-Remastered-Android-${TAG}-arm64.apk"
-          mv out/TheLastOfUsRemastered-Android-v0.1.1-arm64.apk "$apk"
+          mv "out/${ARTIFACT}.apk" "$apk"
           (cd out && sha256sum "$(basename "$apk")" > "$(basename "$apk").sha256")
-          gh release create "$TAG" "$apk" "$apk.sha256" \
+          extra=()
+          [ "$PRERELEASE" = "true" ] && extra+=(--prerelease)
+          gh release create "$TAG" "$apk" "$apk.sha256" "${extra[@]}" \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
-            --title "TLOU Remastered Android $TAG (FSR, motion sensors, cutscene fix)" \
+            --title "TLOU Remastered Android $TAG (Odin 3)" \
             --notes-file "$NOTES"
