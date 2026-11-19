@@ -623,8 +623,7 @@ public:
     // Command headers and items are placed directly in RecordChunk::storage:
     // 1 item costs only sizeof(Item), not a reserved 16-item array.
     [[nodiscard]] bool PushHostCopy(const Gow3Copy::Item& item, u64 sequence,
-                                    std::atomic<u64>& completed,
-                                    Detail::SeqParkSignal* park = nullptr) {
+                                    std::atomic<u64>& completed) {
         static_assert(std::is_trivially_destructible_v<Gow3Copy::Item>);
         if (last_host_batch) {
             const size_t at = (used + alignof(Gow3Copy::Item) - 1) &
@@ -636,6 +635,7 @@ public:
             const bool appended = last_host_batch->batch.Append(next, sequence);
             ASSERT(appended);
             used = at + sizeof(Gow3Copy::Item);
+            ++host_copy_items;
             PrefetchAhead();
             return true;
         }
@@ -647,7 +647,7 @@ public:
             return false;
         }
         auto* first_item = new (storage + item_offset) Gow3Copy::Item(item);
-        auto* command = new (storage + offset) Command(completed, first_item, sequence, park);
+        auto* command = new (storage + offset) Command(completed, first_item, sequence);
         if (last) {
             last->next = command;
         } else {
@@ -656,6 +656,8 @@ public:
         last = command;
         last_host_batch = command;
         used = item_offset + sizeof(Gow3Copy::Item);
+        ++host_copy_items;
+        ++host_copy_groups;
         PrefetchAhead();
         return true;
     }
@@ -682,7 +684,12 @@ public:
         first = last = nullptr;
         last_host_batch = nullptr;
         used = 0;
+        host_copy_items = 0;
+        host_copy_groups = 0;
     }
+
+    [[nodiscard]] u32 HostCopyItems() const noexcept { return host_copy_items; }
+    [[nodiscard]] u32 HostCopyGroups() const noexcept { return host_copy_groups; }
 
     [[nodiscard]] bool Empty() const noexcept {
         return first == nullptr;
@@ -720,8 +727,8 @@ private:
 
     struct HostCopyBatchCommand final : CommandBase {
         explicit HostCopyBatchCommand(std::atomic<u64>& done, Gow3Copy::Item* first,
-                                      u64 sequence, Detail::SeqParkSignal* park)
-            : batch{done, first, sequence, park} {}
+                                      u64 sequence)
+            : batch{done, first, sequence} {}
         void Execute(vk::CommandBuffer) override { batch.Execute(); }
         Detail::HostCopyBatch batch;
     };
@@ -731,6 +738,8 @@ private:
     CommandBase* first{};
     CommandBase* last{};
     HostCopyBatchCommand* last_host_batch{};
+    u32 host_copy_items = 0; // changed only by producer before publication
+    u32 host_copy_groups = 0; // read by recorder after publication
 };
 
 class Scheduler {
@@ -910,10 +919,10 @@ public:
         ASSERT(IsRecordingDeferred());
         ++record_serial;
         const u64 sequence = ++host_copies_issued;
-        if (!record_chunk->PushHostCopy(item, sequence, host_copies_done, &host_copy_park)) {
+        if (!record_chunk->PushHostCopy(item, sequence, host_copies_done)) {
             full_chunks.push_back(std::move(record_chunk));
             record_chunk = AcquireChunk();
-            const bool pushed = record_chunk->PushHostCopy(item, sequence, host_copies_done, &host_copy_park);
+            const bool pushed = record_chunk->PushHostCopy(item, sequence, host_copies_done);
             ASSERT(pushed);
         }
     }
@@ -926,7 +935,7 @@ public:
                 seq = ++host_copies_issued](vk::CommandBuffer) {
             copy();
             host_copies_done.store(seq, std::memory_order_release);
-            host_copy_park.Notify();
+            host_copies_done.notify_all();
         });
     }
 
@@ -956,9 +965,13 @@ public:
 
     /// gow3 statistics: sizes of the scheduler's queues (growth over time).
     std::string DebugSizes() {
-        return std::format("{} pending ops, {} full chunks, {} free chunks, {} queued chunks",
+        const u64 items = recorder_host_copy_items.exchange(0, std::memory_order_relaxed);
+        const u64 groups = recorder_host_copy_groups.exchange(0, std::memory_order_relaxed);
+        return std::format("{} pending ops, {} full chunks, {} free chunks, {} queued chunks; "
+                           "host-copy items={} groups={} avg-per-group={:.2f}",
                            num_pending_ops.load(std::memory_order_relaxed), full_chunks.size(),
-                           free_chunks.size(), recorder_queue.size());
+                           free_chunks.size(), recorder_queue.size(), items, groups,
+                           groups ? double(items) / double(groups) : 0.);
     }
 
     /// Whether a render pass with exactly this state is open.
@@ -1066,13 +1079,13 @@ private:
     std::vector<std::unique_ptr<RecordChunk>> free_chunks;
     bool recorder_busy = false;
     std::atomic<size_t> queued_chunks{0}; ///< recorder_queue.size() for lock-free polling
+    std::atomic<u64> recorder_host_copy_items{0}; // one increment per completed chunk
+    std::atomic<u64> recorder_host_copy_groups{0}; // groups, not Vulkan calls
     bool recorder_sleeping = false; ///< waiting on recorder_cv (guarded by recorder_mutex)
     bool direct_mode = false; ///< the command buffer is recorded on the caller's thread
     bool checkpoint_callers = false; ///< GOW3_GPU_CHECKPOINTS=2: marks CommandBuffer() callers
     u64 host_copies_issued = 0;
     std::atomic<u64> host_copies_done{0};
-    /// TLOU Android: wakes WaitHostCopies sleeping on host_copies_done (GOW3_PARK_COPY_WAITS).
-    Detail::SeqParkSignal host_copy_park;
     std::atomic<u64> guest_write_epoch{0};
     std::atomic<u64> deferred_signals_issued{0}; ///< by the thread recording (A or B)
     std::shared_ptr<std::atomic<u64>> deferred_signals_done =

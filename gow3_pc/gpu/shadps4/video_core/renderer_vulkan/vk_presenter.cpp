@@ -643,6 +643,7 @@ Frame* Presenter::PrepareFrame(const Libraries::VideoOut::BufferAttributeGroup& 
         return env && std::strcmp(env, "sgsr") == 0;
     }();
     fsr_settings.sgsr = sgsr_upscaler;
+    fsr_settings.sgsr_edge_sharpness = Gow3Graphics::SgsrEdgeSharpness(graphics.rcas_strength);
     Gow3Settings::Get().image_width = int(image_size.width);
     Gow3Settings::Get().image_height = int(image_size.height);
     Gow3Settings::Get().window_width = int(frame->width);

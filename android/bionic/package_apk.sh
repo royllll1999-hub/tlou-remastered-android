@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Package the real TLOU ARM64/FEX executable and GPU, not a placeholder APK.
+# Package the ARM64 AOT-only TLOU loader and Vulkan GPU for Android.
 set -Eeuo pipefail
 trap 'echo "TLOU APK packaging failed at line $LINENO: $BASH_COMMAND" >&2' ERR
 cd "$(dirname "$0")/../.."
@@ -14,7 +14,7 @@ if [[ -z "$sdk" ]]; then sdk="$ANDROID_SDK_ROOT"; fi
 [[ -n "$sdk" ]] || { echo "Set ANDROID_HOME or ANDROID_SDK_ROOT" >&2; exit 2; }
 build_tools=35.0.0
 android_tools="$sdk/build-tools/$build_tools"
-[[ -s "$out/bin/gow3-probe" ]] || { echo "Missing actual TLOU FEX loader" >&2; exit 2; }
+[[ -s "$out/bin/gow3-probe" ]] || { echo "Missing TLOU ARM64 AOT loader" >&2; exit 2; }
 for library in libgow3cpu.so libgow3gpu.so libgow3present.so libc++_shared.so; do
   [[ -s "$out/lib/$library" ]] || { echo "Missing native $library" >&2; exit 2; }
 done
@@ -36,8 +36,54 @@ require_command_regex '/system/bin/linker64' "$llvm/llvm-readelf" -l "$out/bin/g
 for library in libgow3cpu.so libgow3gpu.so libgow3present.so libc++_shared.so; do
   require_command_regex 'Machine:.*AArch64' "$llvm/llvm-readelf" -h "$out/lib/$library"
 done
+# Release 0.2.0 must have exactly the same native CPU in the package and
+# in the AOT guest runtime; reject old FEX-built libgow3cpu.so from any cache.
+test -s "$out/lib/libgow3cpu.so"
+test -s "$out/apk-assets/runtime-aot/libgow3cpu.so"
+cmp "$out/lib/libgow3cpu.so" "$out/apk-assets/runtime-aot/libgow3cpu.so" || {
+  echo "Refusing mismatched CPU implementations (FEX vs ARM64 AOT)" >&2
+  exit 8
+}
+require_command_regex 'guest_cpu_fiber_switch' "$llvm/llvm-readelf" --dyn-syms --wide "$out/lib/libgow3cpu.so"
+require_command_regex 'bbr_dispatch' "$llvm/llvm-readelf" --dyn-syms --wide "$out/lib/libgow3cpu.so"
 stage="$out/apk-jni/arm64-v8a"
 assets="$out/apk-assets/runtime"
+# The original v0.1.1 full-native workflow calls this packager after it has
+# built Bionic, ARM64 AOT, Vulkan, Python and the PKG tools. Keep that job
+# hierarchy untouched. Stage the mandatory v0.2.0 ARM64 engine here.
+if [[ ! -s "$out/apk-assets/runtime-aot/libgow3cpu.so" ||
+      ! -s "$out/apk-assets/runtime-aot/libbbcpu.so" ]]; then
+  bash android/bionic/build_aot_cpu.sh
+fi
+# Build the pinned, TLOU-patched TSO compiler from SOURCE in this same release
+# job when no verified archive is supplied. Never silently ship upstream
+# bb-recomp 1.3.0: it lacks the required TSO lowering.
+compiler_archive=${TLOU_AOT_COMPILER_ARCHIVE:-$out/aot-tso-compiler/bb-recomp-android-aarch64.tar.xz}
+if [[ ! -s "$compiler_archive" ]]; then
+  echo "Building TLOU ARM64 TSO compiler from pinned sources within original native release job"
+  ANDROID_NDK_HOME="$ndk" TLOU_AOT_BUILD_JOBS="${TLOU_JOBS:-3}" \
+    bash android/aot/build_recompiler_tso.sh
+fi
+[[ -s "$compiler_archive" ]] || {
+  echo "Mandatory patched compiler archive unavailable: $compiler_archive" >&2
+  exit 8
+}
+if [[ -s "$compiler_archive.sha256" ]]; then
+  (cd "$(dirname "$compiler_archive")" &&
+    sha256sum -c "$(basename "$compiler_archive").sha256")
+fi
+TLOU_TSO_REQUIRED=1 TLOU_AOT_COMPILER_ARCHIVE="$compiler_archive" \
+  bash android/bionic/stage_aot_compiler.sh
+for required in "$out/apk-assets/runtime-aot/libgow3cpu.so" \
+                "$out/apk-assets/runtime-aot/libbbcpu.so" \
+                "$out/aot-compiler/bin/libbbrecomp.so" \
+                "$out/aot-compiler/upstream.sha256"; do
+  [[ -s "$required" ]] || { echo "Missing mandatory v0.2.0 AOT payload: $required" >&2; exit 8; }
+done
+# Sanity check AArch64 runtime: the compiler and CPU backend must match the
+# pinned AOT ABI, not any accidental FEX-only package.
+require_command_regex 'Machine:.*AArch64' "$llvm/llvm-readelf" -h "$out/apk-assets/runtime-aot/libgow3cpu.so"
+require_command_regex 'Machine:.*AArch64' "$llvm/llvm-readelf" -h "$out/aot-compiler/bin/libbbrecomp.so"
 python3 android/bionic/stage_tools.py
 mkdir -p "$stage" "$assets" "$root/out/release"
 # Pinned official Turnip 27 R2 / Gen8 V39 patched. Never use a rolling Mesa
@@ -81,7 +127,7 @@ gradle -p "$root/android-launcher" :app:assembleRelease --no-daemon --max-worker
 unsigned="$root/android-launcher/app/build/outputs/apk/release/app-release-unsigned.apk"
 [[ -s "$unsigned" ]] || { echo "Gradle did not produce an unsigned APK" >&2; exit 2; }
 aligned="$out/tlou-release-aligned.apk"
-apk="$root/out/release/TheLastOfUsRemastered-Android-v0.1.1-arm64.apk"
+apk="$root/out/release/TheLastOfUsRemastered-Android-v0.2.0-arm64.apk"
 "$android_tools/zipalign" -f -p 4 "$unsigned" "$aligned"
 key="$out/experimental-development.jks"
 # A different key would make updates impossible. Never regenerate a release key.
@@ -107,6 +153,8 @@ require_command_regex 'lib/arm64-v8a/libgow3cpu[.]so' unzip -Z -1 "$apk"
 require_command_regex 'lib/arm64-v8a/libgow3present[.]so' unzip -Z -1 "$apk"
 require_command_regex 'assets/runtime/gow3-probe' unzip -Z -1 "$apk"
 require_command_regex 'assets/tools[.]zip' unzip -Z -1 "$apk"
+require_command_regex 'assets/runtime-aot/libgow3cpu[.]so' unzip -Z -1 "$apk"
+require_command_regex 'assets/runtime-aot/libbbcpu[.]so' unzip -Z -1 "$apk"
 require_command_regex 'lib/arm64-v8a/libpython3[.]13[.]so' unzip -Z -1 "$apk"
 sha256sum "$apk" > "$apk.sha256"
-echo "Experimental TLOU APK signed and validated: $apk"
+echo "TLOU v0.2.0 APK signed and validated: $apk"

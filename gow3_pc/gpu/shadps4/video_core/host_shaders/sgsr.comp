@@ -32,7 +32,7 @@
 layout(push_constant) uniform const_buffer {
     uvec4 Const0; // input image: 1/width, 1/height, width, height (float bits)
     uvec4 Const1; // output width, height (uint); part of the input image read: width, height (float bits)
-    uvec4 Const2;
+    uvec4 Const2; // x: edge sharpness (float bits, Odin 3 fork; 0 = SGSR default 2.0)
     uvec4 Const3;
     uvec4 Sample; // x = 1: square the result (HDR output, as fsr.comp)
 };
@@ -47,7 +47,7 @@ layout(local_size_x = 16, local_size_y = 16) in;
 #define ps0 sampler2D(InputTexture, InputSampler)
 
 #define EdgeThreshold (8.0 / 255.0)
-#define EdgeSharpness 2.0
+#define EdgeSharpness (Const2.x != 0u ? uintBitsToFloat(Const2.x) : 2.0)
 
 float fastLanczos2(float x) {
     float wA = x - 4.0;

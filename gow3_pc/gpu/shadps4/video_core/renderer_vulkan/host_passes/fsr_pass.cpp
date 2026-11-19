@@ -231,6 +231,7 @@ vk::ImageView FsrPass::Render(vk::CommandBuffer cmdbuf, vk::ImageView input,
         consts.Const1[1] = height;
         const float read[2] = {float(input_size.width), float(input_size.height)};
         std::memcpy(&consts.Const1[2], read, sizeof(read));
+        std::memcpy(&consts.Const2[0], &settings.sgsr_edge_sharpness, sizeof(float));
         consts.Sample[0] = hdr ? 1 : 0;
     }
 

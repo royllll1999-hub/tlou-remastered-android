@@ -48,7 +48,7 @@ class Release019(unittest.TestCase):
         for name in ("MainActivity.java", "PortMenu.java"):
             text = (JAVA / name).read_text()
             self.assertIn('new String[]{"original","900","828","720","540","360"}', text)
-            self.assertIn('new String[]{"30","40","60"}', text)
+            self.assertIn('new String[]{"30","40","60","120"}', text)
             self.assertIn('new String[]{"fsr","sgsr"}', text)
 
     def test_sgsr_pass_is_built_and_selected(self):
@@ -70,7 +70,7 @@ class Release019(unittest.TestCase):
 
     def test_40_fps_requests_120_hz(self):
         settings = (JAVA / "PortSettings.java").read_text()
-        self.assertIn('return "30".equals(limit)||"40".equals(limit)?limit:"60";', settings)
+        self.assertIn('return "30".equals(requested)||"40".equals(requested)||"120".equals(requested)?requested:"60";', settings)
         game = (JAVA / "GameActivity.java").read_text()
         self.assertIn("requestHighRefresh();", game)
         self.assertIn("attrs.preferredDisplayModeId=best.getModeId();", game)

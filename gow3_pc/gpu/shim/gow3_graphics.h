@@ -66,6 +66,11 @@ inline int ParseRcasStrength(int value) {
 inline float RcasAttenuation(int strength) {
     return 2.0f * (1.0f - float(ParseRcasStrength(strength)) / 100.0f);
 }
+/// Odin 3 fork: SGSR 1 edge sharpness for the same strength, 1.0 (25%) .. 2.5 (100%);
+/// 75% (the launcher's default) keeps SGSR's reference 2.0.
+inline float SgsrEdgeSharpness(int strength) {
+    return 0.5f + 2.0f * float(ParseRcasStrength(strength)) / 100.0f;
+}
 /// Whether the FSR pass runs: FSR 1 when the window is larger than the game's image, RCAS
 /// alone when they are the same size. A smaller window is left to the regular scaling.
 inline bool FsrPassRuns(bool fsr1, bool rcas, int in_w, int in_h, int out_w, int out_h) {

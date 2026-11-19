@@ -21,6 +21,9 @@ final class PadBridge {
     private int lx=128, ly=128, rx=128, ry=128, l2, r2, hatX, hatY;
     private int virtualLx=128, virtualLy=128, virtualRx=128, virtualRy=128, virtualL2, virtualR2;
     private boolean virtualLeftActive, virtualRightActive;
+    // Suppress the remaining stick click after an L3+R3 shortcut until both
+    // physical buttons are released, preventing accidental flashlight toggles.
+    private boolean physicalShakeLatch;
     private boolean queued;
     /** Motion: the device is being shaken (MotionShake), or L3+R3 together act as a shake. */
     private boolean sensorShake, shakeButton=true;
@@ -140,7 +143,8 @@ final class PadBridge {
     }
 
     void reset() {
-        keys.clear(); lx=ly=rx=ry=128; l2=r2=hatX=hatY=0;
+        keys.clear(); physicalShakeLatch=false;
+        lx=ly=rx=ry=128; l2=r2=hatX=hatY=0;
         virtualKeys.clear(); virtualLx=virtualLy=virtualRx=virtualRy=128;
         virtualL2=virtualR2=0; virtualLeftActive=virtualRightActive=false;
         write();
@@ -148,11 +152,22 @@ final class PadBridge {
 
     private void write() {
         StringBuilder text=new StringBuilder();
-        Set<String> all=new LinkedHashSet<>(keys); all.addAll(virtualKeys);
-        // L3+R3 pressed together is the shake button: the game sees a shaken controller only.
-        final boolean shakeCombo=shakeButton && all.contains("l3") && all.contains("r3");
-        if (shakeCombo) { all.remove("l3"); all.remove("r3"); }
-        if (shakeCombo || sensorShake) text.append("shake ");
+        Set<String> all=new LinkedHashSet<>(keys);
+        // Physical controllers: clicking BOTH sticks shakes the DualShock
+        // motion sensors for the TLOU flashlight (fork: when the L3+R3 shake option is on).
+        // Single L3/R3 keep their normal gameplay actions; touch-screen L3/R3 are independent.
+        final boolean shakePhysical=shakeButton && keys.contains("l3") && keys.contains("r3");
+        if(shakePhysical) physicalShakeLatch=true;
+        if(physicalShakeLatch) {
+            all.remove("l3");
+            all.remove("r3");
+            if(shakePhysical) all.add("shake");
+            if(!keys.contains("l3") && !keys.contains("r3"))
+                physicalShakeLatch=false;
+        }
+        all.addAll(virtualKeys);
+        // Fork: shaking the device itself (MotionShake) also shakes the controller.
+        if(sensorShake) all.add("shake");
         int leftTrigger=Math.max(l2,virtualL2), rightTrigger=Math.max(r2,virtualR2);
         for (String key:all) {
             if ((key.equals("l2") && leftTrigger>0) || (key.equals("r2") && rightTrigger>0)) continue;

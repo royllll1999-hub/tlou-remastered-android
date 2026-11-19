@@ -436,9 +436,6 @@ grep -Fq 'done->notify_all();' \
 
 # Verify zero draw-preparation workers in both game releases without changing
 # the frame scheduler or correctness barriers.
-g++ -std=c++20 -O2 -UNDEBUG -Wall -Wextra -Werror -I gow3_pc/gpu/shadps4 \
-  gow3_pc/tests/test_tlou_adpf_thread_set.cpp -o "$test_dir/tlou-adpf-threads"
-"$test_dir/tlou-adpf-threads"
 python3 android/tests/test_tlou_111_preparation_regression.py
 
 # A real 01.00 startup failure was the missing retail-memory report. Movie
@@ -453,7 +450,7 @@ cc -std=c11 -O2 -Wall -Wextra -Werror -pthread \
 # guest VMA fixture. Require byte parity and a host CPU reduction for small
 # two-VMA backing uploads; routine-level speedup is not an FPS guarantee.
 "$test_dir/memory-walk" --two-span-gate
-for test in ring_binding_cursor tlou_host_copy_batch tlou_seq_park; do
+for test in ring_binding_cursor tlou_host_copy_batch; do
   g++ -std=c++20 -O2 -Wall -Wextra -Werror -pthread -I gow3_pc/gpu/shim -I gow3_pc/gpu/shadps4 \
     "gow3_pc/tests/test_${test}.cpp" -o "$test_dir/$test"
   "$test_dir/$test" --correctness-only

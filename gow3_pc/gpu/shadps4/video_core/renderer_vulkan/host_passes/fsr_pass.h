@@ -18,6 +18,8 @@ public:
         /// gow3: upscale with Snapdragon GSR 1 (one pass, its own sharpening) instead of
         /// FSR 1 EASU+RCAS. A same-size image still gets RCAS alone.
         bool sgsr{false};
+        /// Odin 3 fork: SGSR edge sharpness, from the same strength as RCAS (75% = SGSR's 2.0).
+        float sgsr_edge_sharpness{2.0f};
     };
 
     void Create(vk::Device device, VmaAllocator allocator, u32 num_images);

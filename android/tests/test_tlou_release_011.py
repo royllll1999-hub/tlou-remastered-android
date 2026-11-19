@@ -1,4 +1,4 @@
-"""Production release 0.1.1: version, worker policy, icon, dialogs, and APK naming."""
+"""Production release 0.2.0: version, worker policy, icon and compatibility."""
 from pathlib import Path
 import unittest
 
@@ -11,11 +11,11 @@ class Release011(unittest.TestCase):
         build=(ANDROID/"build.gradle").read_text()
         main=(JAVA/"MainActivity.java").read_text()
         about=(JAVA/"AboutPanel.java").read_text()
-        # The fork's own releases (v0.1.9-odin3 onwards) show their number in the launcher.
-        self.assertIn("versionName '0.1.10'",build)
-        self.assertIn("versionCode 50",build)
+        # The fork's own releases show their number in the launcher (0.2.0-odin3: upstream 0.2.0 + fork).
+        self.assertIn("versionName '0.2.0-odin3'",build)
+        self.assertIn("versionCode 201",build)
         self.assertIn('text("v"+TlouDialogs.version(this)',main)
-        self.assertIn('String version="0.1.10"',about)
+        self.assertIn('String version="0.2.0-odin3"',about)
         self.assertIn('"royllll1999-hub"',about)
         self.assertNotIn('DAEDALUS  /  ANDROID',main)
         self.assertIn('artFrame.addView(artVersion,artBadge)',main)
@@ -44,15 +44,20 @@ class Release011(unittest.TestCase):
         self.assertIn('RunLog.export(this,output)',(JAVA/"GameActivity.java").read_text())
         self.assertIn('TlouDialogs.showLogs(this,RunLog.summary(this),this::exportLogs)',(JAVA/"MainActivity.java").read_text())
 
-    def test_release_artifacts_use_new_filename_but_keep_pinned_source_identity(self):
-        name="TheLastOfUsRemastered-Android-v0.1.1-arm64.apk"
-        package=(ROOT/"android/bionic/package_apk.sh").read_text()
+    def test_stable_020_release_preserves_original_package_and_certificate(self):
+        build=(ANDROID/"build.gradle").read_text()
         workflow=(ROOT/".github/workflows/tlou-native-apk.yml").read_text()
-        self.assertIn(name,package)
-        self.assertIn(name,workflow)
-        self.assertIn('out/source-apk/TheLastOfUsRemastered-Android-v0.1-arm64.apk',workflow)
-        self.assertIn('name: TheLastOfUsRemastered-Android-v0.1.1-arm64',workflow)
-        self.assertIn('v0.1.1',(ROOT/"RELEASE_NOTES.md").read_text())
+        self.assertIn("applicationId 'com.daedalus.tlou.remastered'",build)
+        self.assertIn("versionName '0.2.0-odin3'",build)
+        self.assertIn("versionCode 201",build)
+        self.assertIn("name: TLOU Bionic Full Native and APK",workflow)
+        self.assertIn("tlou-ui-approval-log32-20261105",workflow)
+        self.assertIn("key: tlou-development-signing-v2",workflow)
+        self.assertIn("bash android/bionic/package_apk.sh",workflow)
+        self.assertIn("Restore signing identity used by existing installations",workflow)
+        self.assertIn("app:assembleRelease",workflow)
+        self.assertNotIn("app:assembleDebug",workflow)
+        self.assertIn("v0.2.0",(ROOT/"RELEASE_NOTES.md").read_text())
 
 if __name__=="__main__":
     unittest.main()

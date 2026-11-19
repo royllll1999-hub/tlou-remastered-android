@@ -11,8 +11,8 @@ class TestScanAB(unittest.TestCase):
         assert 'TLOU_SHADER_SCAN_SCALAR' in SRC
         assert 'const auto& bininfo' in SRC
     def test_launcher_exposes_restartable_ab(self):
-        assert 'option(diagnostics,"shader_scan_scalar"' in UI
-        assert 'env.put("TLOU_SHADER_SCAN_PROFILE",p.getBoolean("shader_scan_scalar",false)?"1":"0")' in SET
-        assert 'getBoolean("shader_scan_scalar",false)' in SET
+        assert 'option(diagnostics,"shader_scan_scalar"' not in UI
+        assert 'env.put("TLOU_SHADER_SCAN_PROFILE","1")' in SET
+        assert 'env.put("TLOU_SHADER_SCAN_SCALAR","0")' in SET
         assert 'shader-scan-method=' in SET
 if __name__=="__main__": unittest.main()

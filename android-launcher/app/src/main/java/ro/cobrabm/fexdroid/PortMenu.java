@@ -222,12 +222,10 @@ final class PortMenu {
                     new String[]{"Original (1080p)","1600 × 900 (1.11)","1472 × 828 (1.11)","1280 × 720","960 × 540","640 × 360"},
                     new String[]{"original","900","828","720","540","360"},"original");
                 choice("fps_limit","Limite de FPS",
-                    new String[]{"30 FPS","40 FPS (tela 120 Hz)","60 FPS"},
-                    new String[]{"30","40","60"},"60");
-                if(prefs.getBoolean("fps_unlock",false))
-                    note("Desbloqueio até 120 FPS ativo: VSync OFF nesta sessão; reinicie após alterar.");
-                else
-                    toggle("vsync","VSync",true);
+                    new String[]{"30 FPS","40 FPS (tela 120 Hz)","60 FPS","120 FPS"},
+                    new String[]{"30","40","60","120"},"60");
+                toggle("vsync","VSync",true);
+                note("120 FPS desativa VSync na sessão, sem alterar a preferência salva.");
                 note("Modo Unificado ativo: cena, interface e mira na mesma resolução.");
                 note("Sincronização da geometria: Completo (único modo). "
                      +"Preserva a correção das deformações.");
@@ -239,9 +237,9 @@ final class PortMenu {
                 choice("upscaler","Método de ampliação",
                     new String[]{"AMD FSR 1.0","Snapdragon GSR"},
                     new String[]{"fsr","sgsr"},"fsr");
-                choice("fsr_sharpness","Nitidez do FSR",
-                    new String[]{"Suave","Média","Forte"},
-                    new String[]{"50","75","90"},"75");
+                choice("fsr_sharpness","Nitidez (FSR e SGSR)",
+                    new String[]{"Mínima","Suave","Média","Forte","Máxima"},
+                    new String[]{"25","50","75","90","100"},"75");
                 note("Como ativar: ligue a opção acima, escolha uma resolução abaixo de 1080p em Resolução interna e reinicie o jogo.");
                 note("Como desativar: desligue a opção acima e reinicie o jogo. A imagem volta à exibição original.");
                 note("Em 1080p (Original) só a nitidez RCAS é aplicada (também com Snapdragon GSR).");
@@ -249,8 +247,6 @@ final class PortMenu {
             case "patches":
                 heading("PATCHES");
                 note("Patches validados para o eboot reconhecido. Reinicie para aplicar.");
-                toggle("fps_unlock","Desbloquear FPS (até 120, experimental)",false);
-                note("Usa vblank virtual de 480 Hz, limita a apresentação a 120 FPS e desativa VSync/FIFO nesta sessão. Cinemáticas mantêm 60 Hz. Reinicie para aplicar.");
                 toggle("ssao","Desativar SSAO",false);
                 toggle("motion_blur","Desativar desfoque de movimento",false);
                 toggle("depth_of_field","Desativar profundidade de campo",false);
@@ -263,7 +259,6 @@ final class PortMenu {
                 row("Restaurar patches e resolução",()->{
                     SharedPreferences.Editor e=prefs.edit().putString("resolution","original");
                     for(String key:PortSettings.EFFECTS)e.putBoolean(key,false);
-                    e.putBoolean("fps_unlock",false);
                     e.putBoolean("fsr",false).putString("fsr_sharpness","75").putString("upscaler","fsr");
                     e.apply();actions.changed();render();
                 });
@@ -273,12 +268,6 @@ final class PortMenu {
                 language();
                 toggle("gpu_turbo","Adreno Turbo (sem root)",false);
                 toggle("adpf","ADPF — ajuste dinâmico de desempenho",false);
-                toggle("job_wake","Despertar rápido dos threads do jogo",true);
-                note("Os threads de tarefas do jogo acordam assim que há trabalho, em vez de esperar até 10 ms (como no port de Uncharted para Android). Mais FPS e menos travadas, sem esquentar mais. Reinicie o jogo para aplicar; desligue se notar instabilidade.");
-                toggle("pause_wfe","Espera econômica dos threads (menos aquecimento)",false);
-                note("Quando um thread do jogo fica girando à espera de outro, o processador dorme até o próximo evento em vez de consumir energia (como no port de Uncharted para Android). Menos calor e bateria; em raros casos pode custar alguns FPS. Desligado por padrão; reinicie o jogo para aplicar.");
-                toggle("fast_render_cores","Priorizar núcleos rápidos (experimental)",false);
-                note("Não força o clock. Limita as threads críticas aos núcleos mais rápidos; reinicie o jogo para aplicar. Pode aumentar a disputa entre threads.");
                 note("Usa dicas de desempenho na thread nativa de comandos. "
                      +"Compatível com Android 13+ quando suportado pelo aparelho. "
                      +"Reinicie o jogo para aplicar; não desativa os limites térmicos.");
@@ -317,6 +306,9 @@ final class PortMenu {
                 choice("control_color","Cor dos controles",
                     new String[]{"Verde oliva","Âmbar","Branco","Vermelho","Azul"},
                     new String[]{"olive","amber","white","red","blue"},"olive");
+                // One multiplier for face buttons, D-pad, shoulders, sticks and AGITAR.
+                // Editing position remains independent, and changes apply in real time.
+                slider("control_size","Tamanho dos controles (%)",75,160,120);
                 slider("touch_opacity","Opacidade dos controles (%)",15,100,55);
                 if(inGame) {
                     action("Editar posição dos botões",actions::editControls);

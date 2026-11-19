@@ -12,10 +12,12 @@ EMU=(ROOT/"gow3_pc/gpu/shim/core/emulator_settings.h").read_text()
 class TlouFpsUnlockRuntimeContracts(unittest.TestCase):
     def test_launcher_exposes_unlock_and_all_effects(self):
         main=(JAVA/"MainActivity.java").read_text()
-        self.assertIn('option(pacing,"fps_unlock","Desbloquear FPS (até 120, experimental)",',main)
+        # Fork: 120 FPS is a choice of the FPS limit (with 40 FPS at 120 Hz), as in upstream 0.2.0.
+        self.assertIn('new String[]{"30 FPS","40 FPS (tela 120 Hz)","60 FPS","120 FPS"}',main)
+        self.assertNotIn('option(pacing,"fps_unlock"',main)
         self.assertIn('option(effects,"omni_light_shadows"',main)
         self.assertIn('option(effects,"spot_light_shadows"',main)
-        self.assertIn('edit.putBoolean("fps_unlock",false)',main)
+        self.assertNotIn('edit.putBoolean("fps_unlock",false)',main)
         self.assertIn('choiceRow(touch,"touch_mode"',main)
         self.assertNotIn('toggleSetting(controls,"touch_visible"',main)
 
@@ -33,9 +35,10 @@ class TlouFpsUnlockRuntimeContracts(unittest.TestCase):
 
 
     def test_user_option_is_off_by_default_and_restorable(self):
-        self.assertIn('toggle("fps_unlock","Desbloquear FPS (até 120, experimental)",false)',MENU)
-        self.assertIn('e.putBoolean("fps_unlock",false);',MENU)
-        self.assertIn('if(prefs(context).getBoolean("fps_unlock",false))return "120";',SET)
+        self.assertNotIn('toggle("fps_unlock"',MENU)
+        self.assertIn('new String[]{"30 FPS","40 FPS (tela 120 Hz)","60 FPS","120 FPS"}',MENU)
+        self.assertNotIn('e.putBoolean("fps_unlock",false);',MENU)
+        self.assertIn('"40".equals(requested)||"120".equals(requested)?requested:"60"',SET)
 
     def test_vblank_and_present_cap_change_together(self):
         self.assertIn('env.put("GOW3_VBLANK_HZ",unlocked?"0":"60");',SET)
